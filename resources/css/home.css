@@ -1,0 +1,567 @@
+/* Performance optimizations */
+.hero-image img {
+    will-change: transform;
+}
+
+.process-item, .service-card, .why-item {
+    will-change: transform;
+}
+
+/* Image lazy loading - Note: loading is an HTML attribute, not CSS */
+/* This is handled in the HTML img tags directly */
+
+/* Additional performance optimizations */
+.container {
+    contain: layout style paint;
+}
+
+.hero-content {
+    contain: layout style paint;
+}
+
+/* Optimize images */
+img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    max-width: 100%;
+    height: auto;
+}
+
+/* SVG optimization */
+svg {
+    max-width: 100%;
+    height: auto;
+    shape-rendering: geometricPrecision;
+}
+
+/* Reduce paint on scroll */
+.header {
+    will-change: transform;
+}
+
+/* Print styles */
+@media print {
+    .header, .footer, .cta {
+        display: none;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+    
+    .hero {
+        padding: 20px 0;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn-primary, .btn-secondary {
+        border: 2px solid #000;
+    }
+    
+    .faq-question {
+        border: 1px solid #000;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    html {
+        scroll-behavior: auto;
+    }
+    
+    .hero-text, .hero-image {
+        animation: none;
+    }
+    
+    .process-item, .service-card, .why-item {
+        animation: none;
+    }
+}
+
+
+
+/* Focus visible for better keyboard navigation */
+.btn-primary:focus-visible, .btn-secondary:focus-visible {
+    outline: 3px solid #10b981;
+    outline-offset: 2px;
+}
+
+.faq-question:focus-visible {
+    outline: 3px solid #10b981;
+    outline-offset: 2px;
+}
+
+/* Enhanced focus for better visibility */
+.btn-primary:focus-visible, .btn-secondary:focus-visible {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+.faq-question:focus-visible {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+/* Skip to content focus enhancement */
+.skip-to-content:focus-visible {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+/* Final performance and accessibility optimizations */
+@media (prefers-reduced-motion: reduce) {
+    .skip-to-content {
+        transition: none;
+    }
+    
+    .faq-toggle {
+        transition: none;
+    }
+}
+
+/* Mobile-first responsive improvements */
+@media (max-width: 640px) {
+    .hero-text h1 {
+        font-size: 32px;
+        line-height: 1.2;
+    }
+    
+    .hero-text p {
+        font-size: 16px;
+    }
+    
+    .section-header h2 {
+        font-size: 24px;
+    }
+    
+    .section-header p {
+        font-size: 14px;
+    }
+    
+    .process-item h3, .service-card h3, .why-item h3 {
+        font-size: 18px;
+    }
+    
+    .process-item p, .service-card p, .why-item p {
+        font-size: 14px;
+    }
+    
+    .btn-primary, .btn-secondary {
+        padding: 12px 24px;
+        font-size: 14px;
+    }
+    
+    .faq-question {
+        font-size: 16px;
+        padding: 16px;
+    }
+    
+    .faq-answer {
+        font-size: 14px;
+        padding: 0 16px 16px;
+    }
+    
+    .contact-options {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .contact-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 30px;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .header-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .nav-links {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .hero-features {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .hero-feature {
+        justify-content: flex-start;
+    }
+    
+    .logo {
+        font-size: 20px;
+    }
+    
+    .logo img {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .container {
+        padding: 0 15px;
+    }
+    
+    .cta h2 {
+        font-size: 24px;
+    }
+    
+    .footer-bottom p {
+        font-size: 12px;
+        text-align: center;
+        padding: 0 10px;
+    }
+    
+    .contact-info li {
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .footer-column h3 {
+        font-size: 18px;
+    }
+    
+    .footer-links li, .contact-info li span {
+        font-size: 14px;
+    }
+    
+    .hero-feature img {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .process-icon img, .service-icon img, .why-icon img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .contact-btn img {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .contact-info img {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .hero-image img {
+        max-height: 300px;
+        object-fit: cover;
+    }
+    
+    .section {
+        padding: 60px 0;
+    }
+    
+    .faq-container {
+        gap: 15px;
+    }
+}
+
+/* Skip to content link for accessibility */
+.skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #10b981;
+    color: white;
+    padding: 8px 12px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 10000;
+    font-weight: 600;
+    font-size: 14px;
+    transition: top 0.2s ease;
+}
+
+.skip-to-content:focus {
+    top: 6px;
+    outline: 2px solid #059669;
+    outline-offset: 2px;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Additional accessibility improvements */
+.faq-toggle {
+    transition: transform 0.3s ease;
+}
+
+.faq-item.active .faq-toggle {
+    transform: rotate(45deg);
+}
+
+/* Focus indicators for better keyboard navigation */
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid #10b981;
+    outline-offset: 2px;
+}
+
+/* Remove default focus for mouse users */
+a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:not(:focus-visible) {
+    outline: none;
+}
+
+/* High contrast mode improvements */
+@media (prefers-contrast: high) {
+    .btn-primary, .btn-secondary {
+        border: 2px solid #000;
+    }
+    
+    .faq-question {
+        border: 1px solid #000;
+    }
+    
+    .skip-to-content {
+        border: 2px solid #000;
+    }
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header Styles */
+.header {
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #1a365d;
+    text-decoration: none;
+}
+
+.logo img {
+    margin-right: 10px;
+    width: 40px;
+    height: 40px;
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 30px;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #4a5568;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover {
+    color: #10b981;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    padding: 120px 0 80px;
+    margin-top: 80px;
+}
+
+.hero-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+}
+
+.hero-text h1 {
+    font-size: 53px;
+    font-weight: 700;
+    color: #1a365d;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.hero-text p {
+    font-size: 18px;
+    color: #64748b;
+    margin-bottom: 40px;
+    line-height: 1.6;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.btn-primary {
+    background: #10b981;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: #10b981;
+    padding: 15px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    border: 2px solid #10b981;
+    transition: all 0.3s ease;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background: #10b981;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.hero-features {
+    display: flex;
+    gap: 30px;
+}
+
+.hero-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.hero-feature img {
+    width: 20px;
+    height: 20px;
+}
+
+.hero-feature span {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.hero-image {
+    position: relative;
+}
+
+.hero-image img {
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.hero-image::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+    background: #10b981;
+    border-radius: 50%;
+    opacity: 0.1;
+    z-index: -1;
+}
+
+.hero-image::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 150px;
+    height: 150px;
+    background: #059669;
+    border-radius: 50%;
+    opacity: 0.08;
+    z-index: -1;
+}
+
+/* How It Works Section */
+.how-it-works {
+    padding: 80px 0;
+    background: #f8fafc;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-size: 36px;
+    font-weight: 700;
+    color: #1a365d;
+    margin-bottom: 15px;
+}
+
+.section-header p {
+    font-size: 18px;
+    color: #64748b;
+}
+
+
+.process-icon img {
+    width: 40px;
+    height: 40px;
+}
+
