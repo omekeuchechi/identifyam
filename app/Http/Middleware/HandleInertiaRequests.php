@@ -36,4 +36,16 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
     }
+
+    /**
+     * Determine if request should be handled by Inertia.
+     */
+    public function handle(Request $request, \Closure $next)
+    {
+        // Don't handle API requests with Inertia
+        if ($request->is('api/*')) {
+            return $next($request);
+        }
+        return parent::handle($request, $next);
+    }
 }

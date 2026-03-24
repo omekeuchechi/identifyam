@@ -41,8 +41,25 @@ return [
         'callback' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'paystack' => [
+        'secret_key' => env('PAYSTACK_SECRET_KEY'),
+        'public_key' => env('PAYSTACK_PUBLIC_KEY'),
+    ],
+
     'easy_verify' => [
         'token' => env('EASYVERIFY_TOKEN'),
+    ],
+
+    'naija_result_pins' => [
+        'token' => env('NAIJA_RESULT_PINS_TOKEN'),
+    ],
+
+    'exam_card_money' => [
+        'cash' => env('EXAM_CARD_MONEY'),
+    ],
+
+    'lagacy_nin' => [
+        'token' => env('LAGACY_NIN_TOKEN'),
     ],
 
 ];

@@ -2,6 +2,7 @@ export default function PrimaryButton({
     className = '',
     disabled,
     children,
+    style,
     ...props
 }) {
     return (
@@ -13,6 +14,7 @@ export default function PrimaryButton({
                 } ` + className
             }
             disabled={disabled}
+            style={style}
         >
             {children}
         </button>

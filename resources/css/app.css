@@ -1,6 +1,7 @@
 
 /* IDENTIFYAM Custom Styles */
 @import './auth.css';
+@import './user-dashboard.css';
 
 /* Reset and Base Styles */
 * {
