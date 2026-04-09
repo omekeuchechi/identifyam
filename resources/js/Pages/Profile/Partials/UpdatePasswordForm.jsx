@@ -45,98 +45,234 @@ export default function UpdatePasswordForm({ className = '' }) {
     };
 
     return (
-        <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Update Password
-                </h2>
+        <section className={`profile-form ${className}`}>
+            <form onSubmit={updatePassword} className="password-update-form">
+                <div className="form-row">
+                    <div className="form-group">
+                        <label htmlFor="current_password" className="form-label">
+                            Current Password <span className="required">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="current_password"
+                            ref={currentPasswordInput}
+                            value={data.current_password}
+                            onChange={(e) => setData('current_password', e.target.value)}
+                            className="form-input"
+                            autoComplete="current-password"
+                            placeholder="Enter your current password"
+                        />
+                        {errors.current_password && (
+                            <p className="error-message">{errors.current_password}</p>
+                        )}
+                    </div>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Ensure your account is using a long, random password to stay
-                    secure.
-                </p>
-            </header>
-
-            <form onSubmit={updatePassword} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel
-                        htmlFor="current_password"
-                        value="Current Password"
-                    />
-
-                    <TextInput
-                        id="current_password"
-                        ref={currentPasswordInput}
-                        value={data.current_password}
-                        onChange={(e) =>
-                            setData('current_password', e.target.value)
-                        }
-                        type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="current-password"
-                    />
-
-                    <InputError
-                        message={errors.current_password}
-                        className="mt-2"
-                    />
+                    <div className="form-group">
+                        <label htmlFor="password" className="form-label">
+                            New Password <span className="required">*</span>
+                        </label>
+                        <input
+                            type="password"
+                            id="password"
+                            ref={passwordInput}
+                            value={data.password}
+                            onChange={(e) => setData('password', e.target.value)}
+                            className="form-input"
+                            autoComplete="new-password"
+                            placeholder="Enter your new password"
+                        />
+                        {errors.password && (
+                            <p className="error-message">{errors.password}</p>
+                        )}
+                    </div>
                 </div>
 
-                <div>
-                    <InputLabel htmlFor="password" value="New Password" />
-
-                    <TextInput
-                        id="password"
-                        ref={passwordInput}
-                        value={data.password}
-                        onChange={(e) => setData('password', e.target.value)}
+                <div className="form-group">
+                    <label htmlFor="password_confirmation" className="form-label">
+                        Confirm New Password <span className="required">*</span>
+                    </label>
+                    <input
                         type="password"
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div>
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
                         id="password_confirmation"
                         value={data.password_confirmation}
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        type="password"
-                        className="mt-1 block w-full"
+                        onChange={(e) => setData('password_confirmation', e.target.value)}
+                        className="form-input"
                         autoComplete="new-password"
+                        placeholder="Confirm your new password"
                     />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
+                    {errors.password_confirmation && (
+                        <p className="error-message">{errors.password_confirmation}</p>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
+                <div className="password-requirements" style={{
+                    backgroundColor: '#f0f9ff',
+                    border: '1px solid #0ea5e9',
+                    borderRadius: '8px',
+                    padding: '16px',
+                    marginTop: '16px'
+                }}>
+                    <h4 style={{ 
+                        fontSize: '14px', 
+                        fontWeight: '600', 
+                        color: '#0369a1',
+                        marginBottom: '12px',
+                        display: 'flex',
+                        alignItems: 'center'
+                    }}>
+                        <i className="fas fa-shield-alt" style={{ marginRight: '8px' }}></i>
+                        Password Requirements:
+                    </h4>
+                    <ul style={{ 
+                        listStyle: 'none', 
+                        padding: 0, 
+                        margin: 0,
+                        fontSize: '13px',
+                        color: '#0c4a6e'
+                    }}>
+                        <li style={{ marginBottom: '4px', display: 'flex', alignItems: 'center' }}>
+                            <i className="fas fa-check" style={{ marginRight: '8px', color: '#10b981', fontSize: '12px' }}></i>
+                            At least 8 characters long
+                        </li>
+                        <li style={{ marginBottom: '4px', display: 'flex', alignItems: 'center' }}>
+                            <i className="fas fa-check" style={{ marginRight: '8px', color: '#10b981', fontSize: '12px' }}></i>
+                            Contains uppercase and lowercase letters
+                        </li>
+                        <li style={{ marginBottom: '4px', display: 'flex', alignItems: 'center' }}>
+                            <i className="fas fa-check" style={{ marginRight: '8px', color: '#10b981', fontSize: '12px' }}></i>
+                            Contains at least one number
+                        </li>
+                        <li style={{ display: 'flex', alignItems: 'center' }}>
+                            <i className="fas fa-check" style={{ marginRight: '8px', color: '#10b981', fontSize: '12px' }}></i>
+                            Contains at least one special character
+                        </li>
+                    </ul>
+                </div>
 
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out"
-                        enterFrom="opacity-0"
-                        leave="transition ease-in-out"
-                        leaveTo="opacity-0"
+                <div className="form-actions">
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="btn-primary"
+                        style={{
+                            backgroundColor: processing ? '#9ca3af' : '#10b981',
+                            color: 'white',
+                            padding: '12px 24px',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: processing ? 'not-allowed' : 'pointer',
+                            fontSize: '16px',
+                            fontWeight: '500',
+                            transition: 'background-color 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (!processing) e.currentTarget.style.backgroundColor = '#059669';
+                        }}
+                        onMouseOut={(e) => {
+                            if (!processing) e.currentTarget.style.backgroundColor = '#10b981';
+                        }}
                     >
-                        <p className="text-sm text-gray-600">
-                            Saved.
-                        </p>
-                    </Transition>
+                        {processing ? (
+                            <>
+                                <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                                Updating...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-lock" style={{ marginRight: '8px' }}></i>
+                                Update Password
+                            </>
+                        )}
+                    </button>
+
+                    {recentlySuccessful && (
+                        <div className="success-message" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: '#059669',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            marginLeft: '16px'
+                        }}>
+                            <i className="fas fa-check-circle" style={{ marginRight: '8px' }}></i>
+                            Password updated successfully!
+                        </div>
+                    )}
                 </div>
             </form>
+
+            <style jsx>{`
+                .password-update-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+
+                .form-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 24px;
+                }
+
+                .form-group {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .form-label {
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    color: #374151;
+                    font-size: 14px;
+                }
+
+                .required {
+                    color: #ef4444;
+                }
+
+                .form-input {
+                    padding: 12px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    transition: border-color 0.2s;
+                }
+
+                .form-input:focus {
+                    outline: none;
+                    border-color: #10b981;
+                    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+                }
+
+                .error-message {
+                    color: #ef4444;
+                    font-size: 12px;
+                    margin-top: 4px;
+                }
+
+                .form-actions {
+                    display: flex;
+                    align-items: center;
+                    margin-top: 32px;
+                }
+
+                @media (max-width: 768px) {
+                    .form-row {
+                        grid-template-columns: 1fr;
+                        gap: 16px;
+                    }
+
+                    .form-actions {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 12px;
+                    }
+
+                    .success-message {
+                        margin-left: 0 !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

@@ -11,14 +11,14 @@ import fastIcon from '../../assets/svg/fast_processing_support_icon.svg';
 import coverageIcon from '../../assets/svg/nationwide_diaspora_coverage_icon.svg';
 import educationTravelIcon from '../../assets/svg/education_travel_abroad_services.svg';
 import CACIcon from '../../assets/svg/CAC_ICON.svg';
-import secureAndConfidenIcon from"../../assets/svg/secure_and_confidential_icon.svg";
+import secureAndConfidenIcon from "../../assets/svg/secure_and_confidential_icon.svg";
 import fastProcessingIcon from "../../assets/svg/fast_processing_support_icon.svg";
 import nationalDiasporaIcon from "../../assets/svg/nationwide_diaspora_coverage_icon.svg";
 import verifySupportIcon from "../../assets/svg/verify_support.svg";
 import faceBookIcon from "../../assets/svg/facebook_icon.svg";
 import twitterIcon from "../../assets/svg/tiw.svg";
 import instagramIcon from "../../assets/svg/instagram_icon.svg";
-import eIcon from "../../assets/svg/eicon.svg"; 
+import eIcon from "../../assets/svg/eicon.svg";
 import greenShieldIcon from "../../assets/svg/green_shield_icon.svg";
 
 import downloadIcon from '../../assets/img/download_icon.png';
@@ -54,7 +54,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
             elements.forEach(element => {
                 const elementTop = element.getBoundingClientRect().top;
-                
+
                 if (elementTop < triggerBottom) {
                     element.classList.add('fade-in-visible');
                 } else {
@@ -65,10 +65,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
         // Initial check
         handleScroll();
-        
+
         // Add scroll event listener
         window.addEventListener('scroll', handleScroll);
-        
+
         // Cleanup
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -116,7 +116,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <li><a href="#about" onClick={(e) => scrollToSection(e, '#about')}>Education Travel</a></li>
                                 <li><a href="#contact" onClick={(e) => scrollToSection(e, '#contact')}>Contact</a></li>
                                 {auth.user ? (
-                                    <li><a href={route('dashboard')}>Dashboard</a></li>
+                                    auth.user.isAdmin ? (
+                                        <li><a href={route('admin.dashboard')}>Management</a></li>
+                                    ) : (
+                                        <li><a href={route('dashboard')}>Dashboard</a></li>
+                                    )
                                 ) : (
                                     <>
                                         <li><a href="login">Login</a></li>
@@ -134,7 +138,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 <div className="container">
                     <div className="hero-content">
                         <div className="hero-text fade-in-scroll">
-                            <h1 className="fade-in-scroll">Retrieve Your <span style={{color: '#059669'}}>NIN
+                            <h1 className="fade-in-scroll">Retrieve Your <span style={{ color: '#059669' }}>NIN
                                 Slip</span> Fast & Securely</h1>
                             <p className="fade-in-scroll">Lost your NIN slip? Get it retrieved quickly with secure and
                                 professional support</p>
@@ -164,10 +168,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         </div>
                         <div className="id-card-animation hero-content-animation">
                             {Array.from({ length: 20 }, (_, i) => (
-                                <img 
+                                <img
                                     key={i}
-                                    src={idCardImage} 
-                                    alt="ID Card" 
+                                    src={idCardImage}
+                                    alt="ID Card"
                                     className={`id-card-drop-small id-card-${i + 1}`}
                                 />
                             ))}
@@ -217,7 +221,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     </div>
                     <div className="services-grid fade-in-scroll">
 
-                         <div className="service-card fade-in-scroll">
+                        <div className="service-card fade-in-scroll">
                             <div className="service-icon fade-in-scroll">
                                 <img src={CACIcon} alt="Documentation" loading="lazy" />
                                 <span>CAC Business Registration</span>
@@ -243,7 +247,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         <div className="service-card fade-in-scroll">
                             <div className="service-icon fade-in-scroll">
                                 <img src={educationTravelIcon} alt="Education & Travel" loading="lazy" />
-                            <span>Education & Travel Abroad Services</span>
+                                <span>Education & Travel Abroad Services</span>
                             </div>
                             <p className='fade-in-scroll'>NIN verification for educational institutions and international travel requirements</p>
                             <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' />Contact Support</button>
@@ -262,7 +266,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 </a>
                             </div>
                         </div>
-                       
+
                     </div>
                 </div>
             </section>

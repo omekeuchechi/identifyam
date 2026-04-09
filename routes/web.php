@@ -3,6 +3,8 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ExamCardController;
+use App\Http\Controllers\LagacyNinController;
+use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -46,6 +48,60 @@ Route::middleware('auth')->group(function () {
         return Inertia::render('ExamCards');
     })->name('exam.cards');
     
+    // Lagacy NIN Service Routes
+    Route::get('/lagacy-nin', function () {
+        return inertia('LagacyNin');
+    })->name('lagacy-nin');
+    
+    // Admin routes
+    Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/admin', function () {
+            return Inertia::render('Admin/Admin');
+        })->name('admin.dashboard');
+        
+        Route::get('/admin/stats', [App\Http\Controllers\AdminController::class, 'getStats'])->name('admin.stats');
+        Route::get('/admin/users', [App\Http\Controllers\AdminController::class, 'getUsers'])->name('admin.users');
+        Route::get('/admin/nin-requests', [App\Http\Controllers\AdminController::class, 'getNinRequests'])->name('admin.nin.requests');
+        Route::get('/admin/system-logs', [App\Http\Controllers\AdminController::class, 'getSystemLogs'])->name('admin.system.logs');
+        Route::get('/admin/settings', [App\Http\Controllers\AdminController::class, 'getSettings'])->name('admin.settings');
+    });
+    
+    // Bug report routes
+    Route::get('/report-bug', [App\Http\Controllers\ReportController::class, 'index'])->name('report.bug');
+    Route::post('/report-bug', [App\Http\Controllers\ReportController::class, 'submit'])->name('report.bug.submit');
+    Route::middleware(['auth', 'admin'])->group(function () {
+        Route::get('/admin/reports', [App\Http\Controllers\ReportController::class, 'allReports'])->name('admin.reports');
+    });
+    
+    // History routes
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/history', [App\Http\Controllers\HistoryController::class, 'index'])->name('history');
+        Route::get('/api/user/history', [App\Http\Controllers\HistoryController::class, 'getUserHistory'])->name('user.history');
+        Route::post('/api/cache/clear', [App\Http\Controllers\HistoryController::class, 'clearCache'])->name('cache.clear');
+    });
+    
+    // Keep session alive endpoint
+    Route::post('/api/lagacy-nin/keep-alive', [LagacyNinController::class, 'keepAlive']);
+    
+    // V1 API
+    Route::post('/api/lagacy-nin/search', [LagacyNinController::class, 'LagacyNin']);
+    
+    // V2 API
+    Route::post('/api/lagacy-nin/v2/search', [LagacyNinController::class, 'LagacyNinV2']);
+    
+    // V3 API
+    Route::post('/api/lagacy-nin/v3/search', [LagacyNinController::class, 'LagacyNinV3']);
+    
+    // V4 API
+    Route::post('/api/lagacy-nin/v4/search', [LagacyNinController::class, 'LagacyNinV4']);
+    
+    // PDF Generation
+    Route::post('/api/lagacy-nin/pdf', [LagacyNinController::class, 'generatePDF']);
+
+
+    // settings and the rest
+    Route::get('settings', [SettingsController::class, 'settings'])->name('settings');
+    
     // Exam Card API routes (authenticated)
     Route::prefix('api/exam-cards')->group(function () {
         // Get available cards from external API
@@ -71,26 +127,6 @@ Route::middleware('auth')->group(function () {
         // Download PDF
         Route::get('/download/{reference}', [ExamCardController::class, 'downloadPDF'])->name('download');
     });
-
-    // Lagacy NIN Service Routes
-    Route::get('/lagacy-nin', function () {
-        return inertia('LagacyNin');
-    })->name('lagacy-nin');
-    
-    // V1 API
-    Route::post('/api/lagacy-nin/search', [App\Http\Controllers\LagacyNinController::class, 'LagacyNin']);
-    
-    // V2 API
-    Route::post('/api/lagacy-nin/v2/search', [App\Http\Controllers\LagacyNinController::class, 'LagacyNinV2']);
-    
-    // V3 API
-    Route::post('/api/lagacy-nin/v3/search', [App\Http\Controllers\LagacyNinController::class, 'LagacyNinV3']);
-    
-    // V4 API
-    Route::post('/api/lagacy-nin/v4/search', [App\Http\Controllers\LagacyNinController::class, 'LagacyNinV4']);
-    
-    // PDF Generation
-    Route::post('/api/lagacy-nin/pdf', [App\Http\Controllers\LagacyNinController::class, 'generatePDF']);
 
 });
 

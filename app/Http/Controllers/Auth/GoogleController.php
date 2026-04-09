@@ -48,9 +48,9 @@ class GoogleController extends Controller
         try {
             // Simple debugging - write to a file
             file_put_contents(storage_path('debug.log'), "Google callback started at " . now() . "\n", FILE_APPEND);
-            
+
             $token = $request->get('code');
-            
+
             if (!$token) {
                 file_put_contents(storage_path('debug.log'), "ERROR: No authorization code received\n", FILE_APPEND);
                 return redirect()->route('login')
@@ -63,7 +63,7 @@ class GoogleController extends Controller
             $clientId = config('services.google.client_id');
             $clientSecret = config('services.google.client_secret');
             $redirectUri = route('google.callback');
-            
+
             file_put_contents(storage_path('debug.log'), "Client ID: " . ($clientId ? 'SET' : 'NOT SET') . "\n", FILE_APPEND);
             file_put_contents(storage_path('debug.log'), "Client Secret: " . ($clientSecret ? 'SET' : 'NOT SET') . "\n", FILE_APPEND);
             file_put_contents(storage_path('debug.log'), "Redirect URI: " . $redirectUri . "\n", FILE_APPEND);
@@ -126,13 +126,18 @@ class GoogleController extends Controller
             }
 
             file_put_contents(storage_path('debug.log'), "Redirecting to dashboard\n", FILE_APPEND);
-            return redirect()->intended(route('dashboard'));
 
+            if (Auth::check() && Auth::user()->isAdmin) {
+                return redirect()->intended(route('admin.dashboard', absolute: false));
+            } else {
+                return redirect()->intended(route('dashboard', absolute: false));
+            }
+            
         } catch (\Exception $e) {
             // Simple debugging - write error to file
             file_put_contents(storage_path('debug.log'), "EXCEPTION: " . $e->getMessage() . "\n", FILE_APPEND);
             file_put_contents(storage_path('debug.log'), "TRACE: " . $e->getTraceAsString() . "\n", FILE_APPEND);
-            
+
             return redirect()->route('login')
                 ->with('error', 'Google authentication failed. Please try again.');
         }

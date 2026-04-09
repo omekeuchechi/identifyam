@@ -1,4 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
+import { useState } from "react";
 
 import logoImage from '../../assets/svg/shield.svg';
 import defaultProfileImage from '../../assets/img/user_profile.png';
@@ -8,7 +9,41 @@ import registerBusiness from '../../assets/img/register_business.png';
 import studyAbroadImage from '../../assets/img/study_abroad.png';
 import secureQuestionImage from '../../assets/img/secure_question.png';
 
+
 export default function Dashboard({ auth }) {
+        const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    
+        const handleLogout = (e) => {
+            e.preventDefault();
+            if (showLogoutConfirm) {
+                // Create and submit a form for POST request
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = route('logout');
+    
+                // Add CSRF token
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                if (csrfToken) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = '_token';
+                    csrfInput.value = csrfToken.getAttribute('content');
+                    form.appendChild(csrfInput);
+                }
+    
+                document.body.appendChild(form);
+                const logoutConfirm = confirm("Do you want to logout");
+                
+                if (logoutConfirm) {
+                    form.submit();
+                }
+
+            } else {
+                setShowLogoutConfirm(true);
+                setTimeout(() => setShowLogoutConfirm(false), 3000);
+            }
+        };
+
     return (
         <>
             <Head title="Dashboard" />
@@ -26,13 +61,24 @@ export default function Dashboard({ auth }) {
 
                     <nav className="sidebar-menu">
                         <a className="active" href="dashboard"><i className="fas fa-home"></i>Dashboard</a>
-                        <a href="nin-service"><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href="lagacy-nin"><i className="fas fa-id-card"></i> NIN Services</a>
                         <a href="exam-cards"><i className="fas fa-credit-card"></i> Exam Cards</a>
                         <a><i className="fas fa-building"></i> CAC Registration</a>
                         <a><i className="fas fa-graduation-cap"></i> Study Abroad</a>
                         <a><i className="fas fa-wallet"></i> Wallet</a>
-                        <a><i className="fas fa-history"></i> History</a>
-                        <a><i className="fas fa-cog"></i> Settings</a>
+                        <a href={route('history')}><i className="fas fa-history"></i> History</a>
+                        <a href={route('settings')}><i className="fas fa-cog"></i> Settings</a>
+
+                        <button onClick={handleLogout} style={{
+                            padding: '15px 20px',
+                            backgroundColor: 'red',
+                            color: '#fff',
+                            fontSize: '15px',
+                            border: 'none',
+                            borderRadius: '20px',
+                            cursor: 'pointer'
+                         }}><i className='fas fa-sign-out'></i> Logout</button>
+
                     </nav>
                 </aside>
 

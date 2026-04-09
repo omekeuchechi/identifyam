@@ -62,4 +62,8 @@ return [
         'token' => env('LAGACY_NIN_TOKEN'),
     ],
 
+    'nin_cash' => [
+        'cash' => env('NIN_CASH')
+    ]
+
 ];

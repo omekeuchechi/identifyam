@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { usePage, Head } from '@inertiajs/react';
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import { usePage, Head, Link } from '@inertiajs/react';
 
 const LagacyNin = ({ auth }) => {
     const { props } = usePage();
@@ -11,7 +10,7 @@ const LagacyNin = ({ auth }) => {
         surName: '',
         firstName: '',
         dateOfBirth: '',
-        gender: ''
+        gender: '',
     });
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
@@ -19,13 +18,38 @@ const LagacyNin = ({ auth }) => {
     const [pdfDownloading, setPdfDownloading] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState('slip');
 
+    // Keep session alive every 5 minutes
+    useEffect(() => {
+        const keepAliveInterval = setInterval(async () => {
+            try {
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+                await fetch('/api/lagacy-nin/keep-alive', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+            } catch (err) {
+                console.log('Session keep-alive failed:', err);
+            }
+        }, 5 * 60 * 1000); // 5 minutes
+        
+        return () => clearInterval(keepAliveInterval);
+    }, []);
+
     // Auto-download PDF when results are available
     useEffect(() => {
         if (result && result.data && !pdfDownloading) {
             setPdfDownloading(true);
             // Show alert that PDF download is starting
-            alert('Generating and downloading your NIN verification PDF...');
-            downloadPDF();
+            const templateName = selectedTemplate === 'card' ? 'NIN Card' : 'NIN Slip';
+            if (window.confirm(`Would you like to download the ${templateName} PDF?`)) {
+                downloadPDF();
+            } else {
+                setPdfDownloading(false);
+            }
         }
     }, [result]);
 
@@ -62,12 +86,15 @@ const LagacyNin = ({ auth }) => {
                 apiEndpoint = '/api/lagacy-nin/v4/search';
             }
 
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
             const response = await fetch(apiEndpoint, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify(formData)
             });
@@ -75,7 +102,12 @@ const LagacyNin = ({ auth }) => {
             // Check if response is HTML (redirect to login)
             const contentType = response.headers.get('content-type');
             if (contentType && contentType.includes('text/html')) {
-                setError('Session expired. Please login again.');
+                setError('Session expired. Please refresh the page and login again.');
+                return;
+            }
+
+            if (response.status === 401) {
+                setError('Session expired. Please refresh the page and login again.');
                 return;
             }
 
@@ -98,12 +130,10 @@ const LagacyNin = ({ auth }) => {
     const formatImageSrc = (imageData) => {
         if (!imageData) return '';
         
-        // If it's already a data URL, return as is
         if (imageData.startsWith('data:')) {
             return imageData;
         }
         
-        // If it's raw base64, convert to data URL
         if (typeof imageData === 'string') {
             return `data:image/jpeg;base64,${imageData}`;
         }
@@ -113,23 +143,19 @@ const LagacyNin = ({ auth }) => {
 
     const downloadImage = (imageData, filename) => {
         try {
-            // Check if imageData is valid base64
             if (!imageData || typeof imageData !== 'string') {
                 throw new Error('Invalid image data');
             }
 
-            // Handle both data URLs and raw base64
             let base64Data = imageData;
             if (imageData.startsWith('data:')) {
                 base64Data = imageData.split(',')[1];
             }
 
-            // Validate base64 string
             if (!base64Data || base64Data.length === 0) {
                 throw new Error('Empty base64 data');
             }
 
-            // Clean base64 string and decode
             const cleanBase64 = base64Data.replace(/[^A-Za-z0-9+/=]/g, '');
             const byteCharacters = atob(cleanBase64);
             const byteNumbers = new Array(byteCharacters.length);
@@ -139,7 +165,6 @@ const LagacyNin = ({ auth }) => {
             const byteArray = new Uint8Array(byteNumbers);
             const blob = new Blob([byteArray], { type: 'image/jpeg' });
             
-            // Create download link
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -164,14 +189,19 @@ const LagacyNin = ({ auth }) => {
             setLoading(true);
             setError('');
 
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            
             const response = await fetch('/api/lagacy-nin/pdf', {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                    'X-CSRF-TOKEN': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json, application/pdf'
                 },
                 body: JSON.stringify({
+                    data: result.data,
                     nin: result.data.data?.nin || formData.nin,
                     api_version: formData.api_version,
                     search_type: formData.search_type,
@@ -181,35 +211,55 @@ const LagacyNin = ({ auth }) => {
 
             // Check if response is HTML (redirect to login)
             const contentType = response.headers.get('content-type');
+            
+            if (response.status === 401) {
+                setError('Session expired. Please refresh the page and login again.');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+                return;
+            }
+            
             if (contentType && contentType.includes('text/html')) {
-                setError('Session expired. Please login again.');
+                setError('Session expired. Please refresh the page and login again.');
                 return;
             }
 
-            if (!response.ok) {
+            if (contentType && contentType.includes('application/json') && !response.ok) {
                 const errorData = await response.json();
                 setError(errorData.error || 'PDF generation failed');
                 return;
             }
 
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
             // Get the PDF blob
             const pdfBlob = await response.blob();
+            
+            // Verify we got a PDF
+            if (pdfBlob.type !== 'application/pdf') {
+                throw new Error('Received invalid response format');
+            }
             
             // Create download link
             const url = window.URL.createObjectURL(pdfBlob);
             const link = document.createElement('a');
             link.href = url;
             const templateName = selectedTemplate === 'card' ? 'NIN-Card' : 'NIN-Slip';
-            link.download = `${templateName}-${result.data.data?.nin || formData.nin}-${Date.now()}.pdf`;
+            const ninNumber = result.data.data?.nin || formData.nin;
+            link.download = `${templateName}-${ninNumber}-${Date.now()}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
 
-            // Show success notification
             alert('✅ ' + templateName + ' PDF downloaded successfully!');
+            setPdfDownloading(false);
 
         } catch (err) {
+            console.error('PDF generation error:', err);
             setError(err.message || 'Failed to generate PDF');
             alert('❌ Failed to generate PDF: ' + (err.message || 'Unknown error'));
         } finally {
@@ -220,7 +270,6 @@ const LagacyNin = ({ auth }) => {
     const formatResultData = (data) => {
         if (!data) return null;
         
-        // Handle error responses
         if (data.status === 'failed' || data.status === 'error') {
             return (
                 <div className="result-container">
@@ -236,7 +285,6 @@ const LagacyNin = ({ auth }) => {
         return (
             <div className="result-container">
                 <h3>Verification Results</h3>
-                {console.log(data)}
                 
                 {/* PDF Template Selection */}
                 <div className="result-section">
@@ -265,7 +313,15 @@ const LagacyNin = ({ auth }) => {
                                         name="template"
                                         value="card"
                                         checked={selectedTemplate === 'card'}
-                                        onChange={(e) => setSelectedTemplate(e.target.value)}
+                                        onChange={(e) => {
+                                            setSelectedTemplate(e.target.value);
+                                            // Ask if user wants to download immediately
+                                            if (result && result.data) {
+                                                if (window.confirm('Would you like to download the ' + (e.target.value === 'card' ? 'NIN Card' : 'NIN Slip') + ' PDF?')) {
+                                                    setTimeout(() => downloadPDF(), 100);
+                                                }
+                                            }
+                                        }}
                                     />
                                     <div className="template-preview">
                                         <i className="fas fa-id-card"></i>
@@ -467,422 +523,477 @@ const LagacyNin = ({ auth }) => {
     return (
         <>
             <Head title="Lagacy NIN Verification" />
-            
-            <div className="container-fluid">
-                <div className="row">
-                    <div className="col-12">
-                        <div className="card">
-                            <div className="card-header">
-                                <h3 className="card-title">Lagacy NIN Verification Service</h3>
+
+            <div className="dashboard-layout">
+                {/* Sidebar */}
+                <aside className="sidebar">
+                    <div className="sidebar-logo">
+                        <div className="logo-image">
+                        </div>
+                        <span>IDENTIFYAM</span>
+                    </div>
+
+                    <nav className="sidebar-menu">
+                        <Link href={route('dashboard')} className="sidebar-link">
+                            <i className="fas fa-home"></i>Dashboard
+                        </Link>
+                        <Link href={route('nin.service')} className="sidebar-link">
+                            <i className="fas fa-id-card"></i> NIN Services
+                        </Link>
+                        <Link href="/lagacy-nin" className="sidebar-link active">
+                            <i className="fas fa-history"></i> Lagacy NIN
+                        </Link>
+                        <Link href={route('exam.cards')} className="sidebar-link">
+                            <i className="fas fa-credit-card"></i> Exam Cards
+                        </Link>
+                        <Link href={route('funding')} className="sidebar-link">
+                            <i className="fas fa-wallet"></i>Wallet
+                        </Link>
+                        <Link href="#" className="sidebar-link">
+                            <i className="fas fa-history"></i>History
+                        </Link>
+                        <Link href={route('settings')} className="sidebar-link">
+                            <i className="fas fa-cog"></i>Settings
+                        </Link>
+                    </nav>
+                </aside>
+
+                {/* Main Area */}
+                <div className="dashboard-main">
+                    {/* Topbar */}
+                    <header className="topbar">
+                        <h3>Lagacy NIN Verification</h3>
+
+                        <div className="topbar-right">
+                            <span className="notification"><i className="fas fa-bell"></i></span>
+                            <div className="user-profile">
+                                <img src="/assets/img/user_profile.png" alt="avatar" />
+                                <span>{auth.user.name}</span>
                             </div>
-                            <div className="card-body">
-                                <div className="row">
-                                    <div className="col-md-6">
-                                        <form onSubmit={handleSubmit} className="nin-form">
-                                            <div className="form-group">
-                                                <label htmlFor="nin">NIN Number</label>
-                                                <input
-                                                    type="text"
-                                                    id="nin"
-                                                    name="nin"
-                                                    value={formData.nin}
-                                                    onChange={handleChange}
-                                                    className="form-control"
-                                                    placeholder="Enter NIN number"
-                                                    disabled={formData.search_type === 'nin search by demographics'}
-                                                    maxLength={11}
-                                                />
-                                                <small className="form-text text-muted">
-                                                    Enter 11-digit NIN number (not required for demographic search)
-                                                </small>
-                                            </div>
+                        </div>
+                    </header>
 
-                                            {/* Demographic Fields - Show only when demographic search is selected */}
-                                            {formData.search_type === 'nin search by demographics' && (
-                                                <div className="demographic-fields">
-                                                    <div className="form-group">
-                                                        <label htmlFor="surName">Surname</label>
-                                                        <input
-                                                            type="text"
-                                                            id="surName"
-                                                            name="surName"
-                                                            value={formData.surName}
-                                                            onChange={handleChange}
-                                                            className="form-control"
-                                                            placeholder="Enter surname"
-                                                            required
-                                                        />
-                                                    </div>
+                    {/* Page Content */}
+                    <div className="dashboard-content">
+                        {/* Search Form */}
+                        <div className="nin-search-card">
+                            <h3>Lagacy NIN Verification Service</h3>
+                            <p>Verify NIN details using multiple search methods and API versions</p>
 
-                                                    <div className="form-group">
-                                                        <label htmlFor="firstName">First Name</label>
-                                                        <input
-                                                            type="text"
-                                                            id="firstName"
-                                                            name="firstName"
-                                                            value={formData.firstName}
-                                                            onChange={handleChange}
-                                                            className="form-control"
-                                                            placeholder="Enter first name"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group">
-                                                        <label htmlFor="dateOfBirth">Date of Birth</label>
-                                                        <input
-                                                            type="date"
-                                                            id="dateOfBirth"
-                                                            name="dateOfBirth"
-                                                            value={formData.dateOfBirth}
-                                                            onChange={handleChange}
-                                                            className="form-control"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <div className="form-group">
-                                                        <label htmlFor="gender">Gender</label>
-                                                        <select
-                                                            id="gender"
-                                                            name="gender"
-                                                            value={formData.gender}
-                                                            onChange={handleChange}
-                                                            className="form-control"
-                                                            required
-                                                        >
-                                                            <option value="">Select Gender</option>
-                                                            <option value="Male">Male</option>
-                                                            <option value="Female">Female</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            <div className="form-group">
-                                                <label htmlFor="search_type">Search Type</label>
-                                                <select
-                                                    id="search_type"
-                                                    name="search_type"
-                                                    value={formData.search_type}
-                                                    onChange={handleChange}
-                                                    className="form-control"
-                                                    required
-                                                >
-                                                    <option value="nin search by nin">Basic Search</option>
-                                                    <option value="nin search by phone">Phone</option>
-                                                    <option value="nin search by demographic">Demographic Search</option>
-                                                </select>
-                                            </div>
-
-                                            <div className="form-group">
-                                                <label htmlFor="api_version">API Version</label>
-                                                <select
-                                                    id="api_version"
-                                                    name="api_version"
-                                                    value={formData.api_version}
-                                                    onChange={handleChange}
-                                                    className="form-control"
-                                                    required
-                                                >
-                                                    <option value="v1">API v1</option>
-                                                    <option value="v2">API v2</option>
-                                                    <option value="v3">API v3</option>
-                                                    <option value="v4">API v4</option>
-                                                </select>
-                                                <small className="form-text text-muted">
-                                                    Try different versions if one is unavailable
-                                                </small>
-                                            </div>
-
-                                            {error && (
-                                                <div className="alert alert-danger">
-                                                    {error}
-                                                </div>
-                                            )}
-
-                                            <div className="form-actions">
-                                                <button 
-                                                    type="submit" 
-                                                    className="btn btn-primary"
-                                                    disabled={loading}
-                                                >
-                                                    {loading ? (
-                                                        <>
-                                                            <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                                            Searching...
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <i className="fas fa-search"></i>
-                                                            Search NIN
-                                                        </>
-                                                    )}
-                                                </button>
-                                                
-                                                <button 
-                                                    type="button" 
-                                                    className="btn btn-secondary"
-                                                    onClick={() => {
-                                                        setFormData({ 
-                                                            nin: '', 
-                                                            search_type: 'nin search by nin',
-                                                            api_version: 'v1',
-                                                            surName: '',
-                                                            firstName: '',
-                                                            dateOfBirth: '',
-                                                            gender: ''
-                                                        });
-                                                        setResult(null);
-                                                        setError('');
-                                                        setPdfDownloading(false);
-                                                    }}
-                                                >
-                                                    Clear
-                                                </button>
-                                            </div>
-                                        </form>
+                            <form onSubmit={handleSubmit} className="nin-search-form">
+                                <div className="search-options">
+                                    <div className="option-group">
+                                        <label>Search Type</label>
+                                        <select
+                                            value={formData.search_type}
+                                            onChange={handleChange}
+                                            name="search_type"
+                                            className="api-select"
+                                        >
+                                            <option value="nin search by nin">Basic Search</option>
+                                            <option value="nin search by phone">Phone</option>
+                                            <option value="nin search by demographic">Demographic Search</option>
+                                        </select>
                                     </div>
 
-                                    <div className="col-md-6">
-                                        <div className="service-info">
-                                            <h4>Service Information</h4>
-                                            <ul>
-                                                <li>Verify NIN details instantly</li>
-                                                <li>Multiple search types available</li>
-                                                <li>Secure and fast verification</li>
-                                                <li>Comprehensive data retrieval</li>
-                                            </ul>
-                                            
-                                            <div className="alert alert-info">
-                                                <h5>Search Types:</h5>
-                                                <ul className="mb-0">
-                                                    <li><strong>Basic:</strong> Name, Phone, Email</li>
-                                                    <li><strong>Detailed:</strong> Complete profile with photos</li>
-                                                    <li><strong>Demographic:</strong> Demographic information only</li>
-                                                </ul>
-                                            </div>
-                                        </div>
+                                    <div className="option-group">
+                                        <label>API Version</label>
+                                        <select
+                                            value={formData.api_version}
+                                            onChange={handleChange}
+                                            name="api_version"
+                                            className="api-select"
+                                        >
+                                            <option value="v1">API v1</option>
+                                            <option value="v2">API v2</option>
+                                            <option value="v3">API v3</option>
+                                            <option value="v4">API v4</option>
+                                        </select>
                                     </div>
                                 </div>
 
-                                {result && (
-                                    <div className="row mt-4">
-                                        <div className="col-12">
-                                            {formatResultData(result)}
+                                {/* Demographic Fields - Show only when demographic search is selected */}
+                                {formData.search_type === 'nin search by demographic' && (
+                                    <div className="demographic-inputs">
+                                        <div className="input-row">
+                                            <div className="input-group">
+                                                <label>Surname</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.surName}
+                                                    onChange={handleChange}
+                                                    name="surName"
+                                                    placeholder="Enter surname"
+                                                    required
+                                                    className="search-input"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>First Name</label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.firstName}
+                                                    onChange={handleChange}
+                                                    name="firstName"
+                                                    placeholder="Enter first name"
+                                                    required
+                                                    className="search-input"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="input-row">
+                                            <div className="input-group">
+                                                <label>Birth Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={formData.dateOfBirth}
+                                                    onChange={handleChange}
+                                                    name="dateOfBirth"
+                                                    required
+                                                    className="search-input"
+                                                />
+                                            </div>
+                                            <div className="input-group">
+                                                <label>Gender</label>
+                                                <select
+                                                    value={formData.gender}
+                                                    onChange={handleChange}
+                                                    name="gender"
+                                                    required
+                                                    className="search-input"
+                                                >
+                                                    <option value="">Select Gender</option>
+                                                    <option value="Male">Male</option>
+                                                    <option value="Female">Female</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
-                            </div>
+
+                                {formData.search_type !== 'nin search by demographic' && (
+                                    <div className="input-group">
+                                        <label>Enter NIN Number</label>
+                                        <input
+                                            type="text"
+                                            value={formData.nin}
+                                            onChange={handleChange}
+                                            name="nin"
+                                            placeholder="Enter 11-digit NIN"
+                                            pattern="[0-9]{11}"
+                                            maxLength={11}
+                                            required
+                                            className="search-input"
+                                        />
+                                    </div>
+                                )}
+
+                                {error && (
+                                    <div className="error-message">
+                                        <i className="fas fa-exclamation-circle"></i>
+                                        {error}
+                                    </div>
+                                )}
+
+                                <div className="form-actions">
+                                    <button 
+                                        type="submit" 
+                                        className="btn btn-primary"
+                                        disabled={loading}
+                                        style={{ 
+                                            background: 'linear-gradient(135deg, #0B6B3A 0%, #10B981 70.71%)', 
+                                            color: '#fff', 
+                                            padding: '13px 30px', 
+                                            border: 'none', 
+                                            borderRadius: '8px' 
+                                        }}
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                                Searching...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <i className="fas fa-search"></i>
+                                                Search NIN
+                                            </>
+                                        )}
+                                    </button>
+                                    
+                                    <button 
+                                        type="button" 
+                                        className="reset-btn"
+                                        onClick={() => {
+                                            setFormData({ 
+                                                nin: '', 
+                                                search_type: 'nin search by nin',
+                                                api_version: 'v1',
+                                                surName: '',
+                                                firstName: '',
+                                                dateOfBirth: '',
+                                                gender: ''
+                                            });
+                                            setResult(null);
+                                            setError('');
+                                            setPdfDownloading(false);
+                                        }}
+                                    >
+                                        Clear Results
+                                    </button>
+                                </div>
+                            </form>
                         </div>
+
+                        {/* Results Display */}
+                        {result && (
+                            <div className="nin-results-card">
+                                <h3>Verification Results</h3>
+                                
+                                {result.data ? (
+                                    <div className="results-content">
+                                        {formatResultData(result)}
+                                    </div>
+                                ) : (
+                                    <div className="no-results">
+                                        <i className="fas fa-search"></i>
+                                        <p>No results found for the provided information</p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
             <style jsx>{`
-                .nin-form {
-                    padding: 20px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
+                .nin-search-card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    margin-bottom: 25px;
                 }
 
-                .form-group {
-                    margin-bottom: 20px;
-                }
-
-                .form-group label {
-                    font-weight: 600;
-                    color: #495057;
+                .nin-search-card h3 {
+                    color: #1f2937;
                     margin-bottom: 8px;
-                    display: block;
+                    font-size: 24px;
                 }
 
-                .form-control {
-                    border: 1px solid #ced4da;
-                    border-radius: 4px;
-                    padding: 10px 15px;
-                    font-size: 16px;
+                .nin-search-card p {
+                    color: #6b7280;
+                    margin-bottom: 25px;
+                }
+
+                .nin-search-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
+                }
+
+                .search-options {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                }
+
+                .option-group label {
+                    display: block;
+                    margin-bottom: 8px;
+                    font-weight: 500;
+                    color: #374151;
+                }
+
+                .api-select, .search-input {
+                    width: 100%;
+                    padding: 12px 15px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 8px;
+                    font-size: 14px;
                     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
                 }
 
-                .form-control:focus {
-                    border-color: #007bff;
-                    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+                .api-select:focus, .search-input:focus {
+                    border-color: #10b981;
+                    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
                     outline: 0;
+                }
+
+                .demographic-inputs {
+                    background: #f9fafb;
+                    padding: 20px;
+                    border-radius: 8px;
+                    border: 1px solid #e5e7eb;
+                }
+
+                .input-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 15px;
+                    margin-bottom: 15px;
+                }
+
+                .input-group label {
+                    display: block;
+                    margin-bottom: 5px;
+                    font-weight: 500;
+                    color: #374151;
+                    font-size: 14px;
+                }
+
+                .error-message {
+                    background: #fef2f2;
+                    border: 1px solid #fecaca;
+                    color: #dc2626;
+                    padding: 12px 15px;
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
                 }
 
                 .form-actions {
                     display: flex;
-                    gap: 10px;
-                    margin-top: 20px;
+                    gap: 15px;
+                    margin-top: 10px;
                 }
 
-                .btn {
-                    padding: 10px 20px;
+                .reset-btn {
+                    background: #6b7280;
+                    color: white;
+                    padding: 13px 25px;
                     border: none;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-size: 16px;
-                    font-weight: 500;
-                    transition: all 0.15s ease-in-out;
-                }
-
-                .btn-primary {
-                    background-color: #007bff;
-                    color: white;
-                }
-
-                .btn-primary:hover:not(:disabled) {
-                    background-color: #0056b3;
-                }
-
-                .btn-secondary {
-                    background-color: #6c757d;
-                    color: white;
-                }
-
-                .btn-secondary:hover {
-                    background-color: #545b62;
-                }
-
-                .btn:disabled {
-                    opacity: 0.6;
-                    cursor: not-allowed;
-                }
-
-                .spinner-border-sm {
-                    width: 1rem;
-                    height: 1rem;
-                    margin-right: 8px;
-                }
-
-                .service-info {
-                    padding: 20px;
-                    background: #e3f2fd;
                     border-radius: 8px;
-                    border-left: 4px solid #2196f3;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: background-color 0.15s ease-in-out;
                 }
 
-                .service-info h4 {
-                    color: #1976d2;
-                    margin-bottom: 15px;
+                .reset-btn:hover {
+                    background: #4b5563;
                 }
 
-                .service-info ul {
+                .nin-results-card {
+                    background: white;
+                    padding: 25px;
+                    border-radius: 12px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                }
+
+                .nin-results-card h3 {
+                    color: #1f2937;
                     margin-bottom: 20px;
-                }
-
-                .service-info li {
-                    margin-bottom: 8px;
+                    font-size: 24px;
                 }
 
                 .result-container {
-                    padding: 20px;
-                    background: #f8f9fa;
-                    border-radius: 8px;
-                    margin-top: 20px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 25px;
                 }
 
                 .result-section {
-                    margin-bottom: 30px;
+                    background: #f9fafb;
+                    padding: 20px;
+                    border-radius: 8px;
+                    border: 1px solid #e5e7eb;
                 }
 
                 .result-section h4 {
-                    color: #495057;
+                    color: #1f2937;
                     margin-bottom: 15px;
-                    border-bottom: 2px solid #007bff;
-                    padding-bottom: 5px;
+                    font-size: 18px;
+                    font-weight: 600;
+                    border-bottom: 2px solid #10b981;
+                    padding-bottom: 8px;
                 }
 
                 .template-selection {
-                    background: #e8f4fd;
+                    background: #ecfdf5;
                     padding: 20px;
                     border-radius: 8px;
-                    margin-bottom: 20px;
-                    border: 1px solid #bee5eb;
+                    border: 1px solid #d1fae5;
                 }
 
                 .template-options {
-                    display: flex;
-                    gap: 20px;
-                    margin-top: 10px;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 15px;
+                    margin: 15px 0;
                 }
 
                 .template-option {
                     display: flex;
-                    align-items: center;
-                    cursor: pointer;
+                    align-items: flex-start;
                     padding: 15px;
-                    border: 2px solid #dee2e6;
+                    border: 2px solid #e5e7eb;
                     border-radius: 8px;
-                    background: #fff;
+                    background: white;
+                    cursor: pointer;
                     transition: all 0.3s ease;
-                    flex: 1;
                 }
 
                 .template-option:hover {
-                    border-color: #007bff;
-                    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+                    border-color: #10b981;
+                    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
                 }
 
                 .template-option input[type="radio"] {
                     margin-right: 12px;
-                }
-
-                .template-option input[type="radio"]:checked + .template-preview {
-                    color: #007bff;
-                }
-
-                .template-option input[type="radio"]:checked + .template-preview span {
-                    font-weight: 600;
+                    margin-top: 2px;
                 }
 
                 .template-preview {
                     display: flex;
-                    align-items: center;
-                    gap: 10px;
+                    flex-direction: column;
+                    gap: 5px;
                 }
 
                 .template-preview i {
                     font-size: 24px;
-                    color: #6c757d;
+                    color: #6b7280;
                 }
 
                 .template-preview span {
                     font-size: 16px;
-                    font-weight: 500;
+                    font-weight: 600;
+                    color: #1f2937;
                 }
 
                 .template-preview small {
-                    display: block;
-                    color: #6c757d;
+                    color: #6b7280;
                     font-size: 12px;
-                    margin-top: 4px;
-                    line-height: 1.3;
+                    line-height: 1.4;
                 }
 
                 .result-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
                     gap: 15px;
                 }
 
                 .result-item {
                     display: flex;
                     justify-content: space-between;
-                    padding: 10px;
+                    align-items: center;
+                    padding: 12px 15px;
                     background: white;
-                    border-radius: 4px;
-                    border: 1px solid #dee2e6;
+                    border-radius: 6px;
+                    border: 1px solid #e5e7eb;
                 }
 
                 .result-item label {
                     font-weight: 600;
-                    color: #495057;
+                    color: #374151;
+                    font-size: 14px;
                 }
 
                 .result-item span {
-                    color: #212529;
+                    color: #1f2937;
+                    font-size: 14px;
+                    text-align: right;
                 }
 
                 .media-grid {
@@ -894,73 +1005,120 @@ const LagacyNin = ({ auth }) => {
 
                 .media-item {
                     text-align: center;
+                    padding: 15px;
+                    background: white;
+                    border-radius: 8px;
+                    border: 1px solid #e5e7eb;
                 }
 
                 .media-item label {
                     display: block;
                     font-weight: 600;
-                    color: #495057;
+                    color: #374151;
                     margin-bottom: 10px;
                 }
 
                 .result-image {
                     max-width: 100%;
                     max-height: 200px;
-                    border-radius: 4px;
-                    border: 1px solid #dee2e6;
+                    border-radius: 6px;
+                    border: 1px solid #e5e7eb;
                     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                 }
 
+                .no-results {
+                    text-align: center;
+                    padding: 40px;
+                    color: #6b7280;
+                }
+
+                .no-results i {
+                    font-size: 48px;
+                    margin-bottom: 15px;
+                    color: #d1d5db;
+                }
+
                 .status-success {
-                    color: #28a745;
+                    color: #059669;
                     font-weight: 600;
                 }
 
                 .status-error {
-                    color: #dc3545;
+                    color: #dc2626;
                     font-weight: 600;
                 }
 
-                .alert {
-                    padding: 15px;
-                    border-radius: 4px;
-                    margin-bottom: 20px;
-                }
-
-                .alert-danger {
-                    background-color: #f8d7da;
-                    border: 1px solid #f5c6cb;
-                    color: #721c24;
-                }
-
-                .alert-info {
-                    background-color: #d1ecf1;
-                    border: 1px solid #bee5eb;
-                    color: #0c5460;
-                }
-
-                .alert h5 {
-                    margin-bottom: 10px;
-                    color: inherit;
-                }
-
-                .demographic-fields {
-                    background: #f8f9fa;
-                    padding: 20px;
+                .btn {
+                    padding: 13px 25px;
+                    border: none;
                     border-radius: 8px;
-                    margin-bottom: 20px;
-                    border-left: 4px solid #007bff;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: 500;
+                    transition: all 0.15s ease-in-out;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
                 }
 
-                .demographic-fields .form-group {
-                    margin-bottom: 15px;
+                .btn:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
                 }
 
-                .demographic-fields label {
-                    font-weight: 600;
-                    color: #495057;
-                    margin-bottom: 5px;
-                    display: block;
+                .btn-success {
+                    background: #059669;
+                    color: white;
+                }
+
+                .btn-success:hover:not(:disabled) {
+                    background: #047857;
+                }
+
+                .btn-primary {
+                    background: #059669;
+                    color: white;
+                }
+
+                .btn-primary:hover:not(:disabled) {
+                    background: #047857;
+                }
+
+                .btn-sm {
+                    padding: 8px 15px;
+                    font-size: 12px;
+                }
+
+                .spinner-border-sm {
+                    width: 1rem;
+                    height: 1rem;
+                    border: 2px solid rgba(255,255,255,0.3);
+                    border-top: 2px solid white;
+                    border-radius: 50%;
+                    animation: spin 1s linear infinite;
+                }
+
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+
+                @media (max-width: 768px) {
+                    .search-options {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .input-row {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .template-options {
+                        grid-template-columns: 1fr;
+                    }
+                    
+                    .result-grid {
+                        grid-template-columns: 1fr;
+                    }
                 }
             `}</style>
         </>

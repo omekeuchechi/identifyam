@@ -209,6 +209,13 @@
     margin: 0;
 }
 
+.sidebar-menu > button{
+    padding: 15px 20px;
+    background-color: red;
+    color: #fff;
+    font-size: 15px;
+}
+
 .sidebar-menu li {
     margin-bottom: 0.5rem;
 }

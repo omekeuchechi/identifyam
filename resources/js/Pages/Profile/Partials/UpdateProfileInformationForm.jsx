@@ -25,89 +25,224 @@ export default function UpdateProfileInformation({
     };
 
     return (
-        <section className={className}>
-            <header>
-                <h2 className="text-lg font-medium text-gray-900">
-                    Profile Information
-                </h2>
+        <section className={`profile-form ${className}`}>
+            <form onSubmit={submit} className="profile-update-form">
+                <div className="form-row">
+                    <div className="form-group">
+                        <label htmlFor="name" className="form-label">
+                            Full Name <span className="required">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            id="name"
+                            value={data.name}
+                            onChange={(e) => setData('name', e.target.value)}
+                            className="form-input"
+                            required
+                            autoFocus
+                            autoComplete="name"
+                            placeholder="Enter your full name"
+                        />
+                        {errors.name && (
+                            <p className="error-message">{errors.name}</p>
+                        )}
+                    </div>
 
-                <p className="mt-1 text-sm text-gray-600">
-                    Update your account's profile information and email address.
-                </p>
-            </header>
-
-            <form onSubmit={submit} className="mt-6 space-y-6">
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
-
-                    <TextInput
-                        id="name"
-                        className="mt-1 block w-full"
-                        value={data.name}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                        isFocused
-                        autoComplete="name"
-                    />
-
-                    <InputError className="mt-2" message={errors.name} />
-                </div>
-
-                <div>
-                    <InputLabel htmlFor="email" value="Email" />
-
-                    <TextInput
-                        id="email"
-                        type="email"
-                        className="mt-1 block w-full"
-                        value={data.email}
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                        autoComplete="username"
-                    />
-
-                    <InputError className="mt-2" message={errors.email} />
+                    <div className="form-group">
+                        <label htmlFor="email" className="form-label">
+                            Email Address <span className="required">*</span>
+                        </label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={data.email}
+                            onChange={(e) => setData('email', e.target.value)}
+                            className="form-input"
+                            required
+                            autoComplete="username"
+                            placeholder="Enter your email address"
+                        />
+                        {errors.email && (
+                            <p className="error-message">{errors.email}</p>
+                        )}
+                    </div>
                 </div>
 
                 {mustVerifyEmail && user.email_verified_at === null && (
-                    <div>
-                        <p className="mt-2 text-sm text-gray-800">
-                            Your email address is unverified.
-                            <Link
-                                href={route('verification.send')}
-                                method="post"
-                                as="button"
-                                className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                            >
-                                Click here to re-send the verification email.
-                            </Link>
+                    <div className="verification-notice" style={{
+                        backgroundColor: '#fef3c7',
+                        border: '1px solid #f59e0b',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        marginTop: '24px'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                            <i className="fas fa-exclamation-triangle" style={{ 
+                                marginRight: '8px', 
+                                color: '#f59e0b' 
+                            }}></i>
+                            <span style={{ fontWeight: '600', color: '#92400e' }}>Email Verification Required</span>
+                        </div>
+                        <p style={{ color: '#92400e', fontSize: '14px', marginBottom: '12px' }}>
+                            Your email address is unverified. Please verify your email to secure your account.
                         </p>
-
+                        <button
+                            onClick={() => window.location.href = route('verification.send')}
+                            className="verification-button"
+                            style={{
+                                backgroundColor: '#f59e0b',
+                                color: 'white',
+                                padding: '8px 16px',
+                                border: 'none',
+                                borderRadius: '6px',
+                                fontSize: '14px',
+                                cursor: 'pointer',
+                                transition: 'background-color 0.2s'
+                            }}
+                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#d97706'}
+                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#f59e0b'}
+                        >
+                            <i className="fas fa-envelope" style={{ marginRight: '8px' }}></i>
+                            Resend Verification Email
+                        </button>
                         {status === 'verification-link-sent' && (
-                            <div className="mt-2 text-sm font-medium text-green-600">
-                                A new verification link has been sent to your
-                                email address.
+                            <div style={{ 
+                                marginTop: '12px', 
+                                fontSize: '14px', 
+                                color: '#059669',
+                                fontWeight: '500'
+                            }}>
+                                <i className="fas fa-check-circle" style={{ marginRight: '8px' }}></i>
+                                A new verification link has been sent to your email address.
                             </div>
                         )}
                     </div>
                 )}
 
-                <div className="flex items-center gap-4">
-                    <PrimaryButton disabled={processing}>Save</PrimaryButton>
-
-                    <Transition
-                        show={recentlySuccessful}
-                        enter="transition ease-in-out"
-                        enterFrom="opacity-0"
-                        leave="transition ease-in-out"
-                        leaveTo="opacity-0"
+                <div className="form-actions">
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="btn-primary"
+                        style={{
+                            backgroundColor: processing ? '#9ca3af' : '#3b82f6',
+                            color: 'white',
+                            padding: '12px 24px',
+                            border: 'none',
+                            borderRadius: '8px',
+                            cursor: processing ? 'not-allowed' : 'pointer',
+                            fontSize: '16px',
+                            fontWeight: '500',
+                            transition: 'background-color 0.2s'
+                        }}
+                        onMouseOver={(e) => {
+                            if (!processing) e.currentTarget.style.backgroundColor = '#2563eb';
+                        }}
+                        onMouseOut={(e) => {
+                            if (!processing) e.currentTarget.style.backgroundColor = '#3b82f6';
+                        }}
                     >
-                        <p className="text-sm text-gray-600">
-                            Saved.
-                        </p>
-                    </Transition>
+                        {processing ? (
+                            <>
+                                <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <i className="fas fa-save" style={{ marginRight: '8px' }}></i>
+                                Save Changes
+                            </>
+                        )}
+                    </button>
+
+                    {recentlySuccessful && (
+                        <div className="success-message" style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            color: '#059669',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            marginLeft: '16px'
+                        }}>
+                            <i className="fas fa-check-circle" style={{ marginRight: '8px' }}></i>
+                            Profile updated successfully!
+                        </div>
+                    )}
                 </div>
             </form>
+
+            <style jsx>{`
+                .profile-update-form {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 24px;
+                }
+
+                .form-row {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 24px;
+                }
+
+                .form-group {
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .form-label {
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    color: #374151;
+                    font-size: 14px;
+                }
+
+                .required {
+                    color: #ef4444;
+                }
+
+                .form-input {
+                    padding: 12px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    transition: border-color 0.2s;
+                }
+
+                .form-input:focus {
+                    outline: none;
+                    border-color: #3b82f6;
+                    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                }
+
+                .error-message {
+                    color: #ef4444;
+                    font-size: 12px;
+                    margin-top: 4px;
+                }
+
+                .form-actions {
+                    display: flex;
+                    align-items: center;
+                    margin-top: 32px;
+                }
+
+                @media (max-width: 768px) {
+                    .form-row {
+                        grid-template-columns: 1fr;
+                        gap: 16px;
+                    }
+
+                    .form-actions {
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 12px;
+                    }
+
+                    .success-message {
+                        margin-left: 0 !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }
