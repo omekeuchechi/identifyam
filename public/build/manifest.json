@@ -1,0 +1,536 @@
+{
+  "_ApplicationLogo-Zkegeub2.js": {
+    "file": "assets/ApplicationLogo-Zkegeub2.js",
+    "name": "ApplicationLogo",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_GuestLayout-CxbrD2XG.js": {
+    "file": "assets/GuestLayout-CxbrD2XG.js",
+    "name": "GuestLayout",
+    "imports": [
+      "resources/js/app.jsx",
+      "_ApplicationLogo-Zkegeub2.js"
+    ]
+  },
+  "_InputError-cUawEFbh.js": {
+    "file": "assets/InputError-cUawEFbh.js",
+    "name": "InputError",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_InputLabel-CK4YXnBX.js": {
+    "file": "assets/InputLabel-CK4YXnBX.js",
+    "name": "InputLabel",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_PrimaryButton-BoSXo9_Y.js": {
+    "file": "assets/PrimaryButton-BoSXo9_Y.js",
+    "name": "PrimaryButton",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_TextInput-BdWfCWsZ.js": {
+    "file": "assets/TextInput-BdWfCWsZ.js",
+    "name": "TextInput",
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "_auth-DVNnFD11.css": {
+    "file": "assets/auth-DVNnFD11.css",
+    "src": "_auth-DVNnFD11.css"
+  },
+  "_user_profile-B7T53hqi.js": {
+    "file": "assets/user_profile-B7T53hqi.js",
+    "name": "user_profile",
+    "assets": [
+      "assets/shield-KZPI2s0E.svg",
+      "assets/user_profile-DcCS7f8N.png"
+    ]
+  },
+  "resources/assets/img/Retrieve_nin_slip.png": {
+    "file": "assets/Retrieve_nin_slip-_NsHJBlg.png",
+    "src": "resources/assets/img/Retrieve_nin_slip.png"
+  },
+  "resources/assets/img/auth_identifyam_overlay.png": {
+    "file": "assets/auth_identifyam_overlay-BYBQD-4I.png",
+    "src": "resources/assets/img/auth_identifyam_overlay.png"
+  },
+  "resources/assets/img/download_icon.png": {
+    "file": "assets/download_icon-DMVQ42vV.png",
+    "src": "resources/assets/img/download_icon.png"
+  },
+  "resources/assets/img/file.png": {
+    "file": "assets/file-CtwIQ_N7.png",
+    "src": "resources/assets/img/file.png"
+  },
+  "resources/assets/img/gear.png": {
+    "file": "assets/gear-Dg6yu64N.png",
+    "src": "resources/assets/img/gear.png"
+  },
+  "resources/assets/img/id_card.png": {
+    "file": "assets/id_card-D8eOXk5y.png",
+    "src": "resources/assets/img/id_card.png"
+  },
+  "resources/assets/img/img.png": {
+    "file": "assets/img-DGFpsxFH.png",
+    "src": "resources/assets/img/img.png"
+  },
+  "resources/assets/img/live_chat_icon.png": {
+    "file": "assets/live_chat_icon-BXNrjRVT.png",
+    "src": "resources/assets/img/live_chat_icon.png"
+  },
+  "resources/assets/img/mobile_auth_overlay.png": {
+    "file": "assets/mobile_auth_overlay-C_AE8XGe.png",
+    "src": "resources/assets/img/mobile_auth_overlay.png"
+  },
+  "resources/assets/img/phone.png": {
+    "file": "assets/phone-Dve-mUb0.png",
+    "src": "resources/assets/img/phone.png"
+  },
+  "resources/assets/img/red_email.png": {
+    "file": "assets/red_email-Bzs74Aan.png",
+    "src": "resources/assets/img/red_email.png"
+  },
+  "resources/assets/img/register_business.png": {
+    "file": "assets/register_business-B3rxjBMG.png",
+    "src": "resources/assets/img/register_business.png"
+  },
+  "resources/assets/img/secure_question.png": {
+    "file": "assets/secure_question-Dt3wnx_U.png",
+    "src": "resources/assets/img/secure_question.png"
+  },
+  "resources/assets/img/study_abroad.png": {
+    "file": "assets/study_abroad-Dq9CQRKT.png",
+    "src": "resources/assets/img/study_abroad.png"
+  },
+  "resources/assets/img/user_profile.png": {
+    "file": "assets/user_profile-DcCS7f8N.png",
+    "src": "resources/assets/img/user_profile.png"
+  },
+  "resources/assets/img/whap.png": {
+    "file": "assets/whap-7Dwr8PH0.png",
+    "src": "resources/assets/img/whap.png"
+  },
+  "resources/assets/svg/CAC_ICON.svg": {
+    "file": "assets/CAC_ICON-CHMNFRze.svg",
+    "src": "resources/assets/svg/CAC_ICON.svg"
+  },
+  "resources/assets/svg/education_travel_abroad_services.svg": {
+    "file": "assets/education_travel_abroad_services-CfohCs2K.svg",
+    "src": "resources/assets/svg/education_travel_abroad_services.svg"
+  },
+  "resources/assets/svg/eicon.svg": {
+    "file": "assets/eicon-sexfcbG0.svg",
+    "src": "resources/assets/svg/eicon.svg"
+  },
+  "resources/assets/svg/facebook_icon.svg": {
+    "file": "assets/facebook_icon-D8Y_bDhB.svg",
+    "src": "resources/assets/svg/facebook_icon.svg"
+  },
+  "resources/assets/svg/fast_processing_support_icon.svg": {
+    "file": "assets/fast_processing_support_icon-oD8KFl5l.svg",
+    "src": "resources/assets/svg/fast_processing_support_icon.svg"
+  },
+  "resources/assets/svg/green_shield_icon.svg": {
+    "file": "assets/green_shield_icon-JT-n9fNI.svg",
+    "src": "resources/assets/svg/green_shield_icon.svg"
+  },
+  "resources/assets/svg/identifyam_logo.svg": {
+    "file": "assets/identifyam_logo-DpImQ2DJ.svg",
+    "src": "resources/assets/svg/identifyam_logo.svg"
+  },
+  "resources/assets/svg/instagram_icon.svg": {
+    "file": "assets/instagram_icon-Ds16q1sW.svg",
+    "src": "resources/assets/svg/instagram_icon.svg"
+  },
+  "resources/assets/svg/nationwide_diaspora_coverage_icon.svg": {
+    "file": "assets/nationwide_diaspora_coverage_icon-CHeS-v_9.svg",
+    "src": "resources/assets/svg/nationwide_diaspora_coverage_icon.svg"
+  },
+  "resources/assets/svg/secure_and_confidential_icon.svg": {
+    "file": "assets/secure_and_confidential_icon-Wop7HPdJ.svg",
+    "src": "resources/assets/svg/secure_and_confidential_icon.svg"
+  },
+  "resources/assets/svg/secure_processing.svg": {
+    "file": "assets/secure_processing-l5Dk6M3t.svg",
+    "src": "resources/assets/svg/secure_processing.svg"
+  },
+  "resources/assets/svg/shield.svg": {
+    "file": "assets/shield-KZPI2s0E.svg",
+    "src": "resources/assets/svg/shield.svg"
+  },
+  "resources/assets/svg/tiw.svg": {
+    "file": "assets/tiw-CcXI8nhY.svg",
+    "src": "resources/assets/svg/tiw.svg"
+  },
+  "resources/assets/svg/verify_support.svg": {
+    "file": "assets/verify_support-CWxbjdOj.svg",
+    "src": "resources/assets/svg/verify_support.svg"
+  },
+  "resources/js/Pages/Admin/Admin.jsx": {
+    "file": "assets/Admin-CzX4IBuR.js",
+    "name": "Admin",
+    "src": "resources/js/Pages/Admin/Admin.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/NinRequests.jsx": {
+    "file": "assets/NinRequests-Db3gEOCm.js",
+    "name": "NinRequests",
+    "src": "resources/js/Pages/Admin/NinRequests.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/Reports.jsx": {
+    "file": "assets/Reports-YrzJzjMg.js",
+    "name": "Reports",
+    "src": "resources/js/Pages/Admin/Reports.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_ApplicationLogo-Zkegeub2.js"
+    ]
+  },
+  "resources/js/Pages/Admin/Settings.jsx": {
+    "file": "assets/Settings-T5at-a0b.js",
+    "name": "Settings",
+    "src": "resources/js/Pages/Admin/Settings.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/SystemLogs.jsx": {
+    "file": "assets/SystemLogs-BGLNdmFm.js",
+    "name": "SystemLogs",
+    "src": "resources/js/Pages/Admin/SystemLogs.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Admin/Users.jsx": {
+    "file": "assets/Users-oivI5-_R.js",
+    "name": "Users",
+    "src": "resources/js/Pages/Admin/Users.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Auth/ConfirmPassword.jsx": {
+    "file": "assets/ConfirmPassword-CAvZcSv1.js",
+    "name": "ConfirmPassword",
+    "src": "resources/js/Pages/Auth/ConfirmPassword.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_InputError-cUawEFbh.js",
+      "_InputLabel-CK4YXnBX.js",
+      "_PrimaryButton-BoSXo9_Y.js",
+      "_TextInput-BdWfCWsZ.js",
+      "_GuestLayout-CxbrD2XG.js",
+      "_ApplicationLogo-Zkegeub2.js"
+    ]
+  },
+  "resources/js/Pages/Auth/ForgotPassword.jsx": {
+    "file": "assets/ForgotPassword-DzWo9jdC.js",
+    "name": "ForgotPassword",
+    "src": "resources/js/Pages/Auth/ForgotPassword.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_InputError-cUawEFbh.js",
+      "_PrimaryButton-BoSXo9_Y.js",
+      "_TextInput-BdWfCWsZ.js",
+      "_GuestLayout-CxbrD2XG.js",
+      "_ApplicationLogo-Zkegeub2.js"
+    ]
+  },
+  "resources/js/Pages/Auth/Login.jsx": {
+    "file": "assets/Login-BfTEb2Hf.js",
+    "name": "Login",
+    "src": "resources/js/Pages/Auth/Login.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_InputError-cUawEFbh.js",
+      "_InputLabel-CK4YXnBX.js",
+      "_PrimaryButton-BoSXo9_Y.js",
+      "_TextInput-BdWfCWsZ.js"
+    ],
+    "css": [
+      "assets/auth-DVNnFD11.css"
+    ],
+    "assets": [
+      "assets/auth_identifyam_overlay-BYBQD-4I.png",
+      "assets/mobile_auth_overlay-C_AE8XGe.png"
+    ]
+  },
+  "resources/js/Pages/Auth/Register.jsx": {
+    "file": "assets/Register-DRdbQrmE.js",
+    "name": "Register",
+    "src": "resources/js/Pages/Auth/Register.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_InputError-cUawEFbh.js",
+      "_InputLabel-CK4YXnBX.js",
+      "_PrimaryButton-BoSXo9_Y.js",
+      "_TextInput-BdWfCWsZ.js"
+    ],
+    "css": [
+      "assets/auth-DVNnFD11.css"
+    ],
+    "assets": [
+      "assets/auth_identifyam_overlay-BYBQD-4I.png",
+      "assets/mobile_auth_overlay-C_AE8XGe.png"
+    ]
+  },
+  "resources/js/Pages/Auth/ResetPassword.jsx": {
+    "file": "assets/ResetPassword-CHSlxaRN.js",
+    "name": "ResetPassword",
+    "src": "resources/js/Pages/Auth/ResetPassword.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_InputError-cUawEFbh.js",
+      "_InputLabel-CK4YXnBX.js",
+      "_PrimaryButton-BoSXo9_Y.js",
+      "_TextInput-BdWfCWsZ.js",
+      "_GuestLayout-CxbrD2XG.js",
+      "_ApplicationLogo-Zkegeub2.js"
+    ]
+  },
+  "resources/js/Pages/Auth/VerifyEmail.jsx": {
+    "file": "assets/VerifyEmail-CaHbT_tF.js",
+    "name": "VerifyEmail",
+    "src": "resources/js/Pages/Auth/VerifyEmail.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PrimaryButton-BoSXo9_Y.js"
+    ],
+    "css": [
+      "assets/auth-DVNnFD11.css"
+    ],
+    "assets": [
+      "assets/auth_identifyam_overlay-BYBQD-4I.png",
+      "assets/mobile_auth_overlay-C_AE8XGe.png"
+    ]
+  },
+  "resources/js/Pages/Dashboard.jsx": {
+    "file": "assets/Dashboard-DNCEGCCL.js",
+    "name": "Dashboard",
+    "src": "resources/js/Pages/Dashboard.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_user_profile-B7T53hqi.js"
+    ],
+    "assets": [
+      "assets/Retrieve_nin_slip-_NsHJBlg.png",
+      "assets/register_business-B3rxjBMG.png",
+      "assets/study_abroad-Dq9CQRKT.png",
+      "assets/secure_question-Dt3wnx_U.png"
+    ]
+  },
+  "resources/js/Pages/ExamCards.jsx": {
+    "file": "assets/ExamCards-CPRk1LlR.js",
+    "name": "ExamCards",
+    "src": "resources/js/Pages/ExamCards.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/Funding.jsx": {
+    "file": "assets/Funding-HO95vxCT.js",
+    "name": "Funding",
+    "src": "resources/js/Pages/Funding.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PrimaryButton-BoSXo9_Y.js"
+    ]
+  },
+  "resources/js/Pages/History.jsx": {
+    "file": "assets/History-C3OICp7N.js",
+    "name": "History",
+    "src": "resources/js/Pages/History.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/LagacyNin.jsx": {
+    "file": "assets/LagacyNin-o3rLoy3E.js",
+    "name": "LagacyNin",
+    "src": "resources/js/Pages/LagacyNin.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ]
+  },
+  "resources/js/Pages/NinService.jsx": {
+    "file": "assets/NinService-DTNYagCi.js",
+    "name": "NinService",
+    "src": "resources/js/Pages/NinService.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_PrimaryButton-BoSXo9_Y.js"
+    ]
+  },
+  "resources/js/Pages/Profile/Edit.jsx": {
+    "file": "assets/Edit-DQsNy2Ac.js",
+    "name": "Edit",
+    "src": "resources/js/Pages/Profile/Edit.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "resources/js/Pages/Profile/Partials/DeleteUserForm.jsx",
+      "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx",
+      "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx",
+      "_user_profile-B7T53hqi.js",
+      "_TextInput-BdWfCWsZ.js"
+    ]
+  },
+  "resources/js/Pages/Profile/Partials/DeleteUserForm.jsx": {
+    "file": "assets/DeleteUserForm-BlNtmIu-.js",
+    "name": "DeleteUserForm",
+    "src": "resources/js/Pages/Profile/Partials/DeleteUserForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_TextInput-BdWfCWsZ.js"
+    ]
+  },
+  "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx": {
+    "file": "assets/UpdatePasswordForm-W-xpoeai.js",
+    "name": "UpdatePasswordForm",
+    "src": "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_TextInput-BdWfCWsZ.js"
+    ]
+  },
+  "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx": {
+    "file": "assets/UpdateProfileInformationForm-DTxs4nmw.js",
+    "name": "UpdateProfileInformationForm",
+    "src": "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_TextInput-BdWfCWsZ.js"
+    ]
+  },
+  "resources/js/Pages/ReportBug.jsx": {
+    "file": "assets/ReportBug-CeT-79ON.js",
+    "name": "ReportBug",
+    "src": "resources/js/Pages/ReportBug.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_user_profile-B7T53hqi.js"
+    ]
+  },
+  "resources/js/Pages/Settings.jsx": {
+    "file": "assets/Settings-BOZ9VWZw.js",
+    "name": "Settings",
+    "src": "resources/js/Pages/Settings.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx",
+      "_user_profile-B7T53hqi.js"
+    ]
+  },
+  "resources/js/Pages/Welcome.jsx": {
+    "file": "assets/Welcome-DxkeciTh.js",
+    "name": "Welcome",
+    "src": "resources/js/Pages/Welcome.jsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "resources/js/app.jsx"
+    ],
+    "css": [
+      "assets/Welcome-Cjgmq5XE.css"
+    ],
+    "assets": [
+      "assets/identifyam_logo-DpImQ2DJ.svg",
+      "assets/img-DGFpsxFH.png",
+      "assets/secure_processing-l5Dk6M3t.svg",
+      "assets/fast_processing_support_icon-oD8KFl5l.svg",
+      "assets/nationwide_diaspora_coverage_icon-CHeS-v_9.svg",
+      "assets/education_travel_abroad_services-CfohCs2K.svg",
+      "assets/CAC_ICON-CHMNFRze.svg",
+      "assets/secure_and_confidential_icon-Wop7HPdJ.svg",
+      "assets/verify_support-CWxbjdOj.svg",
+      "assets/facebook_icon-D8Y_bDhB.svg",
+      "assets/tiw-CcXI8nhY.svg",
+      "assets/instagram_icon-Ds16q1sW.svg",
+      "assets/eicon-sexfcbG0.svg",
+      "assets/green_shield_icon-JT-n9fNI.svg",
+      "assets/download_icon-DMVQ42vV.png",
+      "assets/file-CtwIQ_N7.png",
+      "assets/gear-Dg6yu64N.png",
+      "assets/whap-7Dwr8PH0.png",
+      "assets/phone-Dve-mUb0.png",
+      "assets/live_chat_icon-BXNrjRVT.png",
+      "assets/red_email-Bzs74Aan.png",
+      "assets/id_card-D8eOXk5y.png"
+    ]
+  },
+  "resources/js/app.jsx": {
+    "file": "assets/app-CA6K7nOx.js",
+    "name": "app",
+    "src": "resources/js/app.jsx",
+    "isEntry": true,
+    "dynamicImports": [
+      "resources/js/Pages/Admin/Admin.jsx",
+      "resources/js/Pages/Admin/NinRequests.jsx",
+      "resources/js/Pages/Admin/Reports.jsx",
+      "resources/js/Pages/Admin/Settings.jsx",
+      "resources/js/Pages/Admin/SystemLogs.jsx",
+      "resources/js/Pages/Admin/Users.jsx",
+      "resources/js/Pages/Auth/ConfirmPassword.jsx",
+      "resources/js/Pages/Auth/ForgotPassword.jsx",
+      "resources/js/Pages/Auth/Login.jsx",
+      "resources/js/Pages/Auth/Register.jsx",
+      "resources/js/Pages/Auth/ResetPassword.jsx",
+      "resources/js/Pages/Auth/VerifyEmail.jsx",
+      "resources/js/Pages/Dashboard.jsx",
+      "resources/js/Pages/ExamCards.jsx",
+      "resources/js/Pages/Funding.jsx",
+      "resources/js/Pages/History.jsx",
+      "resources/js/Pages/LagacyNin.jsx",
+      "resources/js/Pages/NinService.jsx",
+      "resources/js/Pages/Profile/Edit.jsx",
+      "resources/js/Pages/Profile/Partials/DeleteUserForm.jsx",
+      "resources/js/Pages/Profile/Partials/UpdatePasswordForm.jsx",
+      "resources/js/Pages/Profile/Partials/UpdateProfileInformationForm.jsx",
+      "resources/js/Pages/ReportBug.jsx",
+      "resources/js/Pages/Settings.jsx",
+      "resources/js/Pages/Welcome.jsx"
+    ],
+    "css": [
+      "assets/app-_zzjB9z-.css"
+    ],
+    "assets": [
+      "assets/auth_identifyam_overlay-BYBQD-4I.png",
+      "assets/mobile_auth_overlay-C_AE8XGe.png"
+    ]
+  }
+}
