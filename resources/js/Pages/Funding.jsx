@@ -168,15 +168,15 @@ export default function Funding({ auth }) {
                                     alignItems: 'center',
                                     gap: '10px'
                                 }}>
-                                <i 
-                                    className={`fas ${showBalance ? 'fa-eye-slash' : 'fa-eye'}`}
-                                    onClick={() => setShowBalance(!showBalance)}
-                                    style={{ 
-                                        cursor: 'pointer',
-                                        fontSize: '16px',
-                                        color: '#fff'
-                                    }}
-                                ></i>
+                                    <i
+                                        className={`fas ${showBalance ? 'fa-eye-slash' : 'fa-eye'}`}
+                                        onClick={() => setShowBalance(!showBalance)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            fontSize: '16px',
+                                            color: '#fff'
+                                        }}
+                                    ></i>
                                     {showBalance ? `₦${Number(balance).toLocaleString()}` : '****'}
                                 </h2>
                             </div>
@@ -187,7 +187,7 @@ export default function Funding({ auth }) {
                             <div className="option-card">
                                 <h3>Fund Wallet</h3>
                                 <p>Add funds to your wallet using Paystack</p>
-                                
+
                                 <form onSubmit={handleFunding} className="funding-form">
                                     <div className="form-group">
                                         <label>Amount (₦)</label>
@@ -201,7 +201,7 @@ export default function Funding({ auth }) {
                                             required
                                         />
                                     </div>
-                                    
+
                                     <div className="form-group">
                                         <label>Email</label>
                                         <input
@@ -217,99 +217,15 @@ export default function Funding({ auth }) {
                                     </PrimaryButton>
                                 </form>
                             </div>
-
-                            {/* <div className="option-card">
-                                <h3>Transfer Funds</h3>
-                                <p>Transfer funds to bank account</p>
-                                
-                                {!showTransferForm ? (
-                                    <button 
-                                        className="transfer-btn"
-                                        onClick={() => setShowTransferForm(true)}
-                                    >
-                                        Make Transfer
-                                    </button>
-                                ) : (
-                                    <form onSubmit={handleTransfer} className="transfer-form">
-                                        <div className="form-group">
-                                            <label>Amount (₦)</label>
-                                            <input
-                                                type="number"
-                                                min="100"
-                                                step="100"
-                                                value={transferForm.data.amount}
-                                                onChange={(e) => transferForm.setData('amount', e.target.value)}
-                                                placeholder="Enter amount"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>Recipient Name</label>
-                                            <input
-                                                type="text"
-                                                value={transferForm.data.recipient_name}
-                                                onChange={(e) => transferForm.setData('recipient_name', e.target.value)}
-                                                placeholder="Enter recipient name"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>Account Number</label>
-                                            <input
-                                                type="text"
-                                                maxLength="10"
-                                                value={transferForm.data.recipient_account}
-                                                onChange={(e) => transferForm.setData('recipient_account', e.target.value)}
-                                                placeholder="10-digit account number"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div className="form-group">
-                                            <label>Bank</label>
-                                            <select
-                                                value={transferForm.data.recipient_bank}
-                                                onChange={(e) => transferForm.setData('recipient_bank', e.target.value)}
-                                                required
-                                            >
-                                                <option value="">Select Bank</option>
-                                                {banks.map(bank => (
-                                                    <option key={bank.code} value={bank.code}>
-                                                        {bank.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="form-actions">
-                                            <PrimaryButton disabled={transferForm.processing || loading} style={{ background: 'linear-gradient(135deg, #0B6B3A 0%, #10B981 70.71%)', color: '#fff', padding: '13px 30px', border: 'none', borderRadius: '8px' }}>
-                                                {loading ? 'Processing...' : 'Transfer'}
-                                            </PrimaryButton>
-                                            <button 
-                                                type="button"
-                                                className="cancel-btn"
-                                                onClick={() => {
-                                                    setShowTransferForm(false);
-                                                    transferForm.reset();
-                                                }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                )}
-                            </div> */}
                         </div>
 
                         {/* Transaction History */}
                         <div className="transaction-history">
                             <h3>Recent Transactions</h3>
-                            
+
                             <div className="transactions-list">
                                 {transactions.length > 0 ? (
-                                    transactions.map(transaction => (
+                                    transactions.slice(0, 10).map(transaction => (
                                         <div key={transaction.id} className={`transaction-item ${transaction.status}`}>
                                             <div className="transaction-info">
                                                 <h4>{transaction.description || transaction.type}</h4>

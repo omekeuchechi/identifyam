@@ -24,15 +24,38 @@ class WalletController extends Controller
         $logFile = storage_path('logs/wallet.log');
         $timestamp = now()->format('Y-m-d H:i:s');
         $logEntry = "[{$timestamp}] {$level}: {$message} " . json_encode($context) . PHP_EOL;
-        
+
         // Ensure log directory exists
         $logDir = dirname($logFile);
         if (!\Illuminate\Support\Facades\File::exists($logDir)) {
             \Illuminate\Support\Facades\File::makeDirectory($logDir, 0755, true);
         }
-        
+
         // Append to log file
         \Illuminate\Support\Facades\File::append($logFile, $logEntry);
+    }
+
+    // Add this method
+    private function autoUpdateExpiredTransactions()
+    {
+        // Check only once per hour to avoid performance issues
+        $lastCheck = Cache::get('last_expired_check');
+
+        if (!$lastCheck || now()->diffInMinutes($lastCheck) >= 60) {
+            try {
+                Transaction::where('status', 'pending')
+                    ->where('created_at', '<', now()->subMinutes(20))
+                    ->update([
+                        'status' => 'failed',
+                        'failed_at' => now(),
+                        'gateway_response' => json_encode(['timeout' => true, 'reason' => 'Auto-failed after 20 minutes'])
+                    ]);
+
+                Cache::put('last_expired_check', now(), 3600);
+            } catch (\Exception $e) {
+                // Silent fail
+            }
+        }
     }
 
     /**
@@ -54,7 +77,7 @@ class WalletController extends Controller
             }
 
             $user = Auth::user();
-            
+
             // Rate limiting check
             $cacheKey = "funding_attempt_{$user->id}";
             if (Cache::has($cacheKey)) {
@@ -70,7 +93,7 @@ class WalletController extends Controller
 
             // Use database transaction for consistency
             DB::beginTransaction();
-            
+
             try {
                 // Create pending transaction
                 $transaction = Transaction::create([
@@ -120,13 +143,11 @@ class WalletController extends Controller
 
                 // Use Inertia visit to handle redirect properly
                 return inertia()->location($data['data']['authorization_url']);
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 Cache::forget($cacheKey);
                 throw $e;
             }
-
         } catch (\Exception $e) {
 
             return redirect()->route('funding')
@@ -140,7 +161,7 @@ class WalletController extends Controller
     public function fundingCallback(Request $request)
     {
         $reference = $request->reference;
-        
+
         // Validate reference format
         if (!preg_match('/^WALLET_[A-Za-z0-9]{12}_[0-9]+$/', $reference)) {
             return redirect()->route('funding')->with('error', 'Invalid transaction reference');
@@ -159,12 +180,14 @@ class WalletController extends Controller
 
             // Prevent duplicate processing
             if ($transaction->status !== 'pending') {
-                
+
                 if ($transaction->status === 'successful') {
-                    return redirect()->route('funding')->with('success', 
-                        'Wallet funded successfully! New balance: ' . $transaction->user->formatted_wallet_balance);
+                    return redirect()->route('funding')->with(
+                        'success',
+                        'Wallet funded successfully! New balance: ' . $transaction->user->formatted_wallet_balance
+                    );
                 }
-                
+
                 return redirect()->route('funding')->with('error', 'Payment already processed');
             }
 
@@ -176,12 +199,12 @@ class WalletController extends Controller
             $data = $response->json();
 
             if (!$response->successful() || !$data['status']) {
-                
+
                 $transaction->update([
                     'status' => 'failed',
                     'gateway_response' => $data,
                 ]);
-                
+
                 return redirect()->route('funding')->with('error', 'Payment verification failed');
             }
 
@@ -190,9 +213,9 @@ class WalletController extends Controller
             // Validate amounts match (prevent tampering)
             $expectedAmount = $transaction->amount;
             $actualAmount = $paystackData['amount'] / 100; // Convert from kobo
-            
+
             if (abs($expectedAmount - $actualAmount) > 0.01) {
-                
+
                 $transaction->update([
                     'status' => 'failed',
                     'gateway_response' => array_merge($paystackData, [
@@ -201,20 +224,20 @@ class WalletController extends Controller
                         'actual_amount' => $actualAmount
                     ]),
                 ]);
-                
+
                 return redirect()->route('funding')->with('error', 'Payment verification failed - amount mismatch');
             }
 
             // Validate payment currency
             if ($paystackData['currency'] !== 'NGN') {
-                
+
                 $transaction->update([
                     'status' => 'failed',
                     'gateway_response' => array_merge($paystackData, [
                         'fraud_detected' => 'invalid_currency'
                     ]),
                 ]);
-                
+
                 return redirect()->route('funding')->with('error', 'Invalid payment currency');
             }
 
@@ -229,30 +252,32 @@ class WalletController extends Controller
             // If successful, add funds to wallet atomically
             if ($paystackData['status'] === 'success') {
                 $user = $transaction->user;
-                
+
                 // Double-check user still exists and is active
-                if (!$user || $user->email_verified_at === null) {       
+                if (!$user || $user->email_verified_at === null) {
                     return redirect()->route('funding')->with('error', 'Account verification required');
                 }
 
                 // Add funds with additional validation
                 $previousBalance = $user->walletAmount;
                 $success = $user->addToWallet($transaction->amount);
-                
+
                 if (!$success) {
                     Log::error('Failed to update wallet balance', [
                         'reference' => $reference,
                         'user_id' => $user->id,
                         'amount' => $transaction->amount
                     ]);
-                    
+
                     throw new \Exception('Wallet update failed');
                 }
 
                 $newBalance = $user->fresh()->walletAmount;
 
-                return redirect()->route('funding')->with('success', 
-                    'Wallet funded successfully! New balance: ' . $user->formatted_wallet_balance);
+                return redirect()->route('funding')->with(
+                    'success',
+                    'Wallet funded successfully! New balance: ' . $user->formatted_wallet_balance
+                );
             }
 
             return redirect()->route('funding')->with('error', 'Payment failed');
@@ -367,6 +392,7 @@ class WalletController extends Controller
      */
     public function balance()
     {
+        $this->autoUpdateExpiredTransactions();
         $user = Auth::user();
 
         return response()->json([
@@ -380,6 +406,8 @@ class WalletController extends Controller
      */
     public function transactions()
     {
+        $this->autoUpdateExpiredTransactions();
+
         $transactions = Auth::user()
             ->transactions()
             ->latest()
