@@ -212,18 +212,18 @@ export default function ExamCards({ auth }) {
             <div className="dashboard-layout">
                 {/* Sidebar */}
                 <aside className="sidebar">
-                    <div className="sidebar-logo">
+                    <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                             <img src="/assets/svg/shield.svg" alt="" />
                         </div>
                         <span>IDENTIFYAM</span>
-                    </div>
+                    </a>
 
                     <nav className="sidebar-menu">
                         <Link href={route('dashboard')} className="sidebar-link">
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href={route('nin.service')} className="sidebar-link">
+                        <Link href="lagacy-nin" className="sidebar-link">
                             <i className="fas fa-id-card"></i> NIN Services
                         </Link>
                         <Link href={route('exam.cards')} className="sidebar-link active">
@@ -232,10 +232,10 @@ export default function ExamCards({ auth }) {
                         <Link href={route('funding')} className="sidebar-link">
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="#" className="sidebar-link">
+                        <Link href="history" className="sidebar-link">
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="#" className="sidebar-link">
+                        <Link href="settings" className="sidebar-link">
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>
@@ -312,7 +312,7 @@ export default function ExamCards({ auth }) {
                                             </div>
                                             <div className="card-body">
                                                 <div className="price">
-                                                    {formatCurrency(card.unit_amount)}
+                                                    {formatCurrency(card.unit_amount + 500)}
                                                 </div>
                                                 <div className="card-type-id">
                                                     ID: {card.card_type_id}

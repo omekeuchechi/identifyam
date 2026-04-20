@@ -18,26 +18,26 @@ use Illuminate\Support\Facades\Session;
 */
 
 // NIN Service API Routes
-Route::prefix('nin')->group(function () {
-    // Search API 1
-    Route::post('/search1', [NinController::class, 'nin_search1']);
-    Route::post('/search-by-phone1', [NinController::class, 'search_by_Phone1']);
+// Route::prefix('nin')->group(function () {
+//     // Search API 1
+//     Route::post('/search1', [NinController::class, 'nin_search1']);
+//     Route::post('/search-by-phone1', [NinController::class, 'search_by_Phone1']);
     
-    // Search API 2
-    Route::post('/search2', [NinController::class, 'nin_search2']);
-    Route::post('/search-by-phone2', [NinController::class, 'search_by_Phone2']);
+//     // Search API 2
+//     Route::post('/search2', [NinController::class, 'nin_search2']);
+//     Route::post('/search-by-phone2', [NinController::class, 'search_by_Phone2']);
     
-    // Search API 3
-    Route::post('/search3', [NinController::class, 'nin_search3']);
-    Route::post('/search-by-phone3', [NinController::class, 'search_by_Phone3']);
+//     // Search API 3
+//     Route::post('/search3', [NinController::class, 'nin_search3']);
+//     Route::post('/search-by-phone3', [NinController::class, 'search_by_Phone3']);
     
-    // Search API 4
-    Route::post('/search4', [NinController::class, 'nin_search4']);
-    Route::post('/search-by-phone4', [NinController::class, 'search_by_Phone4']);
+//     // Search API 4
+//     Route::post('/search4', [NinController::class, 'nin_search4']);
+//     Route::post('/search-by-phone4', [NinController::class, 'search_by_Phone4']);
     
-    // Demographic Search
-    Route::post('/search-demographic', [NinController::class, 'nin_search_demographic']);
-});
+//     // Demographic Search
+//     Route::post('/search-demographic', [NinController::class, 'nin_search_demographic']);
+// });
 
 // Exam Card API Routes
 Route::prefix('exam-cards')->group(function () {

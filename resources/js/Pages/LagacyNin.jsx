@@ -527,21 +527,18 @@ const LagacyNin = ({ auth }) => {
             <div className="dashboard-layout">
                 {/* Sidebar */}
                 <aside className="sidebar">
-                    <div className="sidebar-logo">
+                    <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                         </div>
                         <span>IDENTIFYAM</span>
-                    </div>
+                    </a>
 
                     <nav className="sidebar-menu">
                         <Link href={route('dashboard')} className="sidebar-link">
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href={route('nin.service')} className="sidebar-link">
-                            <i className="fas fa-id-card"></i> NIN Services
-                        </Link>
                         <Link href="/lagacy-nin" className="sidebar-link active">
-                            <i className="fas fa-history"></i> Lagacy NIN
+                            <i className="fas fa-history"></i>NIN Service
                         </Link>
                         <Link href={route('exam.cards')} className="sidebar-link">
                             <i className="fas fa-credit-card"></i> Exam Cards
@@ -549,7 +546,7 @@ const LagacyNin = ({ auth }) => {
                         <Link href={route('funding')} className="sidebar-link">
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="#" className="sidebar-link">
+                        <Link href="history" className="sidebar-link">
                             <i className="fas fa-history"></i>History
                         </Link>
                         <Link href={route('settings')} className="sidebar-link">

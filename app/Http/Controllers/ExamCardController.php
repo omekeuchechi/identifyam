@@ -37,13 +37,6 @@ class ExamCardController extends Controller
     public function getAvailableCards()
     {
         try {
-            // Debug: Log authentication status
-            $this->logExamCard('INFO', 'getAvailableCards called', [
-                'user_authenticated' => Auth::check(),
-                'user_id' => Auth::id(),
-                'session_id' => session()->getId(),
-                'request_headers' => request()->headers->all()
-            ]);
 
             $token = Config('services.naija_result_pins.token');
             if (!$token) {
@@ -79,10 +72,6 @@ class ExamCardController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            $this->logExamCard('ERROR', 'getAvailableCards exception', [
-                'error_message' => $e->getMessage(),
-                'error_trace' => $e->getTraceAsString()
-            ]);
             
             return response()->json([
                 'error' => 'Failed to fetch exam cards: ' . $e->getMessage()
@@ -96,57 +85,15 @@ class ExamCardController extends Controller
     public function purchaseCards(Request $request)
     {
         try {
-            $this->logExamCard('INFO', 'Purchase attempt started', [
-                'user_id' => Auth::id(),
-                'card_type_id' => $request->card_type_id,
-                'quantity' => $request->quantity,
-                'ip' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-                'auth_check' => Auth::check() ? 'authenticated' : 'not_authenticated',
-                'user_data' => Auth::user() ? ['id' => Auth::id(), 'name' => Auth::user()->name] : null
-            ]);
-
-            $this->logExamCard('INFO', 'About to validate request', [
-                'card_type_id' => $request->card_type_id,
-                'quantity' => $request->quantity
-            ]);
 
             $request->validate([
                 'card_type_id' => 'required|string',
                 'quantity' => 'required|integer|min:1|max:2'
             ]);
 
-            $this->logExamCard('INFO', 'Validation passed', [
-                'validation_successful' => true
-            ]);
-
             $token = Config('services.naija_result_pins.token');
-            
-            $this->logExamCard('INFO', 'Token retrieved', [
-                'token_retrieved' => !empty($token),
-                'token_length' => strlen($token ?? '')
-            ]);
-            
-            // Debug: Check all possible environment variable names
-            $this->logExamCard('INFO', 'Token check - detailed', [
-                'token_from_config' => $token,
-                'token_exists' => !empty($token),
-                'token_length' => strlen($token ?? ''),
-                'token_prefix' => substr($token ?? '', 0, 10) . '...',
-                'env_naija_result_pins' => env('NAIJA_RESULT_PINS_TOKEN'),
-                'env_naja_result_pins' => env('NAJA_RESULT_PINS_TOKEN'),
-                'all_env_vars' => [
-                    'NAIJA_RESULT_PINS_TOKEN' => env('NAIJA_RESULT_PINS_TOKEN'),
-                    'NAJA_RESULT_PINS_TOKEN' => env('NAJA_RESULT_PINS_TOKEN'),
-                ]
-            ]);
 
             if (!$token) {
-                $this->logExamCard('ERROR', 'API token not configured', [
-                    'user_id' => Auth::id(),
-                    'card_type_id' => $request->card_type_id
-                ]);
-                
                 return response()->json([
                     'error' => 'API token not configured. Please set NAJA_RESULT_PINS_TOKEN in your .env file.'
                 ], 500);
@@ -157,25 +104,8 @@ class ExamCardController extends Controller
                 'quantity' => $request->quantity
             ];
 
-            $this->logExamCard('INFO', 'Making API request', [
-                'url' => 'https://www.naijaresultpins.com/api/v1/exam-card/buy',
-                'request_data' => $requestData,
-                'headers' => [
-                    'Authorization' => 'Bearer ' . substr($token, 0, 10) . '...',
-                    'Content-Type' => 'application/json'
-                ]
-            ]);
-
             // Check if cURL is available
             if (!function_exists('curl_init')) {
-                $this->logExamCard('ERROR', 'cURL not available', [
-                    'curl_functions' => [
-                        'curl_init' => function_exists('curl_init'),
-                        'curl_exec' => function_exists('curl_exec'),
-                        'curl_close' => function_exists('curl_close')
-                    ]
-                ]);
-                
                 return response()->json([
                     'error' => 'cURL extension not available on this server',
                     'code' => 'CURL_NOT_AVAILABLE',
@@ -187,10 +117,6 @@ class ExamCardController extends Controller
             $ch = curl_init();
             
             if (!$ch) {
-                $this->logExamCard('ERROR', 'Failed to initialize cURL', [
-                    'error' => 'curl_init() returned false'
-                ]);
-                
                 return response()->json([
                     'error' => 'Failed to initialize cURL',
                     'code' => 'CURL_INIT_ERROR',
@@ -219,21 +145,8 @@ class ExamCardController extends Controller
             
             curl_close($ch);
 
-            $this->logExamCard('INFO', 'cURL response received', [
-                'http_code' => $httpCode,
-                'response_body' => $responseBody,
-                'curl_error' => $curlError,
-                'curl_errno' => $curlErrno,
-                'successful' => $httpCode >= 200 && $httpCode < 300
-            ]);
-
             // Check for cURL errors
             if ($curlError) {
-                $this->logExamCard('ERROR', 'cURL error occurred', [
-                    'curl_error' => $curlError,
-                    'curl_errno' => $curlErrno
-                ]);
-                
                 return response()->json([
                     'error' => 'API request failed: ' . $curlError,
                     'code' => 'CURL_ERROR',
@@ -246,12 +159,6 @@ class ExamCardController extends Controller
             $jsonError = json_last_error();
             
             if ($jsonError !== JSON_ERROR_NONE) {
-                $this->logExamCard('ERROR', 'JSON parse error', [
-                    'json_error' => $jsonError,
-                    'json_error_message' => json_last_error_msg(),
-                    'response_body' => $responseBody
-                ]);
-                
                 return response()->json([
                     'error' => 'API response parsing failed',
                     'code' => 'JSON_PARSE_ERROR',
@@ -259,19 +166,8 @@ class ExamCardController extends Controller
                 ], 500);
             }
 
-            $this->logExamCard('INFO', 'Parsed response data', [
-                'response_data' => $responseData,
-                'status_check' => isset($responseData['status']) ? $responseData['status'] : 'not_set',
-                'status_value' => $responseData['status'] ?? 'null'
-            ]);
-
             // Save purchase record
             if ($httpCode >= 200 && $httpCode < 300 && isset($responseData['status']) && $responseData['status'] === true) {
-                $this->logExamCard('INFO', 'Purchase successful, checking wallet', [
-                    'user_id' => Auth::id(),
-                    'purchase_amount' => $responseData['amount'] ?? 0,
-                    'old_balance' => $responseData['old_balance'] ?? 0
-                ]);
 
                 // Check user's wallet balance
                 $user = Auth::user();
@@ -281,13 +177,6 @@ class ExamCardController extends Controller
                 $purchaseAmount = $baseAmount + $serviceCharge;
 
                 if ($walletAmount < $purchaseAmount) {
-                    $this->logExamCard('ERROR', 'Insufficient wallet balance', [
-                        'user_id' => Auth::id(),
-                        'wallet_amount' => $walletAmount,
-                        'purchase_amount' => $purchaseAmount,
-                        'shortfall' => $purchaseAmount - $walletAmount
-                    ]);
-
                     return response()->json([
                         'error' => 'Insufficient wallet balance. Your current balance is ₦' . number_format($walletAmount, 2) . ' but this purchase requires ₦' . number_format($purchaseAmount, 2),
                         'code' => 'INSUFFICIENT_FUNDS',
@@ -298,21 +187,6 @@ class ExamCardController extends Controller
                 // Deduct from wallet
                 $user->walletAmount = $walletAmount - $purchaseAmount;
                 $user->save();
-
-                $this->logExamCard('INFO', 'Wallet deducted successfully', [
-                    'user_id' => Auth::id(),
-                    'old_wallet_balance' => $walletAmount,
-                    'new_wallet_balance' => $user->walletAmount,
-                    'amount_deducted' => $purchaseAmount
-                ]);
-
-                $this->logExamCard('INFO', 'Purchase successful, creating record', [
-                    'user_id' => Auth::id(),
-                    'card_type_id' => $request->card_type_id,
-                    'quantity' => $responseData['quantity'] ?? $request->quantity,
-                    'amount' => $responseData['amount'] ?? 0,
-                    'reference' => $responseData['reference'] ?? uniqid()
-                ]);
 
                 $purchase = ExamCardPurchase::create([
                     'user_id' => Auth::id(),
@@ -328,25 +202,11 @@ class ExamCardController extends Controller
                     'cards' => $responseData['cards'] ?? []
                 ]);
 
-                $this->logExamCard('INFO', 'Purchase record created successfully', [
-                    'purchase_id' => $purchase->id,
-                    'reference' => $purchase->reference
-                ]);
-
                 return response()->json([
                     'data' => $responseData,
                     'status' => 200
                 ]);
             } else {
-                $this->logExamCard('WARNING', 'Purchase failed', [
-                    'user_id' => Auth::id(),
-                    'card_type_id' => $request->card_type_id,
-                    'quantity' => $request->quantity,
-                    'response_status' => $httpCode,
-                    'error_message' => $responseData['message'] ?? 'Purchase failed',
-                    'error_code' => $responseData['code'] ?? '000'
-                ]);
-
                 return response()->json([
                     'error' => $responseData['message'] ?? 'Purchase failed',
                     'code' => $responseData['code'] ?? '000',
@@ -355,17 +215,6 @@ class ExamCardController extends Controller
             }
 
         } catch (\Exception $e) {
-            $this->logExamCard('ERROR', 'Purchase exception occurred', [
-                'user_id' => Auth::id(),
-                'card_type_id' => $request->card_type_id,
-                'quantity' => $request->quantity,
-                'error_message' => $e->getMessage(),
-                'error_code' => $e->getCode(),
-                'error_file' => $e->getFile(),
-                'error_line' => $e->getLine(),
-                'error_trace' => $e->getTraceAsString()
-            ]);
-
             return response()->json([
                 'error' => 'Purchase failed: ' . $e->getMessage()
             ], 500);
@@ -378,29 +227,9 @@ class ExamCardController extends Controller
     public function getUserPurchases()
     {
         try {
-            // Debug: Log authentication status
-            $this->logExamCard('INFO', 'getUserPurchases called', [
-                'user_authenticated' => Auth::check(),
-                'user_id' => Auth::id(),
-                'session_id' => session()->getId(),
-                'request_headers' => request()->headers->all()
-            ]);
-
-            // Query real data from database
-            $this->logExamCard('INFO', 'Before database query', [
-                'user_id' => Auth::id(),
-                'model_exists' => class_exists('App\Models\ExamCardPurchase'),
-                'table_name' => (new \App\Models\ExamCardPurchase())->getTable()
-            ]);
-
             $purchases = ExamCardPurchase::where('user_id', Auth::id())
                 ->orderBy('created_at', 'desc')
                 ->get();
-
-            $this->logExamCard('INFO', 'After database query', [
-                'purchases_count' => $purchases->count(),
-                'purchases_data' => $purchases->toArray()
-            ]);
 
             return response()->json([
                 'data' => $purchases,
@@ -408,11 +237,6 @@ class ExamCardController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            $this->logExamCard('ERROR', 'getUserPurchases exception', [
-                'error_message' => $e->getMessage(),
-                'error_trace' => $e->getTraceAsString()
-            ]);
-            
             return response()->json([
                 'error' => 'Failed to fetch purchases: ' . $e->getMessage()
             ], 500);
@@ -476,11 +300,6 @@ class ExamCardController extends Controller
             $dompdf->loadHtml($html);
             $dompdf->setPaper('A4', 'portrait');
             $dompdf->render();
-            
-            $this->logExamCard('INFO', 'PDF generated successfully using DomPDF', [
-                'purchase_id' => $purchase->id,
-                'reference' => $purchase->reference
-            ]);
             
             return $dompdf->output();
         } catch (\Exception $e) {

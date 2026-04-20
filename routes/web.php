@@ -39,9 +39,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/wallet/transactions', [WalletController::class, 'transactions'])->name('wallet.transactions');
     
     // NIN Service routes
-    Route::get('/nin-service', function () {
-        return Inertia::render('NinService');
-    })->name('nin.service');
+    // Route::get('/nin-service', function () {
+    //     return Inertia::render('NinService');
+    // })->name('nin.service');
     
     // Exam Card routes
     Route::get('/exam-cards', function () {

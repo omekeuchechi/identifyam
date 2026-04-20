@@ -91,7 +91,7 @@ const Admin = ({ auth }) => {
                         <Link href={route('dashboard')} className="sidebar-link">
                             <i className="fas fa-home"></i>User Dashboard
                         </Link>
-                        <Link href="/lagacy-nin" className="sidebar-link">
+                        <Link href="lagacy-nin" className="sidebar-link">
                             <i className="fas fa-history"></i> Lagacy NIN
                         </Link>
                         <Link href={route('exam.cards')} className="sidebar-link">
@@ -100,10 +100,10 @@ const Admin = ({ auth }) => {
                         <Link href="/admin/users" className="sidebar-link">
                             <i className="fas fa-credit-card"></i> Manage Users
                         </Link>
-                        <Link href="#" className="sidebar-link">
+                        <Link href="history" className="sidebar-link">
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="/profile" className="sidebar-link">
+                        <Link href="profile" className="sidebar-link">
                             <i className="fas fa-user-edit"></i>Profile Edit
                         </Link>
 

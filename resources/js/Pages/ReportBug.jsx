@@ -35,16 +35,16 @@ export default function ReportBug({ auth }) {
 
                 {/* Sidebar */}
                 <aside className="sidebar">
-                    <div className="sidebar-logo">
+                    <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                             <img src={logoImage} alt="" />
                         </div>
                         <span>IDENTIFYAM</span>
-                    </div>
+                    </a>
 
                     <nav className="sidebar-menu">
                         <a href={route('dashboard')}><i className="fas fa-home"></i>Dashboard</a>
-                        <a href={route('nin.service')}><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href="lagacy-nin"><i className="fas fa-id-card"></i> NIN Services</a>
                         <a href={route('exam.cards')}><i className="fas fa-credit-card"></i> Exam Cards</a>
                         <a><i className="fas fa-building"></i> CAC Registration</a>
                         <a><i className="fas fa-graduation-cap"></i> Study Abroad</a>

@@ -53,7 +53,7 @@ export default function Edit({ auth, mustVerifyEmail, status }) {
 
                     <nav className="sidebar-menu">
                         <a href={route('dashboard')}><i className="fas fa-home"></i>Dashboard</a>
-                        <a href={route('nin.service')}><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href="lagacy-nin"><i className="fas fa-id-card"></i> NIN Services</a>
                         <a href={route('exam.cards')}><i className="fas fa-credit-card"></i> Exam Cards</a>
 
                         <button onClick={handleLogout} style={{

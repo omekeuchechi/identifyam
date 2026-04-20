@@ -7,67 +7,131 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Inertia\Inertia;
 
 class WalletController extends Controller
 {
+    /**
+     * Custom logging method for wallet operations
+     */
+    private function logWalletOperation($level, $message, $context = [])
+    {
+        $logFile = storage_path('logs/wallet.log');
+        $timestamp = now()->format('Y-m-d H:i:s');
+        $logEntry = "[{$timestamp}] {$level}: {$message} " . json_encode($context) . PHP_EOL;
+        
+        // Ensure log directory exists
+        $logDir = dirname($logFile);
+        if (!\Illuminate\Support\Facades\File::exists($logDir)) {
+            \Illuminate\Support\Facades\File::makeDirectory($logDir, 0755, true);
+        }
+        
+        // Append to log file
+        \Illuminate\Support\Facades\File::append($logFile, $logEntry);
+    }
+
     /**
      * Initialize Paystack funding.
      */
     public function initializeFunding(Request $request)
     {
-        $request->validate([
-            'amount' => 'required|numeric|min:100',
-            'email' => 'required|email',
-        ]);
+        try {
+            // Enhanced validation
+            $validator = Validator::make($request->all(), [
+                'amount' => 'required|numeric|min:100|max:1000000', // Max 1M for security
+                'email' => 'required|email|regex:/^[^\s@]+@[^\s@]+\.[^\s@]+$/',
+            ]);
 
-        $user = Auth::user();
-        $amount = $request->amount * 100; // Convert to kobo
-        $reference = 'WALLET_' . Str::random(12) . '_' . time();
+            if ($validator->fails()) {
+                return redirect()->route('funding')
+                    ->with('error', 'Invalid input. Amount must be between 100 and 1,000,000.')
+                    ->withInput();
+            }
 
-        // Create pending transaction
-        $transaction = Transaction::create([
-            'user_id' => $user->id,
-            'reference' => $reference,
-            'type' => 'funding',
-            'amount' => $request->amount,
-            'currency' => 'NGN',
-            'status' => 'pending',
-            'gateway' => 'paystack',
-            'description' => 'Wallet funding',
-        ]);
+            $user = Auth::user();
+            
+            // Rate limiting check
+            $cacheKey = "funding_attempt_{$user->id}";
+            if (Cache::has($cacheKey)) {
+                return redirect()->route('funding')
+                    ->with('error', 'Please wait before making another funding attempt.');
+            }
 
-        // Initialize Paystack transaction
-        $response = Http::withToken(config('services.paystack.secret_key'))
-            ->post('https://api.paystack.co/transaction/initialize', [
-                'amount' => $amount,
-                'email' => $request->email,
-                'reference' => $reference,
-                'callback_url' => route('wallet.funding.callback'),
-                'metadata' => [
+            // Rate limit: 1 funding attempt per 30 seconds
+            Cache::put($cacheKey, true, 30);
+
+            $amount = $request->amount * 100; // Convert to kobo
+            $reference = 'WALLET_' . Str::random(12) . '_' . time();
+
+            // Use database transaction for consistency
+            DB::beginTransaction();
+            
+            try {
+                // Create pending transaction
+                $transaction = Transaction::create([
                     'user_id' => $user->id,
-                    'transaction_id' => $transaction->id,
-                ],
-            ]);
+                    'reference' => $reference,
+                    'type' => 'funding',
+                    'amount' => $request->amount,
+                    'currency' => 'NGN',
+                    'status' => 'pending',
+                    'gateway' => 'paystack',
+                    'description' => 'Wallet funding',
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                ]);
 
-        $data = $response->json();
+                // Initialize Paystack transaction
+                $response = Http::withToken(config('services.paystack.secret_key'))
+                    ->timeout(30) // Add timeout
+                    ->post('https://api.paystack.co/transaction/initialize', [
+                        'amount' => $amount,
+                        'email' => $request->email,
+                        'reference' => $reference,
+                        'callback_url' => route('wallet.funding.callback'),
+                        'metadata' => [
+                            'user_id' => $user->id,
+                            'transaction_id' => $transaction->id,
+                            'ip_address' => $request->ip(),
+                        ],
+                    ]);
 
-        if (!$response->successful() || !$data['status']) {
-            $transaction->update([
-                'status' => 'failed',
-                'gateway_response' => $data,
-            ]);
+                $data = $response->json();
 
-            return response()->json([
-                'success' => false,
-                'message' => 'Failed to initialize payment',
-            ], 400);
+                if (!$response->successful() || !$data['status']) {
+                    $transaction->update([
+                        'status' => 'failed',
+                        'gateway_response' => $data,
+                    ]);
+
+                    DB::rollBack();
+                    Cache::forget($cacheKey);
+
+                    return redirect()->route('funding')
+                        ->with('error', 'Failed to initialize payment. Please try again.');
+                }
+
+                DB::commit();
+
+                // Use Inertia visit to handle redirect properly
+                return inertia()->location($data['data']['authorization_url']);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Cache::forget($cacheKey);
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+
+            return redirect()->route('funding')
+                ->with('error', 'An unexpected error occurred. Please try again.');
         }
-
-        return response()->json([
-            'success' => true,
-            'data' => $data['data'],
-        ]);
     }
 
     /**
@@ -76,52 +140,123 @@ class WalletController extends Controller
     public function fundingCallback(Request $request)
     {
         $reference = $request->reference;
-
-        // Verify transaction with Paystack
-        $response = Http::withToken(config('services.paystack.secret_key'))
-            ->get("https://api.paystack.co/transaction/verify/{$reference}");
-
-        $data = $response->json();
-
-        if (!$response->successful() || !$data['status']) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Payment verification failed',
-            ], 400);
+        
+        // Validate reference format
+        if (!preg_match('/^WALLET_[A-Za-z0-9]{12}_[0-9]+$/', $reference)) {
+            return redirect()->route('funding')->with('error', 'Invalid transaction reference');
         }
 
-        $paystackData = $data['data'];
-        $transaction = Transaction::where('reference', $reference)->first();
+        // Use database transaction for atomicity
+        return DB::transaction(function () use ($reference) {
+            // Lock the transaction row to prevent race conditions
+            $transaction = Transaction::where('reference', $reference)
+                ->lockForUpdate()
+                ->first();
 
-        if (!$transaction) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Transaction not found',
-            ], 404);
-        }
+            if (!$transaction) {
+                return redirect()->route('funding')->with('error', 'Transaction not found');
+            }
 
-        // Update transaction
-        $transaction->update([
-            'status' => $paystackData['status'] === 'success' ? 'successful' : 'failed',
-            'gateway_response' => $paystackData,
-        ]);
+            // Prevent duplicate processing
+            if ($transaction->status !== 'pending') {
+                
+                if ($transaction->status === 'successful') {
+                    return redirect()->route('funding')->with('success', 
+                        'Wallet funded successfully! New balance: ' . $transaction->user->formatted_wallet_balance);
+                }
+                
+                return redirect()->route('funding')->with('error', 'Payment already processed');
+            }
 
-        // If successful, add funds to wallet
-        if ($paystackData['status'] === 'success') {
-            $user = $transaction->user;
-            $user->addToWallet($transaction->amount);
+            // Verify transaction with Paystack
+            $response = Http::withToken(config('services.paystack.secret_key'))
+                ->timeout(30)
+                ->get("https://api.paystack.co/transaction/verify/{$reference}");
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Wallet funded successfully',
-                'new_balance' => $user->fresh()->formatted_wallet_balance,
+            $data = $response->json();
+
+            if (!$response->successful() || !$data['status']) {
+                
+                $transaction->update([
+                    'status' => 'failed',
+                    'gateway_response' => $data,
+                ]);
+                
+                return redirect()->route('funding')->with('error', 'Payment verification failed');
+            }
+
+            $paystackData = $data['data'];
+
+            // Validate amounts match (prevent tampering)
+            $expectedAmount = $transaction->amount;
+            $actualAmount = $paystackData['amount'] / 100; // Convert from kobo
+            
+            if (abs($expectedAmount - $actualAmount) > 0.01) {
+                
+                $transaction->update([
+                    'status' => 'failed',
+                    'gateway_response' => array_merge($paystackData, [
+                        'fraud_detected' => 'amount_mismatch',
+                        'expected_amount' => $expectedAmount,
+                        'actual_amount' => $actualAmount
+                    ]),
+                ]);
+                
+                return redirect()->route('funding')->with('error', 'Payment verification failed - amount mismatch');
+            }
+
+            // Validate payment currency
+            if ($paystackData['currency'] !== 'NGN') {
+                
+                $transaction->update([
+                    'status' => 'failed',
+                    'gateway_response' => array_merge($paystackData, [
+                        'fraud_detected' => 'invalid_currency'
+                    ]),
+                ]);
+                
+                return redirect()->route('funding')->with('error', 'Invalid payment currency');
+            }
+
+            // Update transaction status
+            $newStatus = $paystackData['status'] === 'success' ? 'successful' : 'failed';
+            $transaction->update([
+                'status' => $newStatus,
+                'gateway_response' => $paystackData,
+                'processed_at' => now(),
             ]);
-        }
 
-        return response()->json([
-            'success' => false,
-            'message' => 'Payment failed',
-        ], 400);
+            // If successful, add funds to wallet atomically
+            if ($paystackData['status'] === 'success') {
+                $user = $transaction->user;
+                
+                // Double-check user still exists and is active
+                if (!$user || $user->email_verified_at === null) {       
+                    return redirect()->route('funding')->with('error', 'Account verification required');
+                }
+
+                // Add funds with additional validation
+                $previousBalance = $user->walletAmount;
+                $success = $user->addToWallet($transaction->amount);
+                
+                if (!$success) {
+                    Log::error('Failed to update wallet balance', [
+                        'reference' => $reference,
+                        'user_id' => $user->id,
+                        'amount' => $transaction->amount
+                    ]);
+                    
+                    throw new \Exception('Wallet update failed');
+                }
+
+                $newBalance = $user->fresh()->walletAmount;
+
+                return redirect()->route('funding')->with('success', 
+                    'Wallet funded successfully! New balance: ' . $user->formatted_wallet_balance);
+            }
+
+            return redirect()->route('funding')->with('error', 'Payment failed');
+        }, 3); // Retry transaction up to 3 times on deadlock
     }
 
     /**

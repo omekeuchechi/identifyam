@@ -52,12 +52,12 @@ export default function Dashboard({ auth }) {
 
                 {/* Sidebar */}
                 <aside className="sidebar">
-                    <div className="sidebar-logo">
+                    <a href="/" className="sidebar-logo">
                         <div className="logo-image">
                             <img src={logoImage} alt="" />
                         </div>
                         <span>IDENTIFYAM</span>
-                    </div>
+                    </a>
 
                     <nav className="sidebar-menu">
                         <a className="active" href="dashboard"><i className="fas fa-home"></i>Dashboard</a>

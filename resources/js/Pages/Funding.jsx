@@ -8,6 +8,7 @@ export default function Funding({ auth }) {
     const [loading, setLoading] = useState(false);
     const [showTransferForm, setShowTransferForm] = useState(false);
     const [banks, setBanks] = useState([]);
+    const [showBalance, setShowBalance] = useState(false);
 
     const { data, setData, post, processing } = useForm({
         amount: '',
@@ -111,18 +112,18 @@ export default function Funding({ auth }) {
             <div className="dashboard-layout">
                 {/* Sidebar */}
                 <aside className="sidebar">
-                    <div className="sidebar-logo">
+                    <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                             <img src="/assets/svg/shield.svg" alt="" />
                         </div>
                         <span>IDENTIFYAM</span>
-                    </div>
+                    </a>
 
                     <nav className="sidebar-menu">
                         <Link href={route('dashboard')} className="sidebar-link">
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href={route('nin.service')} className="sidebar-link">
+                        <Link href="lagacy-nin" className="sidebar-link">
                             <i className="fas fa-id-card"></i> NIN Services
                         </Link>
                         <Link href={route('exam.cards')} className="sidebar-link">
@@ -131,10 +132,10 @@ export default function Funding({ auth }) {
                         <Link href={route('funding')} className="sidebar-link active">
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="#" className="sidebar-link">
+                        <Link href="history" className="sidebar-link">
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="#" className="sidebar-link">
+                        <Link href="settings" className="sidebar-link">
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>
@@ -161,8 +162,23 @@ export default function Funding({ auth }) {
                         <div className="wallet-card">
                             <div>
                                 <h4>Wallet Balance</h4>
-                                <p>Account: 2087654321 | GTBank</p>
-                                <h2>₦{Number(balance).toLocaleString()}</h2>
+                                <h2 style={{
+                                    display: 'flex',
+                                    justifyContent: 'start',
+                                    alignItems: 'center',
+                                    gap: '10px'
+                                }}>
+                                <i 
+                                    className={`fas ${showBalance ? 'fa-eye-slash' : 'fa-eye'}`}
+                                    onClick={() => setShowBalance(!showBalance)}
+                                    style={{ 
+                                        cursor: 'pointer',
+                                        fontSize: '16px',
+                                        color: '#fff'
+                                    }}
+                                ></i>
+                                    {showBalance ? `₦${Number(balance).toLocaleString()}` : '****'}
+                                </h2>
                             </div>
                         </div>
 
@@ -202,7 +218,7 @@ export default function Funding({ auth }) {
                                 </form>
                             </div>
 
-                            <div className="option-card">
+                            {/* <div className="option-card">
                                 <h3>Transfer Funds</h3>
                                 <p>Transfer funds to bank account</p>
                                 
@@ -284,7 +300,7 @@ export default function Funding({ auth }) {
                                         </div>
                                     </form>
                                 )}
-                            </div>
+                            </div> */}
                         </div>
 
                         {/* Transaction History */}

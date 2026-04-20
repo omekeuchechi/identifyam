@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import '../../css/home.css'
 import '../../css/custom.css'
 
@@ -35,6 +35,8 @@ import idCardImage from '../../assets/img/id_card.png';
 
 
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     const handleImageError = () => {
         document
             .getElementById('screenshot-container')
@@ -44,6 +46,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             .getElementById('docs-card-content')
             ?.classList.add('!flex-row');
         document.getElementById('background')?.classList.add('!hidden');
+    };
+
+    const toggleMobileMenu = () => {
+        setIsMobileMenuOpen(!isMobileMenuOpen);
     };
 
     // Scroll-based fade animation
@@ -109,12 +115,22 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             }} />
                             IdentifyAM
                         </Link>
-                        <nav>
+                        
+                        {/* Mobile Menu Toggle */}
+                        <button 
+                            className="mobile-menu-toggle" 
+                            onClick={toggleMobileMenu}
+                            aria-label="Toggle navigation menu"
+                        >
+                            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                        </button>
+                        
+                        <nav className={`nav ${isMobileMenuOpen ? 'nav-open' : ''}`}>
                             <ul className="nav-links">
-                                <li><a href="#home" onClick={(e) => scrollToSection(e, '#home')}>NIN Services</a></li>
-                                <li><a href="#services" onClick={(e) => scrollToSection(e, '#services')}>CAC Registration</a></li>
-                                <li><a href="#about" onClick={(e) => scrollToSection(e, '#about')}>Education Travel</a></li>
-                                <li><a href="#contact" onClick={(e) => scrollToSection(e, '#contact')}>Contact</a></li>
+                                <li><a href="#home" onClick={(e) => { scrollToSection(e, '#home'); setIsMobileMenuOpen(false); }}>NIN Services</a></li>
+                                <li><a href="#services" onClick={(e) => { scrollToSection(e, '#services'); setIsMobileMenuOpen(false); }}>CAC Registration</a></li>
+                                <li><a href="#about" onClick={(e) => { scrollToSection(e, '#about'); setIsMobileMenuOpen(false); }}>Education Travel</a></li>
+                                <li><a href="#contact" onClick={(e) => { scrollToSection(e, '#contact'); setIsMobileMenuOpen(false); }}>Contact</a></li>
                                 {auth.user ? (
                                     auth.user.isAdmin ? (
                                         <li><a href={route('admin.dashboard')}>Management</a></li>

@@ -20,11 +20,13 @@ class Transaction extends Model
         'recipient_name',
         'recipient_account',
         'recipient_bank',
+        'processed_at',
     ];
 
     protected $casts = [
         'amount' => 'decimal:2',
         'gateway_response' => 'array',
+        'processed_at' => 'datetime',
     ];
 
     /**
