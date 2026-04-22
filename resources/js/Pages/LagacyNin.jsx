@@ -106,11 +106,6 @@ const LagacyNin = ({ auth }) => {
                 return;
             }
 
-            if (response.status === 401) {
-                setError('Session expired. Please refresh the page and login again.');
-                return;
-            }
-
             if (!response.ok) {
                 const errorData = await response.json();
                 setError(errorData.error || 'Search failed');
@@ -118,7 +113,16 @@ const LagacyNin = ({ auth }) => {
             }
 
             const data = await response.json();
-            setResult(data.data);
+            
+            // Check if response is successful
+            if (response.ok && data) {
+                setResult(data);
+            } else if (!response.ok) {
+                const errorData = await response.json();
+                setError(errorData.error || 'Search failed');
+            } else {
+                setError('Invalid response format received from server');
+            }
             
         } catch (err) {
             setError(err.message || 'An error occurred during search');
@@ -180,92 +184,108 @@ const LagacyNin = ({ auth }) => {
     };
 
     const downloadPDF = async () => {
-        if (!result || !result.data) {
-            setError('No verification results available for PDF generation');
+    if (!result || !result.data) {
+        setError('No verification results available for PDF generation');
+        return;
+    }
+
+    try {
+        setLoading(true);
+        setError('');
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        const response = await fetch('/api/lagacy-nin/pdf', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json, application/pdf'
+            },
+            body: JSON.stringify({
+                data: result.data,
+                nin: result.data.data?.nin || formData.nin,
+                api_version: formData.api_version,
+                search_type: formData.search_type,
+                template_type: selectedTemplate
+            })
+        });
+
+        // Check if response is HTML (redirect to login)
+        const contentType = response.headers.get('content-type');
+        
+        if (response.status === 401) {
+            setError('Session expired. Please refresh the page and login again.');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 2000);
+            return;
+        }
+        
+        if (contentType && contentType.includes('text/html')) {
+            setError('Session expired. Please refresh the page and login again.');
             return;
         }
 
-        try {
-            setLoading(true);
-            setError('');
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            
-            const response = await fetch('/api/lagacy-nin/pdf', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json, application/pdf'
-                },
-                body: JSON.stringify({
-                    data: result.data,
-                    nin: result.data.data?.nin || formData.nin,
-                    api_version: formData.api_version,
-                    search_type: formData.search_type,
-                    template_type: selectedTemplate
-                })
-            });
-
-            // Check if response is HTML (redirect to login)
-            const contentType = response.headers.get('content-type');
-            
-            if (response.status === 401) {
-                setError('Session expired. Please refresh the page and login again.');
-                setTimeout(() => {
-                    window.location.href = '/login';
-                }, 2000);
-                return;
-            }
-            
-            if (contentType && contentType.includes('text/html')) {
-                setError('Session expired. Please refresh the page and login again.');
-                return;
-            }
-
-            if (contentType && contentType.includes('application/json') && !response.ok) {
-                const errorData = await response.json();
-                setError(errorData.error || 'PDF generation failed');
-                return;
-            }
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-
-            // Get the PDF blob
-            const pdfBlob = await response.blob();
-            
-            // Verify we got a PDF
-            if (pdfBlob.type !== 'application/pdf') {
-                throw new Error('Received invalid response format');
-            }
-            
-            // Create download link
-            const url = window.URL.createObjectURL(pdfBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            const templateName = selectedTemplate === 'card' ? 'NIN-Card' : 'NIN-Slip';
-            const ninNumber = result.data.data?.nin || formData.nin;
-            link.download = `${templateName}-${ninNumber}-${Date.now()}.pdf`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-
-            alert('✅ ' + templateName + ' PDF downloaded successfully!');
-            setPdfDownloading(false);
-
-        } catch (err) {
-            console.error('PDF generation error:', err);
-            setError(err.message || 'Failed to generate PDF');
-            alert('❌ Failed to generate PDF: ' + (err.message || 'Unknown error'));
-        } finally {
-            setLoading(false);
+        if (contentType && contentType.includes('application/json') && !response.ok) {
+            const errorData = await response.json();
+            setError(errorData.error || 'PDF generation failed');
+            return;
         }
-    };
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        // Get the response blob
+        const responseBlob = await response.blob();
+        
+        // Determine file type and extension based on content type
+        const responseContentType = responseBlob.type;
+        const isPDF = responseContentType === 'application/pdf';
+        const isHTML = responseContentType === 'text/html';
+        
+        // Check blob size
+        if (responseBlob.size < 100) {
+            throw new Error('Generated file is too small (possibly corrupted)');
+        }
+        
+        // Create download link
+        const url = window.URL.createObjectURL(responseBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        const templateName = selectedTemplate === 'card' ? 'NIN-Card' : 'NIN-Slip';
+        const ninNumber = result.data.data?.nin || formData.nin;
+        
+        // Set appropriate filename and extension
+        const fileExtension = isPDF ? '.pdf' : '.html';
+        link.download = `${templateName}-${ninNumber}-${Date.now()}${fileExtension}`;
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the object URL after a delay
+        setTimeout(() => {
+            window.URL.revokeObjectURL(url);
+        }, 100);
+
+        // Show appropriate success message
+        const fileType = isPDF ? 'PDF' : 'HTML';
+        const additionalMessage = isHTML ? ' (PDF generation failed, HTML fallback provided)' : '';
+        alert('✅ ' + templateName + ' ' + fileType + ' downloaded successfully!' + additionalMessage);
+        setPdfDownloading(false);
+
+    } catch (err) {
+        console.error('PDF generation error:', err);
+        setError(err.message || 'Failed to generate PDF');
+        alert('❌ Failed to generate PDF: ' + (err.message || 'Unknown error'));
+    } finally {
+        setLoading(false);
+    }
+};
 
     const formatResultData = (data) => {
         if (!data) return null;
