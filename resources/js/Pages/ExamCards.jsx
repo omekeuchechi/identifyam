@@ -216,7 +216,7 @@ export default function ExamCards({ auth }) {
                         <div className="logo-image">
                             <img src="/assets/svg/shield.svg" alt="" />
                         </div>
-                        <span>IDENTIFYAM</span>
+                        <span style={{ backgroundColor: 'red' }}>IDENTIFYAM</span>
                     </a>
 
                     <nav className="sidebar-menu">
