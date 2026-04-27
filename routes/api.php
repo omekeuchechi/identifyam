@@ -55,4 +55,22 @@ Route::prefix('exam-cards')->group(function () {
     
     // Get locally stored cards (public)
     Route::get('/local', [ExamCardController::class, 'getLocalCards'])->name('local');
+    
+    // Get user's purchases (authenticated)
+    Route::get('/purchases', [ExamCardController::class, 'getUserPurchases'])->middleware('auth:sanctum');
+    
+    // Purchase exam cards (authenticated)
+    Route::post('/purchase', [ExamCardController::class, 'purchaseCards'])->middleware('auth:sanctum');
+    
+    // Download exam card PDF (authenticated)
+    Route::get('/download/{reference}', [ExamCardController::class, 'downloadPDF'])->middleware('auth:sanctum');
+    
+    // Auth test endpoint (authenticated)
+    Route::get('/auth-test', function () {
+        return response()->json([
+            'message' => 'Authentication successful',
+            'authenticated' => Auth::check(),
+            'timestamp' => now()
+        ]);
+    })->middleware('auth:sanctum');
 });

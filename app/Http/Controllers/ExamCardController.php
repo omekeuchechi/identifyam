@@ -41,10 +41,15 @@ class ExamCardController extends Controller
 
             $token = Config('services.naija_result_pins.token');
             if (!$token) {
-                $this->logExamCard('ERROR', 'API token not configured', ['user_id' => Auth::id()]);
+                $this->logExamCard('WARNING', 'API token not configured, falling back to local cards', ['user_id' => Auth::id()]);
+                
+                // Fallback to local cards when token is missing
+                $localCards = ExamCard::all();
                 return response()->json([
-                    'error' => 'API token not configured. Please set NAJA_RESULT_PINS_TOKEN in your .env file.'
-                ], 500);
+                    'data' => $localCards,
+                    'status' => 200,
+                    'message' => 'Using local cards (API token not configured)'
+                ]);
             }
 
             $this->logExamCard('INFO', 'Making API request to fetch available cards', [
