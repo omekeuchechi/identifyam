@@ -950,10 +950,10 @@ class LagacyNinController extends Controller
     }
 
     .slip-header {
-      display: flex;
+      display: inline-flex;
       justify-content: space-between;
       align-items: center;
-      gap: 12px;
+      gap: 2px;
       margin-bottom: 5px;
       padding-bottom: 10px;
     }

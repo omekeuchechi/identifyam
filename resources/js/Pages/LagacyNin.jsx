@@ -39,19 +39,7 @@ const LagacyNin = ({ auth }) => {
         return () => clearInterval(keepAliveInterval);
     }, []);
 
-    // Auto-download PDF when results are available
-    useEffect(() => {
-        if (result && result.data && !pdfDownloading) {
-            setPdfDownloading(true);
-            // Show alert that PDF download is starting
-            const templateName = selectedTemplate === 'card' ? 'NIN Card' : 'NIN Slip';
-            if (window.confirm(`Would you like to download the ${templateName} PDF?`)) {
-                downloadPDF();
-            } else {
-                setPdfDownloading(false);
-            }
-        }
-    }, [result]);
+    // Remove auto-download - let user choose template first
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -304,7 +292,6 @@ const LagacyNin = ({ auth }) => {
         
         return (
             <div className="result-container">
-                <h3>Verification Results</h3>
                 
                 {/* PDF Template Selection */}
                 <div className="result-section">
@@ -333,15 +320,7 @@ const LagacyNin = ({ auth }) => {
                                         name="template"
                                         value="card"
                                         checked={selectedTemplate === 'card'}
-                                        onChange={(e) => {
-                                            setSelectedTemplate(e.target.value);
-                                            // Ask if user wants to download immediately
-                                            if (result && result.data) {
-                                                if (window.confirm('Would you like to download the ' + (e.target.value === 'card' ? 'NIN Card' : 'NIN Slip') + ' PDF?')) {
-                                                    setTimeout(() => downloadPDF(), 100);
-                                                }
-                                            }
-                                        }}
+                                        onChange={(e) => setSelectedTemplate(e.target.value)}
                                     />
                                     <div className="template-preview">
                                         <i className="fas fa-id-card"></i>
@@ -367,40 +346,41 @@ const LagacyNin = ({ auth }) => {
                     <h4>Basic Information</h4>
                     <div className="result-grid">
                         <div className="result-item">
+                        {console.log("this is for data", data)}
                             <label>NIN:</label>
                             <span>{data.data?.nin || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Full Name:</label>
-                            <span>{data.data?.fullName || `${data.data?.surName || data.data?.surname || ''} ${data.data?.firstName || data.data?.firstname || ''} ${data.data?.middleName || data.data?.middlename || ''}`.trim() || 'N/A'}</span>
+                            <span>{data.data.data.fullName || `${data.data.data.surName || data.data.data.surname || ''} ${data.data.data.firstName || data.data.data.firstname || ''} ${data.data.data.middleName || data.data.data.middlename || ''}`.trim() || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Phone:</label>
-                            <span>{data.data?.telephoneno || data.data?.phone || 'N/A'}</span>
+                            <span>{data.data.data.telephoneno || data.data.data.phone || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Email:</label>
-                            <span>{data.data?.email || 'N/A'}</span>
+                            <span>{data.data.data.email || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Date of Birth:</label>
-                            <span>{data.data?.dateOfBirth || data.data?.birthdate || data.data?.birth_date || 'N/A'}</span>
+                            <span>{data.data.data.dateOfBirth || data.data.data.birthdate || data.data.data.birth_date || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Gender:</label>
-                            <span>{data.data?.gender || 'N/A'}</span>
+                            <span>{data.data.data.gender || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Marital Status:</label>
-                            <span>{data.data?.maritalstatus || data.data?.marital_status || 'N/A'}</span>
+                            <span>{data.data.data.maritalstatus || data.data.data.marital_status || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Religion:</label>
-                            <span>{data.data?.religion || 'N/A'}</span>
+                            <span>{data.data.data.religion || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Title:</label>
-                            <span>{data.data?.title || 'N/A'}</span>
+                            <span>{data.data.data.title || 'N/A'}</span>
                         </div>
                     </div>
                 </div>
@@ -411,48 +391,50 @@ const LagacyNin = ({ auth }) => {
                     <div className="result-grid">
                         <div className="result-item">
                             <label>Tracking ID:</label>
-                            <span>{data.data?.trackingId || data.data?.tracking_id || 'N/A'}</span>
+                            <span>{data.data.data.trackingId || data.data.data.tracking_id || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Title:</label>
-                            <span>{data.data?.title || 'N/A'}</span>
+                            <span>{data.data.data.title || 'N/A'}</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Birth Information */}
-                {(data.data?.birthCountry || data.data?.birthState) && (
+                {(data.data.data.birthCountry || data.data.data.birthState) && (
                     <div className="result-section">
                         <h4>Birth Information</h4>
                         <div className="result-grid">
                             <div className="result-item">
                                 <label>Birth Country:</label>
-                                <span>{data.data?.birthCountry || 'N/A'}</span>
+                                <span>{data.data.data.birthCountry || 'N/A'}</span>
                             </div>
                             <div className="result-item">
                                 <label>Birth State:</label>
-                                <span>{data.data?.birthState || 'N/A'}</span>
+                                <span>{data.data.data.birthState || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
                 )}
 
+                {console.log("data set of data", data.data)}
+
                 {/* Residence Information */}
-                {(data.data?.residenceState || data.data?.residenceTown) && (
+                {(data.data.residenceState || data.data.data.residenceTown) && (
                     <div className="result-section">
                         <h4>Residence Information</h4>
                         <div className="result-grid">
                             <div className="result-item">
                                 <label>Residence State:</label>
-                                <span>{data.data?.residenceState || 'N/A'}</span>
+                                <span>{data.data.data.residenceState || 'N/A'}</span>
                             </div>
                             <div className="result-item">
                                 <label>Residence Town:</label>
-                                <span>{data.data?.residenceTown || 'N/A'}</span>
+                                <span>{data.data.data.residenceTown || 'N/A'}</span>
                             </div>
                             <div className="result-item">
                                 <label>Residential Address:</label>
-                                <span>{data.data?.residentialAddress || 'N/A'}</span>
+                                <span>{data.data.data.residentialAddress || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -465,55 +447,55 @@ const LagacyNin = ({ auth }) => {
                         <div className="result-grid">
                             <div className="result-item">
                                 <label>Next of Kin Name:</label>
-                                <span>{`${data.data.nextOfKin?.firstName || ''} ${data.data.nextOfKin?.middleName || ''} ${data.data.nextOfKin?.lastName || ''}`.trim() || 'N/A'}</span>
+                                <span>{`${data.data.data.nextOfKin?.firstName || ''} ${data.data.data.nextOfKin?.middleName || ''} ${data.data.data.nextOfKin?.lastName || ''}`.trim() || 'N/A'}</span>
                             </div>
                             <div className="result-item">
                                 <label>Next of Kin Address:</label>
-                                <span>{data.data.nextOfKin?.residentialAddress || 'N/A'}</span>
+                                <span>{data.data.data.nextOfKin?.residentialAddress || 'N/A'}</span>
                             </div>
                             <div className="result-item">
                                 <label>Next of Kin LGA:</label>
-                                <span>{data.data.nextOfKin?.lga || 'N/A'}</span>
+                                <span>{data.data.data.nextOfKin?.lga || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {/* Photos/Signatures */}
-                {(data.data?.photo || data.data?.image || data.data?.signature) && (
+                {(data.data.data.photo || data.data.data.image || data.data.data.signature) && (
                     <div className="result-section">
                         <h4>Media</h4>
                         <div className="media-grid">
-                            {data.data?.photo && (
+                            {data.data.data.photo && (
                                 <div className="media-item">
                                     <label>Photo:</label>
-                                    <img src={formatImageSrc(data.data.photo)} alt="Passport Photo" className="result-image" />
+                                    <img src={formatImageSrc(data.data.data.photo)} alt="Passport Photo" className="result-image" />
                                     <button 
-                                        onClick={() => downloadImage(data.data.photo, 'passport-photo')}
+                                        onClick={() => downloadImage(data.data.data.photo, 'passport-photo')}
                                         className="btn btn-sm btn-primary mt-2"
                                     >
                                         <i className="fas fa-download"></i> Download Photo
                                     </button>
                                 </div>
                             )}
-                            {data.data?.image && (
+                            {data.data.data.image && (
                                 <div className="media-item">
                                     <label>Image:</label>
-                                    <img src={formatImageSrc(data.data.image)} alt="Image" className="result-image" />
+                                    <img src={formatImageSrc(data.data.data.image)} alt="Image" className="result-image" />
                                     <button 
-                                        onClick={() => downloadImage(data.data.image, 'image')}
+                                        onClick={() => downloadImage(data.data.data.image, 'image')}
                                         className="btn btn-sm btn-primary mt-2"
                                     >
                                         <i className="fas fa-download"></i> Download Image
                                     </button>
                                 </div>
                             )}
-                            {data.data?.signature && (
+                            {data.data.data.signature && (
                                 <div className="media-item">
                                     <label>Signature:</label>
-                                    <img src={formatImageSrc(data.data.signature)} alt="Signature" className="result-image" />
+                                    <img src={formatImageSrc(data.data.data.signature)} alt="Signature" className="result-image" />
                                     <button 
-                                        onClick={() => downloadImage(data.data.signature, 'signature')}
+                                        onClick={() => downloadImage(data.data.data.signature, 'signature')}
                                         className="btn btn-sm btn-primary mt-2"
                                     >
                                         <i className="fas fa-download"></i> Download Signature
@@ -525,13 +507,13 @@ const LagacyNin = ({ auth }) => {
                 )}
 
                 {/* Additional Information */}
-                {data.data?.all_validation_passed !== undefined && (
+                {data.data.data.all_validation_passed !== undefined && (
                     <div className="result-section">
                         <h4>Validation Status</h4>
                         <div className="result-item">
                             <label>All Validation Passed:</label>
-                            <span className={data.data?.all_validation_passed ? 'status-success' : 'status-error'}>
-                                {data.data?.all_validation_passed ? 'Yes' : 'No'}
+                            <span className={data.data.data.all_validation_passed ? 'status-success' : 'status-error'}>
+                                {data.data.data.all_validation_passed ? 'Yes' : 'No'}
                             </span>
                         </div>
                     </div>

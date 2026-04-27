@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NIN Slip - National Identity Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #F5F5F5;
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      color: #1A1A1B;
+      padding: 32px 20px;
+      min-height: 100vh;
+    }
+
+    .print-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: #0038FF;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 56, 255, 0.3);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .print-button:hover {
+      background: #0028CC;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 56, 255, 0.4);
+    }
+
+    .nin-page {
+      width: 210mm;
+      min-height: 148mm;
+      margin: 0 auto;
+      background: #FFFFFF;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 12mm 15mm;
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+      color: #1A1A1B;
+      position: relative;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 4px;
+      padding-bottom: 8px;
+    }
+
+    .logo-left, .logo-right {
+      width: 60px;
+      height: 60px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .center-text {
+      text-align: center;
+      flex: 1;
+    }
+
+    .center-text h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #1A1A1B;
+      line-height: 1.2;
+    }
+
+    .center-text p {
+      margin: 2px 0 0 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1A1A1B;
+    }
+
+    .center-text .subtitle {
+      margin: 2px 0 0 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1A1A1B;
+    }
+
+    .divider {
+      border-bottom: 2px solid #1A1A1B;
+      margin-bottom: 0;
+    }
+
+    .data-grid {
+      display: grid;
+      grid-template-columns: 170mm 1fr;
+      border: 1px solid #CCCCCC;
+      border-top: none;
+    }
+
+    .data-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-right: 1px solid #CCCCCC;
+    }
+
+    .data-cell {
+      padding: 6px 10px;
+      border-right: 1px solid #CCCCCC;
+      border-bottom: 1px solid #CCCCCC;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+    }
+
+    .data-cell.no-border-right {
+      border-right: none;
+    }
+
+    .data-cell.no-border-bottom {
+      border-bottom: none;
+    }
+
+    .data-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      color: #1A1A1B;
+      margin-right: 8px;
+    }
+
+    .data-value {
+      font-size: 12px;
+      font-weight: 400;
+      color: #1A1A1B;
+    }
+
+    .data-value.nin {
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .photo-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      min-height: 120px;
+    }
+
+    .photo-frame {
+      width: 100px;
+      height: 120px;
+      background: #E8E8E8;
+      border: 1px solid #CCCCCC;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: #999;
+    }
+
+    .note-section {
+      border-left: 1px solid #CCCCCC;
+      border-right: 1px solid #CCCCCC;
+      border-bottom: 1px solid #CCCCCC;
+      padding: 8px 10px;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .note-section p {
+      margin: 0;
+    }
+
+    .note-section .small-text {
+      margin: 4px 0 0 0;
+      font-size: 10.5px;
+      color: #575757;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1.5fr;
+      border: 1px solid #CCCCCC;
+      border-top: none;
+      font-size: 10px;
+    }
+
+    .footer-cell {
+      padding: 8px 10px;
+      border-right: 1px solid #CCCCCC;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-cell:last-child {
+      border-right: none;
+    }
+
+    .footer-icon {
+      flex-shrink: 0;
+    }
+
+    .footer-text {
+      line-height: 1.4;
+      color: #1A1A1B;
+    }
+
+    .footer-text .small-text {
+      color: #575757;
+    }
+
+    .footer-text .bold-text {
+      font-weight: 700;
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
+    @media print {
+      body {
+        background: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .print-button {
+        display: none !important;
+      }
+      .nin-page {
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 15mm !important;
+      }
+      @page {
+        size: A4;
+        margin: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 16px 10px;
+      }
+      .nin-page {
+        padding: 8mm 10mm;
+      }
+      .data-grid {
+        grid-template-columns: 1fr;
+      }
+      .data-fields {
+        grid-template-columns: 1fr;
+        border-right: none;
+      }
+      .photo-section {
+        border-top: 1px solid #CCCCCC;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .footer-cell:nth-child(3),
+      .footer-cell:nth-child(4) {
+        border-top: 1px solid #CCCCCC;
+      }
+      .footer-cell:nth-child(2),
+      .footer-cell:nth-child(4) {
+        border-right: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Print Button -->
+  <button class="print-button" onclick="window.print()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-6 4l-3-3m0 0l3 3m-3-3v6"/>
+    </svg>
+    Print Slip
+  </button>
+
+  <!-- A4 Page -->
+  <div class="nin-page">
+    <!-- Header -->
+    <div class="header">
+      <!-- Left Coat of Arms -->
+      <div class="logo-left">
+        <svg width="54" height="54" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="48" fill="none" stroke="#006B3F" stroke-width="2"/>
+          <path d="M30 70 L50 20 L70 70" fill="none" stroke="#006B3F" stroke-width="3"/>
+          <path d="M35 60 L65 60" stroke="#006B3F" stroke-width="2"/>
+          <circle cx="50" cy="35" r="6" fill="#006B3F"/>
+          <path d="M40 75 L50 80 L60 75" fill="none" stroke="#006B3F" stroke-width="2"/>
+          <text x="50" y="95" text-anchor="middle" font-size="8" fill="#006B3F" font-weight="bold">🇳🇬</text>
+        </svg>
+      </div>
+
+      <!-- Center Text -->
+      <div class="center-text">
+        <h1>National Identity Management System</h1>
+        <p>Federal Republic of Nigeria</p>
+        <p class="subtitle">National Identification Number Slip (NINS)</p>
+      </div>
+
+      <!-- Right NIMC Logo -->
+      <div class="logo-right">
+        <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #006B3F 0%, #004D2C 100%); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+          <span style="color: #FFFFFF; font-size: 11px; font-weight: 800; line-height: 1; letter-spacing: 0.5px;">NIMC</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="divider"></div>
+
+    <!-- Main Data Grid -->
+    <div class="data-grid">
+      <!-- Left Side - Data Fields -->
+      <div class="data-fields">
+        <!-- Row 1 -->
+        <div class="data-cell">
+          <span class="data-label">Tracking ID:</span>
+          <span class="data-value">S7Y0ORZTK0002VZ</span>
+        </div>
+        <div class="data-cell">
+          <span class="data-label">Surname:</span>
+          <span class="data-value">HABIBU</span>
+        </div>
+        <div class="data-cell no-border-right">
+          <span class="data-label">Address:</span>
+          <span class="data-value">HAYEWA QUARTERS</span>
+        </div>
+
+        <!-- Row 2 -->
+        <div class="data-cell">
+          <span class="data-label">NIN:</span>
+          <span class="data-value nin">13044839780</span>
+        </div>
+        <div class="data-cell">
+          <span class="data-label">First Name:</span>
+          <span class="data-value">SHUAIBU</span>
+        </div>
+        <div class="data-cell no-border-right">
+          <span class="data-label"></span>
+          <span class="data-value"></span>
+        </div>
+
+        <!-- Row 3 -->
+        <div class="data-cell">
+          <span class="data-label"></span>
+          <span class="data-value"></span>
+        </div>
+        <div class="data-cell">
+          <span class="data-label">Middle Name:</span>
+          <span class="data-value"></span>
+        </div>
+        <div class="data-cell no-border-right">
+          <span class="data-label"></span>
+          <span class="data-value">KADEWA</span>
+        </div>
+
+        <!-- Row 4 -->
+        <div class="data-cell no-border-bottom">
+          <span class="data-label"></span>
+          <span class="data-value"></span>
+        </div>
+        <div class="data-cell no-border-bottom">
+          <span class="data-label">Gender:</span>
+          <span class="data-value">M</span>
+        </div>
+        <div class="data-cell no-border-right no-border-bottom">
+          <span class="data-label"></span>
+          <span class="data-value">Kano</span>
+        </div>
+      </div>
+
+      <!-- Right Side - Photo -->
+      <div class="photo-section">
+        <div class="photo-frame">
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
+            <circle cx="30" cy="22" r="12" fill="#CCCCCC"/>
+            <ellipse cx="30" cy="50" rx="20" ry="14" fill="#CCCCCC"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Note Section -->
+    <div class="note-section">
+      <p>
+        <strong>Note:</strong> The <strong><em>National Identification Number (NIN) is your identity.</em></strong>&nbsp;&nbsp;
+        It is confidential and may only be released for legitimate transactions.
+      </p>
+      <p class="small-text">
+        You will be notified when your National Identity Card is ready&nbsp;&nbsp;(for any enquiries please contact)
+      </p>
+    </div>
+
+    <!-- Footer Contact Bar -->
+    <div class="footer-grid">
+      <div class="footer-cell">
+        <div class="footer-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0038FF" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M22 4L12 13L2 4"/>
+          </svg>
+        </div>
+        <div class="footer-text">helpdesk@nimc.gov.ng</div>
+      </div>
+      <div class="footer-cell">
+        <div class="footer-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0038FF" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+          </svg>
+        </div>
+        <div class="footer-text">www.nimc.gov.ng</div>
+      </div>
+      <div class="footer-cell">
+        <div class="footer-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0038FF" stroke-width="2">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+        </div>
+        <div class="footer-text">
+          0700-CALL-NIMC<br>
+          <span class="small-text">(0700-2255-646)</span>
+        </div>
+      </div>
+      <div class="footer-cell">
+        <div class="footer-text">
+          <div class="bold-text">National Identity Management Commission</div>
+          <div>11, Sokode Crescent, Off Dalaba Street, Zone 5 Wuse, Abuja Nigeria</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
