@@ -64,6 +64,10 @@ return [
 
     'nin_cash' => [
         'cash' => env('NIN_CASH')
+    ],
+
+    'nin_profile_image_fallback' => [
+        'image' => env('FALLBACKPROFILEIMAGE')
     ]
 
 ];

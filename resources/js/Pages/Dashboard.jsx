@@ -1,5 +1,5 @@
 import { Head, Link } from "@inertiajs/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import logoImage from '../../assets/svg/shield.svg';
 import defaultProfileImage from '../../assets/img/user_profile.png';
@@ -12,6 +12,52 @@ import secureQuestionImage from '../../assets/img/secure_question.png';
 
 export default function Dashboard({ auth }) {
         const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+        const [recentActivities, setRecentActivities] = useState([]);
+        const [loading, setLoading] = useState(true);
+
+        // Fetch user activities on component mount
+        useEffect(() => {
+            fetchRecentActivities();
+        }, []);
+
+        const fetchRecentActivities = async () => {
+            try {
+                const response = await fetch('/api/user/history');
+                const data = await response.json();
+                if (data.activities) {
+                    // Map activities to table format and take only the first 3
+                    const mappedActivities = data.activities.slice(0, 3).map(activity => ({
+                        service: activity.description || activity.action,
+                        date: new Date(activity.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                        }),
+                        status: getActivityStatus(activity.type),
+                        action: 'View Details'
+                    }));
+                    console.log(data);
+                    setRecentActivities(mappedActivities);
+                }
+            } catch (error) {
+                console.error('Failed to fetch recent activities:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const getActivityStatus = (type) => {
+            const statusMap = {
+                'nin_verification': 'completed',
+                'wallet_transaction': 'completed',
+                'profile_update': 'completed',
+                'password_change': 'completed',
+                'email_verification': 'completed',
+                'google_login': 'completed',
+                'default': 'pending'
+            };
+            return statusMap[type] || statusMap['default'];
+        };
     
         const handleLogout = (e) => {
             e.preventDefault();
@@ -63,8 +109,8 @@ export default function Dashboard({ auth }) {
                         <a className="active" href="dashboard"><i className="fas fa-home"></i>Dashboard</a>
                         <a href="lagacy-nin"><i className="fas fa-id-card"></i> NIN Services</a>
                         <a href="exam-cards"><i className="fas fa-credit-card"></i> Exam Cards</a>
-                        <a><i className="fas fa-building"></i> CAC Registration</a>
-                        <a><i className="fas fa-graduation-cap"></i> Study Abroad</a>
+                        {/* <a><i className="fas fa-building"></i> CAC Registration</a> */}
+                        {/* <a><i className="fas fa-graduation-cap"></i> Study Abroad</a> */}
                         <a><i className="fas fa-wallet"></i> Wallet</a>
                         <a href={route('history')}><i className="fas fa-history"></i> History</a>
                         <a href={route('settings')}><i className="fas fa-cog"></i> Settings</a>
@@ -172,38 +218,32 @@ export default function Dashboard({ auth }) {
                                 </thead>
 
                                 <tbody>
-                                    <tr>
-                                        <td>NIN Slip Retrieval</td>
-                                        <td>Jan 15, 2024</td>
-                                        <td>
-                                            <span className="badge completed">
-                                                Completed
-                                            </span>
-                                        </td>
-                                        <td>View Details</td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>CAC Registration</td>
-                                        <td>Jan 12, 2024</td>
-                                        <td>
-                                            <span className="badge processing">
-                                                Processing
-                                            </span>
-                                        </td>
-                                        <td>View Details</td>
-                                    </tr>
-
-                                    <tr>
-                                        <td>Study Abroad Support</td>
-                                        <td>Jan 10, 2024</td>
-                                        <td>
-                                            <span className="badge pending">
-                                                Pending
-                                            </span>
-                                        </td>
-                                        <td>View Details</td>
-                                    </tr>
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+                                                Loading...
+                                            </td>
+                                        </tr>
+                                    ) : recentActivities.length > 0 ? (
+                                        recentActivities.map((activity, index) => (
+                                            <tr key={index}>
+                                                <td>{activity.service}</td>
+                                                <td>{activity.date}</td>
+                                                <td>
+                                                    <span className={`badge ${activity.status}`}>
+                                                        {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                                                    </span>
+                                                </td>
+                                                <td>{activity.action}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4" style={{ textAlign: 'center', padding: '20px' }}>
+                                                No recent activities found
+                                            </td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>

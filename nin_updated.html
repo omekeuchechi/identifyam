@@ -3,452 +3,201 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NIN Slip - National Identity Management System</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <title>NIN Card - Digital NIN Slip</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      background: #F5F5F5;
-      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-      color: #1A1A1B;
-      padding: 32px 20px;
-      min-height: 100vh;
-    }
-
-    .print-button {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-      background: #0038FF;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(0, 56, 255, 0.3);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-    }
-
-    .print-button:hover {
-      background: #0028CC;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(0, 56, 255, 0.4);
-    }
-
-    .nin-page {
-      width: 210mm;
-      min-height: 148mm;
-      margin: 0 auto;
-      background: #FFFFFF;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      padding: 12mm 15mm;
-      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
-      color: #1A1A1B;
-      position: relative;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-bottom: 4px;
-      padding-bottom: 8px;
-    }
-
-    .logo-left, .logo-right {
-      width: 60px;
-      height: 60px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .center-text {
-      text-align: center;
-      flex: 1;
-    }
-
-    .center-text h1 {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: #1A1A1B;
-      line-height: 1.2;
-    }
-
-    .center-text p {
-      margin: 2px 0 0 0;
-      font-size: 13px;
-      font-weight: 600;
-      color: #1A1A1B;
-    }
-
-    .center-text .subtitle {
-      margin: 2px 0 0 0;
-      font-size: 12px;
-      font-weight: 700;
-      color: #1A1A1B;
-    }
-
-    .divider {
-      border-bottom: 2px solid #1A1A1B;
-      margin-bottom: 0;
-    }
-
-    .data-grid {
-      display: grid;
-      grid-template-columns: 170mm 1fr;
-      border: 1px solid #CCCCCC;
-      border-top: none;
-    }
-
-    .data-fields {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      border-right: 1px solid #CCCCCC;
-    }
-
-    .data-cell {
-      padding: 6px 10px;
-      border-right: 1px solid #CCCCCC;
-      border-bottom: 1px solid #CCCCCC;
-      min-height: 32px;
-      display: flex;
-      align-items: center;
-    }
-
-    .data-cell.no-border-right {
-      border-right: none;
-    }
-
-    .data-cell.no-border-bottom {
-      border-bottom: none;
-    }
-
-    .data-label {
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 10px;
-      font-weight: 600;
-      color: #1A1A1B;
-      margin-right: 8px;
-    }
-
-    .data-value {
-      font-size: 12px;
-      font-weight: 400;
-      color: #1A1A1B;
-    }
-
-    .data-value.nin {
-      font-weight: 800;
-      font-size: 14px;
-    }
-
-    .photo-section {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      min-height: 120px;
-    }
-
-    .photo-frame {
-      width: 100px;
-      height: 120px;
-      background: #E8E8E8;
-      border: 1px solid #CCCCCC;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      color: #999;
-    }
-
-    .note-section {
-      border-left: 1px solid #CCCCCC;
-      border-right: 1px solid #CCCCCC;
-      border-bottom: 1px solid #CCCCCC;
-      padding: 8px 10px;
-      font-size: 11px;
-      line-height: 1.5;
-    }
-
-    .note-section p {
-      margin: 0;
-    }
-
-    .note-section .small-text {
-      margin: 4px 0 0 0;
-      font-size: 10.5px;
-      color: #575757;
-    }
-
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1.5fr;
-      border: 1px solid #CCCCCC;
-      border-top: none;
-      font-size: 10px;
-    }
-
-    .footer-cell {
-      padding: 8px 10px;
-      border-right: 1px solid #CCCCCC;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .footer-cell:last-child {
-      border-right: none;
-    }
-
-    .footer-icon {
-      flex-shrink: 0;
-    }
-
-    .footer-text {
-      line-height: 1.4;
-      color: #1A1A1B;
-    }
-
-    .footer-text .small-text {
-      color: #575757;
-    }
-
-    .footer-text .bold-text {
-      font-weight: 700;
-      font-size: 11px;
-      margin-bottom: 2px;
-    }
-
     @media print {
-      body {
-        background: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      .print-button {
-        display: none !important;
-      }
-      .nin-page {
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 15mm !important;
-      }
-      @page {
-        size: A4;
-        margin: 0;
-      }
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 16px 10px;
-      }
-      .nin-page {
-        padding: 8mm 10mm;
-      }
-      .data-grid {
-        grid-template-columns: 1fr;
-      }
-      .data-fields {
-        grid-template-columns: 1fr;
-        border-right: none;
-      }
-      .photo-section {
-        border-top: 1px solid #CCCCCC;
-      }
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-      .footer-cell:nth-child(3),
-      .footer-cell:nth-child(4) {
-        border-top: 1px solid #CCCCCC;
-      }
-      .footer-cell:nth-child(2),
-      .footer-cell:nth-child(4) {
-        border-right: none;
-      }
+      body { background: white !important; margin: 0; padding: 0; }
+      .print-hidden { display: none !important;}
+      #nin-card-wrapper { margin: 0 auto; }
+      @page { size: A4; margin: 15mm; }
     }
   </style>
 </head>
 <body>
-  <!-- Print Button -->
-  <button class="print-button" onclick="window.print()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2m-6 4l-3-3m0 0l3 3m-3-3v6"/>
-    </svg>
-    Print Slip
-  </button>
-
-  <!-- A4 Page -->
-  <div class="nin-page">
-    <!-- Header -->
-    <div class="header">
-      <!-- Left Coat of Arms -->
-      <div class="logo-left">
-        <svg width="54" height="54" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="48" fill="none" stroke="#006B3F" stroke-width="2"/>
-          <path d="M30 70 L50 20 L70 70" fill="none" stroke="#006B3F" stroke-width="3"/>
-          <path d="M35 60 L65 60" stroke="#006B3F" stroke-width="2"/>
-          <circle cx="50" cy="35" r="6" fill="#006B3F"/>
-          <path d="M40 75 L50 80 L60 75" fill="none" stroke="#006B3F" stroke-width="2"/>
-          <text x="50" y="95" text-anchor="middle" font-size="8" fill="#006B3F" font-weight="bold">🇳🇬</text>
-        </svg>
-      </div>
-
-      <!-- Center Text -->
-      <div class="center-text">
-        <h1>National Identity Management System</h1>
-        <p>Federal Republic of Nigeria</p>
-        <p class="subtitle">National Identification Number Slip (NINS)</p>
-      </div>
-
-      <!-- Right NIMC Logo -->
-      <div class="logo-right">
-        <div style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #006B3F 0%, #004D2C 100%); display: flex; align-items: center; justify-content: center; flex-direction: column;">
-          <span style="color: #FFFFFF; font-size: 11px; font-weight: 800; line-height: 1; letter-spacing: 0.5px;">NIMC</span>
-        </div>
-      </div>
+  <div style="background: #f5f5f5; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; font-family: Arial, 'Helvetica Neue', sans-serif;">
+    <!-- 08084493832 -->
+    <!-- Print Button -->
+    <div class="print-hidden" style="margin-bottom: 24px;">
+      <button onclick="window.print()" style="background: #0b8640; color: white; font-weight: 600; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        🖨️ Print / Save as PDF
+      </button>
     </div>
 
-    <!-- Divider -->
-    <div class="divider"></div>
+    <!-- Warning text -->
+    <p class="print-hidden" style="font-size: 13px; color: #333; margin-bottom: 20px; text-align: center; max-width: 560px; font-weight: 600;">
+      For your Security and Privacy, Please Do Not Share This Card or take Photocopies
+    </p>
 
-    <!-- Main Data Grid -->
-    <div class="data-grid">
-      <!-- Left Side - Data Fields -->
-      <div class="data-fields">
-        <!-- Row 1 -->
-        <div class="data-cell">
-          <span class="data-label">Tracking ID:</span>
-          <span class="data-value">S7Y0ORZTK0002VZ</span>
-        </div>
-        <div class="data-cell">
-          <span class="data-label">Surname:</span>
-          <span class="data-value">HABIBU</span>
-        </div>
-        <div class="data-cell no-border-right">
-          <span class="data-label">Address:</span>
-          <span class="data-value">HAYEWA QUARTERS</span>
-        </div>
+    <!-- Card Wrapper -->
+    <div id="nin-card-wrapper" style="width: 100%; max-width: 560px; margin: 0 auto;">
+      
+      <!-- ===== CARD FRONT ===== -->
+      <div style="position: relative; width: 100%; height: 350px; background: url('./plastic.png'); background-attachment: fixed; background-position: center; background-size: 40%; background-repeat: no-repeat;">
+        
+        <!-- Background pattern - diagonal lines -->
+        <div style="position: absolute; inset: 0; pointer-events: none;"></div>
 
-        <!-- Row 2 -->
-        <div class="data-cell">
-          <span class="data-label">NIN:</span>
-          <span class="data-value nin">13044839780</span>
-        </div>
-        <div class="data-cell">
-          <span class="data-label">First Name:</span>
-          <span class="data-value">SHUAIBU</span>
-        </div>
-        <div class="data-cell no-border-right">
-          <span class="data-label"></span>
-          <span class="data-value"></span>
-        </div>
-
-        <!-- Row 3 -->
-        <div class="data-cell">
-          <span class="data-label"></span>
-          <span class="data-value"></span>
-        </div>
-        <div class="data-cell">
-          <span class="data-label">Middle Name:</span>
-          <span class="data-value"></span>
-        </div>
-        <div class="data-cell no-border-right">
-          <span class="data-label"></span>
-          <span class="data-value">KADEWA</span>
-        </div>
-
-        <!-- Row 4 -->
-        <div class="data-cell no-border-bottom">
-          <span class="data-label"></span>
-          <span class="data-value"></span>
-        </div>
-        <div class="data-cell no-border-bottom">
-          <span class="data-label">Gender:</span>
-          <span class="data-value">M</span>
-        </div>
-        <div class="data-cell no-border-right no-border-bottom">
-          <span class="data-label"></span>
-          <span class="data-value">Kano</span>
-        </div>
-      </div>
-
-      <!-- Right Side - Photo -->
-      <div class="photo-section">
-        <div class="photo-frame">
-          <svg width="60" height="60" viewBox="0 0 60 60" fill="none">
-            <circle cx="30" cy="22" r="12" fill="#CCCCCC"/>
-            <ellipse cx="30" cy="50" rx="20" ry="14" fill="#CCCCCC"/>
+        <!-- Coat of Arms watermark -->
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-10%, -50%); opacity: 0.12; pointer-events: none;">
+          <svg width="220" height="220" viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="50" rx="48" ry="48" fill="#fff" fill-opacity="0.15" />
+            <path d="M30 25 H70 V60 Q50 75 30 60 Z" fill="#006B3F" stroke="#fff" stroke-width="1.5" />
+            <path d="M30 25 H50 V75 Q40 72 30 60 Z" fill="#fff" fill-opacity="0.15" />
+            <path d="M15 35 Q20 20 30 28" stroke="#fff" stroke-width="2" fill="none" />
+            <path d="M85 35 Q80 20 70 28" stroke="#fff" stroke-width="2" fill="none" />
+            <ellipse cx="50" cy="18" rx="8" ry="7" fill="#1a1a1a" />
+            <circle cx="50" cy="14" r="4" fill="#1a1a1a" />
+            <path d="M30 72 Q50 80 70 72" stroke="#fff" stroke-width="1.5" fill="none" />
+            <circle cx="50" cy="79" r="3" fill="#fff" fill-opacity="0.7" />
+            <circle cx="40" cy="77" r="2.5" fill="#fff" fill-opacity="0.7" />
+            <circle cx="60" cy="77" r="2.5" fill="#fff" fill-opacity="0.7" />
           </svg>
         </div>
-      </div>
-    </div>
 
-    <!-- Note Section -->
-    <div class="note-section">
-      <p>
-        <strong>Note:</strong> The <strong><em>National Identification Number (NIN) is your identity.</em></strong>&nbsp;&nbsp;
-        It is confidential and may only be released for legitimate transactions.
-      </p>
-      <p class="small-text">
-        You will be notified when your National Identity Card is ready&nbsp;&nbsp;(for any enquiries please contact)
-      </p>
-    </div>
+        <!-- TOP HEADER STRIP -->
+        <div style="position: absolute; top: 0; left: 0; right: 0; padding: 6px 14px; display: flex; align-items: center; justify-content: space-between;">
+          <!-- Left: small coat of arms -->
+          <svg width="36" height="36" viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="50" rx="48" ry="48" fill="#fff" fill-opacity="0.15" />
+            <path d="M30 25 H70 V60 Q50 75 30 60 Z" fill="#006B3F" stroke="#fff" stroke-width="1.5" />
+            <path d="M30 25 H50 V75 Q40 72 30 60 Z" fill="#fff" fill-opacity="0.15" />
+            <path d="M15 35 Q20 20 30 28" stroke="#fff" stroke-width="2" fill="none" />
+            <path d="M85 35 Q80 20 70 28" stroke="#fff" stroke-width="2" fill="none" />
+            <ellipse cx="50" cy="18" rx="8" ry="7" fill="#1a1a1a" />
+            <circle cx="50" cy="14" r="4" fill="#1a1a1a" />
+            <path d="M30 72 Q50 80 70 72" stroke="#fff" stroke-width="1.5" fill="none" />
+            <circle cx="50" cy="79" r="3" fill="#fff" fill-opacity="0.7" />
+            <circle cx="40" cy="77" r="2.5" fill="#fff" fill-opacity="0.7" />
+            <circle cx="60" cy="77" r="2.5" fill="#fff" fill-opacity="0.7" />
+          </svg>
 
-    <!-- Footer Contact Bar -->
-    <div class="footer-grid">
-      <div class="footer-cell">
-        <div class="footer-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0038FF" stroke-width="2">
-            <rect x="2" y="4" width="20" height="16" rx="2"/>
-            <path d="M22 4L12 13L2 4"/>
-          </svg>
+          <!-- Center: Title -->
+          <div style="text-align: center; flex: 1; color: #fff;">
+            <div style="font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">Federal Republic of Nigeria</div>
+            <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; opacity: 0.9;">Digital NIN Slip</div>
+          </div>
+
+          <!-- Right: QR Code area -->
+          <div style="width: 80px; height: 80px; background: #fff; display: flex; align-items: center; justify-content: center; padding: 4px; border-radius: 2px;">
+            <svg width="72" height="72" viewBox="0 0 72 72" style="display: block;">
+              <rect width="72" height="72" fill="#fff" />
+              <rect x="0" y="0" width="24" height="24" fill="#000" />
+              <rect x="4" y="4" width="16" height="16" fill="#fff" />
+              <rect x="8" y="8" width="8" height="8" fill="#000" />
+              <rect x="48" y="0" width="24" height="24" fill="#000" />
+              <rect x="52" y="4" width="16" height="16" fill="#fff" />
+              <rect x="56" y="8" width="8" height="8" fill="#000" />
+              <rect x="0" y="48" width="24" height="24" fill="#000" />
+              <rect x="4" y="52" width="16" height="16" fill="#fff" />
+              <rect x="8" y="56" width="8" height="8" fill="#000" />
+              <rect x="28" y="4" width="4" height="4" fill="#000" />
+              <rect x="36" y="4" width="4" height="4" fill="#000" />
+              <rect x="28" y="12" width="4" height="4" fill="#000" />
+              <rect x="36" y="12" width="4" height="4" fill="#000" />
+              <rect x="28" y="20" width="4" height="4" fill="#000" />
+              <rect x="36" y="20" width="4" height="4" fill="#000" />
+              <rect x="4" y="28" width="4" height="4" fill="#000" />
+              <rect x="12" y="28" width="4" height="4" fill="#000" />
+              <rect x="20" y="28" width="4" height="4" fill="#000" />
+              <rect x="4" y="36" width="4" height="4" fill="#000" />
+              <rect x="12" y="36" width="4" height="4" fill="#000" />
+              <rect x="20" y="36" width="4" height="4" fill="#000" />
+              <rect x="48" y="28" width="4" height="4" fill="#000" />
+              <rect x="56" y="28" width="4" height="4" fill="#000" />
+              <rect x="48" y="36" width="4" height="4" fill="#000" />
+              <rect x="56" y="36" width="4" height="4" fill="#000" />
+              <rect x="64" y="28" width="4" height="4" fill="#000" />
+              <rect x="64" y="36" width="4" height="4" fill="#000" />
+              <rect x="28" y="48" width="4" height="4" fill="#000" />
+              <rect x="36" y="48" width="4" height="4" fill="#000" />
+              <rect x="44" y="48" width="4" height="4" fill="#000" />
+              <rect x="52" y="48" width="4" height="4" fill="#000" />
+              <rect x="60" y="48" width="4" height="4" fill="#000" />
+              <rect x="28" y="56" width="4" height="4" fill="#000" />
+              <rect x="36" y="56" width="4" height="4" fill="#000" />
+              <rect x="44" y="56" width="4" height="4" fill="#000" />
+              <rect x="52" y="56" width="4" height="4" fill="#000" />
+              <rect x="60" y="56" width="4" height="4" fill="#000" />
+              <rect x="64" y="48" width="4" height="4" fill="#000" />
+              <rect x="64" y="56" width="4" height="4" fill="#000" />
+            </svg>
+          </div>
         </div>
-        <div class="footer-text">helpdesk@nimc.gov.ng</div>
+
+        <!-- PHOTO -->
+        <div style="position: absolute; top: 70px; left: 14px; width: 110px; height: 140px; border: 2px solid rgba(255,255,255,0.7); background: #c8c8c8; overflow: hidden; border-radius: 2px;">
+          <div style="width: 100%; height: 100%; background: #b0b0b0; display: flex; align-items: center; justify-content: center;">
+            <svg width="50" height="60" viewBox="0 0 50 60" fill="none">
+              <circle cx="25" cy="18" r="13" fill="#888" />
+              <ellipse cx="25" cy="52" rx="22" ry="15" fill="#888" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- DATA FIELDS -->
+        <div style="position: absolute; top: 72px; left: 138px; right: 14px; color: #fff; display: flex; flex-direction: column; gap: 14px;">
+          <!-- Surname -->
+          <div>
+            <div style="font-size: 8px; font-weight: 700; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase;">Surname/Nom</div>
+            <div style="font-size: 16px; font-weight: 800; letter-spacing: 0.5px;">WILLIAMS</div>
+          </div>
+
+          <!-- Given Names -->
+          <div>
+            <div style="font-size: 8px; font-weight: 700; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase;">Given Names/Prénoms</div>
+            <div style="font-size: 14px; font-weight: 700;">BLESSING</div>
+          </div>
+
+          <!-- DOB / Sex / Issue Date row -->
+          <div style="display: flex; gap: 28px; align-items: flex-start;">
+            <div>
+              <div style="font-size: 8px; font-weight: 700; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase;">Date of Birth</div>
+              <div style="font-size: 12px; font-weight: 700;">03 Jul 2000</div>
+            </div>
+            <div>
+              <div style="font-size: 8px; font-weight: 700; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase;">Sex/Sexe</div>
+              <div style="font-size: 12px; font-weight: 700;">F</div>
+            </div>
+            <div>
+              <div style="font-size: 8px; font-weight: 700; opacity: 0.75; letter-spacing: 1px; text-transform: uppercase;">Issue Date</div>
+              <div style="font-size: 12px; font-weight: 700;">22 Apr 2026</div>
+            </div>
+            <!-- NGA Badge -->
+            <div style="margin-left: auto; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.5); border-radius: 3px; padding: 2px 8px; font-size: 20px; font-weight: 900; color: #fff; letter-spacing: 2px; align-self: center;">
+              NGA
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTOM STRIP - NIN Number -->
+        <div style="position: absolute; bottom: 0; left: 0; right: 0;">
+          <div style="text-align: center; color: #000; font-size: 34px; font-weight: 900; letter-spacing: 6px; line-height: 1; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+            3478 360 2536
+          </div>
+        </div>
       </div>
-      <div class="footer-cell">
-        <div class="footer-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0038FF" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-          </svg>
-        </div>
-        <div class="footer-text">www.nimc.gov.ng</div>
-      </div>
-      <div class="footer-cell">
-        <div class="footer-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0038FF" stroke-width="2">
-            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
-          </svg>
-        </div>
-        <div class="footer-text">
-          0700-CALL-NIMC<br>
-          <span class="small-text">(0700-2255-646)</span>
-        </div>
-      </div>
-      <div class="footer-cell">
-        <div class="footer-text">
-          <div class="bold-text">National Identity Management Commission</div>
-          <div>11, Sokode Crescent, Off Dalaba Street, Zone 5 Wuse, Abuja Nigeria</div>
-        </div>
+
+      <!-- ===== DISCLAIMER (rotated 180deg = upside down) ===== -->
+      <div style="border: 1.5px solid #000; background: #fff; padding: 16px 14px; text-align: center; transform: rotate(180deg); margin-top: -1px;">
+        <div style="font-size: 22px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 2px;">Disclaimer</div>
+        <div style="font-size: 13px; font-style: italic; margin-bottom: 10px; color: #333;">Trust, but verify</div>
+
+        <p style="font-size: 12px; line-height: 1.5; color: #000; margin-bottom: 12px;">
+          Kindly ensure each time this ID is presented, that you verify credentials<br />
+          using a Government-APPROVED verification resource.<br />
+          The details on front of this NIN Slip must EXACTLY match<br />
+          verification result.
+        </p>
+
+        <div style="font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px;">Caution!</div>
+
+        <p style="font-size: 11.5px; line-height: 1.55; color: #000;">
+          If this NIN was not issued to the person on the front of this document, please DO<br />
+          NOT attempt to scan, photocopy or replicate personal data contained herein.<br /><br />
+          You are only permitted to scan the barcode for the purpose of identity verification.<br />
+          The FEDERAL GOVERNMENT OF NIGERIA assumes no responsibility<br />
+          if you accept any variance in scan result or do not scan the 2D barcode overleaf
+        </p>
       </div>
     </div>
   </div>

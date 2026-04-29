@@ -346,9 +346,8 @@ const LagacyNin = ({ auth }) => {
                     <h4>Basic Information</h4>
                     <div className="result-grid">
                         <div className="result-item">
-                        {console.log("this is for data", data)}
                             <label>NIN:</label>
-                            <span>{data.data?.nin || 'N/A'}</span>
+                            <span>{data.data.data.nin || 'N/A'}</span>
                         </div>
                         <div className="result-item">
                             <label>Full Name:</label>
@@ -416,8 +415,6 @@ const LagacyNin = ({ auth }) => {
                         </div>
                     </div>
                 )}
-
-                {console.log("data set of data", data.data)}
 
                 {/* Residence Information */}
                 {(data.data.residenceState || data.data.data.residenceTown) && (
