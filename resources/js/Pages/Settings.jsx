@@ -3,8 +3,12 @@ import { Head, Link } from '@inertiajs/react';
 import logoImage from '../../assets/svg/shield.svg';
 import defaultProfileImage from '../../assets/img/user_profile.png';
 
+import "../../css/dashboardRes.css";
+import "../../css/settingsRes.css";
+
 const Settings = ({ auth }) => {
     const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleLogout = (e) => {
         e.preventDefault();
@@ -37,9 +41,11 @@ const Settings = ({ auth }) => {
             <Head title="Settings" />
 
             <div className="dashboard-layout">
+                {/* Mobile Menu Overlay */}
+                <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
 
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href="/" className="sidebar-logo">
                         <div className="logo-image">
                             <img src={logoImage} alt="" />
@@ -48,14 +54,14 @@ const Settings = ({ auth }) => {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <a href={route('dashboard')}><i className="fas fa-home"></i>Dashboard</a>
-                        <a href="lagacy-nin"><i className="fas fa-id-card"></i> NIN Services</a>
-                        <a href={route('exam.cards')}><i className="fas fa-credit-card"></i> Exam Cards</a>
+                        <a href={route('dashboard')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-home"></i>Dashboard</a>
+                        <a href="lagacy-nin" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href={route('exam.cards')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-credit-card"></i> Exam Cards</a>
                         <a><i className="fas fa-building"></i> CAC Registration</a>
                         <a><i className="fas fa-graduation-cap"></i> Study Abroad</a>
-                        <a href={route('funding')}><i className="fas fa-wallet"></i> Wallet</a>
-                        <a href='history'><i className="fas fa-history"></i> History</a>
-                        <a href={route('settings')} className="active"><i className="fas fa-cog"></i> Settings</a>
+                        <a href={route('funding')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-wallet"></i> Wallet</a>
+                        <a href='history' onClick={() => setMobileMenuOpen(false)}><i className="fas fa-history"></i> History</a>
+                        <a href={route('settings')} className="active" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-cog"></i> Settings</a>
                     </nav>
                 </aside>
 
@@ -63,7 +69,12 @@ const Settings = ({ auth }) => {
                 <div className="dashboard-main">
                     {/* Topbar */}
                     <header className="topbar">
-                    <h2>Settings</h2>
+                        <div className="topbar-left">
+                            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                                <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                            </button>
+                            <h2>Settings</h2>
+                        </div>
 
                         <div className="topbar-right">
                             <span className="notification"><i className="fas fa-bell"></i></span>

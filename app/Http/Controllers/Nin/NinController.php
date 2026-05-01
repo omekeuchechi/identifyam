@@ -123,7 +123,15 @@ class NinController extends Controller
 
             $this->logNinOperation('INFO', 'NIN data saved successfully', [
                 'nin' => $nin,
-                'phone' => $responseData['data']['telephoneno'] ?? null
+                'transaction_id' => $responseData['transaction_id'] ?? null
+            ]);
+
+            // Log NIN verification activity
+            $this->logActivity('nin_verification', 'NIN verification completed by NIN (V1)', 'nin', [
+                'nin' => $nin,
+                'search_type' => 'nin_search1',
+                'transaction_id' => $responseData['transaction_id'] ?? null,
+                'status' => $responseData['status'] ?? null
             ]);
         } else {
             $this->logNinOperation('ERROR', 'API request failed', [
@@ -188,6 +196,14 @@ class NinController extends Controller
                     'status' => $responseData['status'] ?? null
                 ]
             );
+
+            // Log NIN verification activity
+            $this->logActivity('nin_verification', 'NIN verification completed by phone (V1)', 'nin', [
+                'phone' => $phone,
+                'search_type' => 'search_by_Phone1',
+                'transaction_id' => $responseData['transaction_id'] ?? null,
+                'status' => $responseData['status'] ?? null
+            ]);
         }
 
         return response()->json([
@@ -247,6 +263,14 @@ class NinController extends Controller
                     'transaction_id' => $responseData['transaction_id'] ?? null,
                 ]
             );
+
+            // Log NIN verification activity
+            $this->logActivity('nin_verification', 'NIN verification completed by phone (V2)', 'nin', [
+                'phone' => $phone,
+                'search_type' => 'search_by_Phone2',
+                'transaction_id' => $responseData['transaction_id'] ?? null,
+                'nin' => $data['idNumber'] ?? null
+            ]);
         }
 
         return response()->json([
@@ -306,6 +330,14 @@ class NinController extends Controller
                     'transaction_id' => $responseData['transaction_id'] ?? null,
                 ]
             );
+
+            // Log NIN verification activity
+            $this->logActivity('nin_verification', 'NIN verification completed by NIN (V2)', 'nin', [
+                'nin' => $nin,
+                'search_type' => 'nin_search2',
+                'transaction_id' => $responseData['transaction_id'] ?? null,
+                'id_number' => $data['idNumber'] ?? null
+            ]);
         }
 
         return response()->json([
@@ -362,6 +394,14 @@ class NinController extends Controller
                     'marital_status' => $data['maritalstatus'] ?? null,
                 ]
             );
+
+            // Log NIN verification activity
+            $this->logActivity('nin_verification', 'NIN verification completed by NIN (V3)', 'nin', [
+                'nin' => $nin,
+                'search_type' => 'nin_search3',
+                'transaction_id' => $responseData['transaction_id'] ?? null,
+                'tracking_id' => $data['trackingId'] ?? null
+            ]);
         }
 
         return response()->json([

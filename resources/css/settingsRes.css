@@ -1,0 +1,167 @@
+/* Settings Page - Responsive Styles */
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+    .settings-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+        gap: 20px !important;
+    }
+
+    .settings-section {
+        padding: 20px !important;
+    }
+
+    .settings-section h3 {
+        font-size: 16px !important;
+    }
+
+    .settings-card {
+        padding: 14px !important;
+    }
+
+    .settings-card div div:first-child {
+        font-size: 14px !important;
+    }
+
+    .settings-card div div:last-child {
+        font-size: 13px !important;
+    }
+
+    .info-section {
+        padding: 20px !important;
+    }
+
+    .info-section h4 {
+        font-size: 15px !important;
+    }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    .welcome h1 {
+        font-size: 24px;
+    }
+
+    .welcome p {
+        font-size: 14px;
+    }
+
+    .settings-grid {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        margin-top: 24px !important;
+    }
+
+    .settings-section {
+        padding: 16px !important;
+    }
+
+    .settings-section h3 {
+        font-size: 16px !important;
+        margin-bottom: 16px !important;
+    }
+
+    .settings-section h3 i {
+        font-size: 16px !important;
+    }
+
+    .settings-card {
+        padding: 12px !important;
+        flex-wrap: wrap;
+    }
+
+    .settings-card i:first-child {
+        font-size: 18px !important;
+        margin-right: 12px !important;
+        width: 20px !important;
+    }
+
+    .settings-card div {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .settings-card div div:first-child {
+        font-size: 14px !important;
+        margin-bottom: 2px !important;
+        word-break: break-word;
+    }
+
+    .settings-card div div:last-child {
+        font-size: 12px !important;
+        line-height: 1.3;
+        word-break: break-word;
+    }
+
+    .settings-card i:last-child {
+        display: none;
+    }
+
+    .info-section {
+        padding: 16px !important;
+        margin-top: 24px !important;
+    }
+
+    .info-section h4 {
+        font-size: 14px !important;
+        margin-bottom: 10px !important;
+    }
+
+    .info-section h4 i {
+        font-size: 14px !important;
+    }
+
+    .info-section > div[style*="grid"] {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+
+    .info-section span {
+        font-size: 12px !important;
+    }
+
+    .info-section div div {
+        font-size: 13px !important;
+        word-break: break-word;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .welcome h1 {
+        font-size: 20px;
+    }
+
+    .settings-section {
+        padding: 12px !important;
+    }
+
+    .settings-section h3 {
+        font-size: 15px !important;
+    }
+
+    .settings-card {
+        padding: 10px !important;
+    }
+
+    .settings-card i:first-child {
+        font-size: 16px !important;
+        margin-right: 10px !important;
+    }
+
+    .settings-card div div:first-child {
+        font-size: 13px !important;
+    }
+
+    .settings-card div div:last-child {
+        font-size: 11px !important;
+    }
+
+    .info-section {
+        padding: 12px !important;
+    }
+
+    .info-section h4 {
+        font-size: 13px !important;
+    }
+}

@@ -51,6 +51,14 @@ class ReportController extends Controller
                 'ip_address' => $request->ip()
             ]);
 
+            // Log bug report submission
+            $this->logActivity('bug_report', 'Bug report submitted', 'system', [
+                'report_id' => $report->id,
+                'title' => $request->title,
+                'category' => $request->category,
+                'priority' => $request->priority
+            ]);
+
             return redirect()->back()->with('success', 'Bug report submitted successfully! We will investigate and resolve it soon.');
 
         } catch (\Exception $e) {

@@ -1203,6 +1203,107 @@ class LagacyNinController extends Controller
     }
 
     /**
+     * Format birth date to human-readable format with short capital month
+     */
+    private function formatBirthDate($birthDate)
+    {
+        try {
+            // Try to parse the date
+            $date = null;
+            
+            // Handle various date formats
+            if (is_string($birthDate)) {
+                // Try common date formats
+                $formats = ['Y-m-d', 'd/m/Y', 'd-m-Y', 'm/d/Y', 'Y/m/d', 'F d, Y', 'M d, Y'];
+                
+                foreach ($formats as $format) {
+                    try {
+                        $date = \Carbon\Carbon::createFromFormat($format, $birthDate);
+                        break;
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+                
+                // If still not parsed, try Carbon's flexible parsing
+                if (!$date) {
+                    try {
+                        $date = \Carbon\Carbon::parse($birthDate);
+                    } catch (\Exception $e) {
+                        // If all parsing fails, return as-is but ensure month is in capital short form
+                        return $this->ensureCapitalShortMonth($birthDate);
+                    }
+                }
+            } else {
+                // If it's already a DateTime object or similar
+                try {
+                    $date = \Carbon\Carbon::parse($birthDate);
+                } catch (\Exception $e) {
+                    return '01 JAN 1990'; // fallback
+                }
+            }
+            
+            // Format as DD MON YYYY (e.g., 15 JAN 1990)
+            return $date->format('d M Y');
+            
+        } catch (\Exception $e) {
+            return '01 JAN 1990'; // fallback
+        }
+    }
+    
+    /**
+     * Ensure month is in short capital form
+     */
+    private function ensureCapitalShortMonth($dateString)
+    {
+        // Replace various month formats with short capital form
+        $monthReplacements = [
+            'january' => 'JAN',
+            'february' => 'FEB',
+            'march' => 'MAR',
+            'april' => 'APR',
+            'may' => 'MAY',
+            'june' => 'JUN',
+            'july' => 'JUL',
+            'august' => 'AUG',
+            'september' => 'SEP',
+            'october' => 'OCT',
+            'november' => 'NOV',
+            'december' => 'DEC',
+            'jan' => 'JAN',
+            'feb' => 'FEB',
+            'mar' => 'MAR',
+            'apr' => 'APR',
+            'jun' => 'JUN',
+            'jul' => 'JUL',
+            'aug' => 'AUG',
+            'sep' => 'SEP',
+            'oct' => 'OCT',
+            'nov' => 'NOV',
+            'dec' => 'DEC',
+            '01' => 'JAN',
+            '02' => 'FEB',
+            '03' => 'MAR',
+            '04' => 'APR',
+            '05' => 'MAY',
+            '06' => 'JUN',
+            '07' => 'JUL',
+            '08' => 'AUG',
+            '09' => 'SEP',
+            '10' => 'OCT',
+            '11' => 'NOV',
+            '12' => 'DEC'
+        ];
+        
+        // Replace month names/numbers with short capital form
+        foreach ($monthReplacements as $search => $replace) {
+            $dateString = preg_replace('/\b' . $search . '\b/i', $replace, $dateString);
+        }
+        
+        return $dateString;
+    }
+
+    /**
      * Get Plastic Card PDF HTML template
      */
     private function getPlasticCardHTML($data, $ninRecord)
@@ -1216,7 +1317,7 @@ class LagacyNinController extends Controller
         $firstName = $data['firstName'] ?? $data['firstname'] ?? 'JOHN';
         $middleName = $data['middleName'] ?? $data['middlename'] ?? 'SMITH';
         $gender = $data['gender'] ?? 'M';
-        $birthDate = $data['dateOfBirth'] ?? $data['birthdate'] ?? $data['birth_date'] ?? '01 JAN 1990';
+        $birthDate = $this->formatBirthDate($data['dateOfBirth'] ?? $data['birthdate'] ?? $data['birth_date'] ?? '01 JAN 1990');
         $issueDate = now()->format('d M Y');
 
         $genderNewValue='';
@@ -1396,39 +1497,60 @@ class LagacyNinController extends Controller
         }
 
         .nin-plastic-data .surname {
+            position: absolute;
+            top: -65px;
+            left: 5px;
             font-size: 16px;
             font-weight: 400;
-            transform: translatey(-60px);
-            margin-left: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
         }
 
         .nin-plastic-data .given_names {
+            position: absolute;
+            top: -5px;
+            left: 5px;
             font-size: 14px;
             font-weight: 400;
-            transform: translatey(-5px);
-            margin-left: -53px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px;
         }
 
         .nin-plastic-data > .date_and_sex{
-            display: inline-flex;
-            gap: 80px;
-            transform: translatey(55px);
-            margin-left: -125.5px;
+            position: absolute;
+            top: 49px;
+            left: 5px;
+            display: flex;
+            justify-content: space-between;
+            width: 400px;
         }
 
-        .nin-plastic-data > .date_and_sex > .birth_date,
-        .nin-plastic-data > .date_and_sex > .gender,
-        .nin-plastic-data > .date_and_sex > .issue-date {
+        .nin-plastic-data > .date_and_sex > .birth_date {
+            position: absolute;
+            top: 0;
+            left: 0;
             font-size: 14px;
             font-weight: 400;
         }
 
         .nin-plastic-data > .date_and_sex > .gender{
-            margin-left: 122px;
+            position: absolute;
+            top: 0;
+            left: 193px;
+            font-size: 14px;
+            font-weight: 400;
         }
 
         .nin-plastic-data > .date_and_sex > .issue-date{
-            margin-left: 84px;
+            position: absolute;
+            top: 0;
+            left: 286px;
+            font-size: 14px;
+            font-weight: 400;
         }
 
         .qr-code-area {

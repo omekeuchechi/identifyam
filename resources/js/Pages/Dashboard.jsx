@@ -9,11 +9,15 @@ import registerBusiness from '../../assets/img/register_business.png';
 import studyAbroadImage from '../../assets/img/study_abroad.png';
 import secureQuestionImage from '../../assets/img/secure_question.png';
 
+// responsiveness for dashboard who ever will read this code
+import "../../css/dashboardRes.css";
+
 
 export default function Dashboard({ auth }) {
         const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
         const [recentActivities, setRecentActivities] = useState([]);
         const [loading, setLoading] = useState(true);
+        const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
         // Fetch user activities on component mount
         useEffect(() => {
@@ -96,8 +100,11 @@ export default function Dashboard({ auth }) {
 
             <div className="dashboard-layout">
 
+                {/* Mobile Menu Overlay */}
+                <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href="/" className="sidebar-logo">
                         <div className="logo-image">
                             <img src={logoImage} alt="" />
@@ -106,16 +113,16 @@ export default function Dashboard({ auth }) {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <a className="active" href="dashboard"><i className="fas fa-home"></i>Dashboard</a>
-                        <a href="lagacy-nin"><i className="fas fa-id-card"></i> NIN Services</a>
-                        <a href="exam-cards"><i className="fas fa-credit-card"></i> Exam Cards</a>
+                        <a className="active" href="dashboard" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-home"></i>Dashboard</a>
+                        <a href="lagacy-nin" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href="exam-cards" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-credit-card"></i> Exam Cards</a>
                         {/* <a><i className="fas fa-building"></i> CAC Registration</a> */}
                         {/* <a><i className="fas fa-graduation-cap"></i> Study Abroad</a> */}
                         <a><i className="fas fa-wallet"></i> Wallet</a>
-                        <a href={route('history')}><i className="fas fa-history"></i> History</a>
-                        <a href={route('settings')}><i className="fas fa-cog"></i> Settings</a>
+                        <a href={route('history')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-history"></i> History</a>
+                        <a href={route('settings')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-cog"></i> Settings</a>
 
-                        <button onClick={handleLogout} style={{
+                        <button onClick={(e) => { e.preventDefault(); handleLogout(e); }} style={{
                             padding: '15px 20px',
                             backgroundColor: 'red',
                             color: '#fff',
@@ -133,7 +140,12 @@ export default function Dashboard({ auth }) {
 
                     {/* Topbar */}
                     <header className="topbar">
-                        <h3>Dashboard</h3>
+                        <div className="topbar-left">
+                            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                                <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                            </button>
+                            <h3>Dashboard</h3>
+                        </div>
 
                         <div className="topbar-right">
                             <span className="notification"><i className="fas fa-bell"></i></span>
@@ -160,7 +172,7 @@ export default function Dashboard({ auth }) {
                         <div className="wallet-card">
                             <div>
                                 <h4>Wallet Balance</h4>
-                                <p>Account: 2087654321 | GTBank</p>
+                                <p>Paystack</p>
                                 <h2>{auth.user.walletAmount || 0}</h2>
                             </div>
 
@@ -227,14 +239,14 @@ export default function Dashboard({ auth }) {
                                     ) : recentActivities.length > 0 ? (
                                         recentActivities.map((activity, index) => (
                                             <tr key={index}>
-                                                <td>{activity.service}</td>
-                                                <td>{activity.date}</td>
-                                                <td>
+                                                <td data-label="Service">{activity.service}</td>
+                                                <td data-label="Date">{activity.date}</td>
+                                                <td data-label="Status">
                                                     <span className={`badge ${activity.status}`}>
                                                         {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                                                     </span>
                                                 </td>
-                                                <td>{activity.action}</td>
+                                                <td data-label="Action">{activity.action}</td>
                                             </tr>
                                         ))
                                     ) : (
@@ -262,7 +274,7 @@ export default function Dashboard({ auth }) {
 
                     </div>
                 </div>
-            </div>
+            </div>           
         </>
     );
 }

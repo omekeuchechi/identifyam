@@ -315,6 +315,16 @@ class ExamCardController extends Controller
                     'cards_count' => is_array($responseData['cards']) ? count($responseData['cards']) : 0
                 ]);
 
+                // Log exam card purchase to activity log
+                $this->logActivity('exam_card_purchase', 'Exam card purchased', 'exam', [
+                    'purchase_id' => $purchase->id,
+                    'reference' => $purchase->reference,
+                    'card_type_id' => $request->card_type_id,
+                    'quantity' => $request->quantity,
+                    'amount' => $purchaseAmount,
+                    'card_name' => $purchase->card_name
+                ]);
+
                 return response()->json([
                     'data' => $responseData,
                     'status' => 200
@@ -443,6 +453,14 @@ class ExamCardController extends Controller
             $this->logExamCard('INFO', 'PDF generated successfully', [
                 'user_id' => Auth::id(),
                 'reference' => $reference,
+                'pdf_size' => strlen($pdfContent)
+            ]);
+            
+            // Log PDF download activity
+            $this->logActivity('exam_card_download', 'Exam card PDF downloaded', 'exam', [
+                'purchase_id' => $purchase->id,
+                'reference' => $reference,
+                'card_name' => $purchase->card_name,
                 'pdf_size' => strlen($pdfContent)
             ]);
             

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { usePage, Head, Link } from '@inertiajs/react';
 
+import "../../css/dashboardRes.css";
+import "../../css/lagacyNinRes.css";
+
 const LagacyNin = ({ auth }) => {
     const { props } = usePage();
     const [formData, setFormData] = useState({
@@ -17,6 +20,7 @@ const LagacyNin = ({ auth }) => {
     const [error, setError] = useState('');
     const [pdfDownloading, setPdfDownloading] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState('slip');
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Keep session alive every 5 minutes
     useEffect(() => {
@@ -524,8 +528,11 @@ const LagacyNin = ({ auth }) => {
             <Head title="Lagacy NIN Verification" />
 
             <div className="dashboard-layout">
+                {/* Mobile Menu Overlay */}
+                <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                         </div>
@@ -533,22 +540,22 @@ const LagacyNin = ({ auth }) => {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('dashboard')} className="sidebar-link">
+                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href="/lagacy-nin" className="sidebar-link active">
+                        <Link href="/lagacy-nin" className="sidebar-link active" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-history"></i>NIN Service
                         </Link>
-                        <Link href={route('exam.cards')} className="sidebar-link">
+                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href={route('funding')} className="sidebar-link">
+                        <Link href={route('funding')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="history" className="sidebar-link">
+                        <Link href="history" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href={route('settings')} className="sidebar-link">
+                        <Link href={route('settings')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>
@@ -558,7 +565,12 @@ const LagacyNin = ({ auth }) => {
                 <div className="dashboard-main">
                     {/* Topbar */}
                     <header className="topbar">
-                        <h3>Lagacy NIN Verification</h3>
+                        <div className="topbar-left">
+                            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                                <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                            </button>
+                            <h3>Lagacy NIN Verification</h3>
+                        </div>
 
                         <div className="topbar-right">
                             <span className="notification"><i className="fas fa-bell"></i></span>

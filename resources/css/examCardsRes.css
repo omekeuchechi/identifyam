@@ -1,0 +1,155 @@
+/* Exam Cards Page - Responsive Styles */
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .card-item {
+        padding: 15px;
+    }
+
+    .card-header h5 {
+        font-size: 16px;
+    }
+
+    .card-body .price {
+        font-size: 18px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .section-header button {
+        width: 100%;
+    }
+
+    .purchase-form {
+        padding: 20px;
+    }
+
+    .purchase-form-container {
+        margin-top: 20px;
+    }
+
+    .history-table table {
+        font-size: 13px;
+    }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .card-item {
+        padding: 15px;
+    }
+
+    .card-header h5 {
+        font-size: 15px;
+    }
+
+    .card-body .price {
+        font-size: 16px;
+    }
+
+    .section-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .section-header h4 {
+        font-size: 18px;
+    }
+
+    .purchase-form {
+        padding: 15px;
+    }
+
+    .purchase-form-container {
+        margin-top: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .form-actions button {
+        width: 100%;
+    }
+
+    .history-table table {
+        font-size: 12px;
+    }
+
+    .history-table table thead {
+        display: none;
+    }
+
+    .history-table table tbody {
+        display: block;
+    }
+
+    .history-table table tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 15px;
+    }
+
+    .history-table table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border: none;
+    }
+
+    .history-table table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #666;
+    }
+
+    .download-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .card-header h5 {
+        font-size: 14px;
+    }
+
+    .card-body .price {
+        font-size: 15px;
+    }
+
+    .section-header h4 {
+        font-size: 16px;
+    }
+
+    .purchase-form {
+        padding: 12px;
+    }
+
+    .form-input {
+        font-size: 14px;
+    }
+}

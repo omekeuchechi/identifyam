@@ -171,7 +171,9 @@ class HistoryController extends Controller
             'admin_action' => 'Admin action performed',
             'cache_clear' => 'Cache cleared',
             'email_verification' => 'Email verified',
-            'google_login' => 'Google login successful'
+            'google_login' => 'Google login successful',
+            'exam_card_purchase' => 'Exam card purchased',
+            'exam_card_download' => 'Exam card PDF downloaded'
         ];
 
         return $descriptions[$action] ?? 'Unknown action';

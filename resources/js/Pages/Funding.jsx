@@ -2,6 +2,9 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
 
+import "../../css/dashboardRes.css";
+import "../../css/fundingRes.css";
+
 export default function Funding({ auth }) {
     const [balance, setBalance] = useState(0);
     const [transactions, setTransactions] = useState([]);
@@ -9,6 +12,7 @@ export default function Funding({ auth }) {
     const [showTransferForm, setShowTransferForm] = useState(false);
     const [banks, setBanks] = useState([]);
     const [showBalance, setShowBalance] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const { data, setData, post, processing } = useForm({
         amount: '',
@@ -110,8 +114,11 @@ export default function Funding({ auth }) {
             <Head title="Wallet Funding" />
 
             <div className="dashboard-layout">
+                {/* Mobile Menu Overlay */}
+                <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                             <img src="/assets/svg/shield.svg" alt="" />
@@ -120,22 +127,22 @@ export default function Funding({ auth }) {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('dashboard')} className="sidebar-link">
+                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href="lagacy-nin" className="sidebar-link">
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-id-card"></i> NIN Services
                         </Link>
-                        <Link href={route('exam.cards')} className="sidebar-link">
+                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href={route('funding')} className="sidebar-link active">
+                        <Link href={route('funding')} className="sidebar-link active" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="history" className="sidebar-link">
+                        <Link href="history" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="settings" className="sidebar-link">
+                        <Link href="settings" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>
@@ -145,7 +152,12 @@ export default function Funding({ auth }) {
                 <div className="dashboard-main">
                     {/* Topbar */}
                     <header className="topbar">
-                        <h3>Wallet Funding</h3>
+                        <div className="topbar-left">
+                            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                                <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                            </button>
+                            <h3>Wallet Funding</h3>
+                        </div>
 
                         <div className="topbar-right">
                             <span className="notification"><i className="fas fa-bell"></i></span>

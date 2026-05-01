@@ -1,6 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 
+import "../../css/dashboardRes.css";
+import "../../css/examCardsRes.css";
+
 export default function ExamCards({ auth }) {
     const [availableCards, setAvailableCards] = useState([]);
     const [userPurchases, setUserPurchases] = useState([]);
@@ -12,6 +15,7 @@ export default function ExamCards({ auth }) {
         quantity: 1
     });
     const [purchaseLoading, setPurchaseLoading] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Fetch available cards on component mount
     useEffect(() => {
@@ -210,8 +214,11 @@ export default function ExamCards({ auth }) {
             <Head title="Exam Cards" />
 
             <div className="dashboard-layout">
+                {/* Mobile Menu Overlay */}
+                <div className={`mobile-menu-overlay ${mobileMenuOpen ? 'active' : ''}`} onClick={() => setMobileMenuOpen(false)}></div>
+
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href='/' className="sidebar-logo">
                         <div className="logo-image">
                             <img src="/assets/svg/shield.svg" alt="" />
@@ -220,22 +227,22 @@ export default function ExamCards({ auth }) {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('dashboard')} className="sidebar-link">
+                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href="lagacy-nin" className="sidebar-link">
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-id-card"></i> NIN Services
                         </Link>
-                        <Link href={route('exam.cards')} className="sidebar-link active">
+                        <Link href={route('exam.cards')} className="sidebar-link active" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href={route('funding')} className="sidebar-link">
+                        <Link href={route('funding')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="history" className="sidebar-link">
+                        <Link href="history" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="settings" className="sidebar-link">
+                        <Link href="settings" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>
@@ -245,7 +252,12 @@ export default function ExamCards({ auth }) {
                 <div className="dashboard-main">
                     {/* Topbar */}
                     <header className="topbar">
-                        <h3>Exam Cards</h3>
+                        <div className="topbar-left">
+                            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                                <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                            </button>
+                            <h3>Exam Cards</h3>
+                        </div>
 
                         <div className="topbar-right">
                             <span className="notification"><i className="fas fa-bell"></i></span>
@@ -408,19 +420,19 @@ export default function ExamCards({ auth }) {
                                         <tbody>
                                             {userPurchases.map((purchase) => (
                                                 <tr key={purchase.id}>
-                                                    <td>{purchase.card_name}</td>
-                                                    <td>{purchase.quantity}</td>
-                                                    <td>{formatCurrency(purchase.amount)}</td>
-                                                    <td>
+                                                    <td data-label="Card Name">{purchase.card_name}</td>
+                                                    <td data-label="Quantity">{purchase.quantity}</td>
+                                                    <td data-label="Amount">{formatCurrency(purchase.amount)}</td>
+                                                    <td data-label="Status">
                                                         <span className={`status-badge ${purchase.status}`}>
                                                             {purchase.status}
                                                         </span>
                                                     </td>
-                                                    <td>{purchase.reference}</td>
-                                                    <td>{formatDate(purchase.created_at)}</td>
-                                                    <td>
+                                                    <td data-label="Reference">{purchase.reference}</td>
+                                                    <td data-label="Date">{formatDate(purchase.created_at)}</td>
+                                                    <td data-label="Action">
                                                         {purchase.status === 'success' && (
-                                                            <button 
+                                                            <button
                                                                 className="download-btn"
                                                                 onClick={() => handleDownloadPDF(purchase)}
                                                                 title="Download PDF"

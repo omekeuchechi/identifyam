@@ -1,0 +1,171 @@
+/* Funding Page - Responsive Styles */
+
+/* Tablet (1024px and below) */
+@media (max-width: 1024px) {
+    .wallet-card {
+        padding: 20px;
+    }
+
+    .wallet-card h2 {
+        font-size: 28px;
+    }
+
+    .option-card {
+        padding: 25px;
+    }
+
+    .option-card h3 {
+        font-size: 20px;
+    }
+
+    .funding-form {
+        padding: 20px;
+    }
+
+    .transaction-item {
+        padding: 15px;
+    }
+
+    .transaction-info h4 {
+        font-size: 15px;
+    }
+
+    .transaction-info p {
+        font-size: 13px;
+    }
+
+    .transaction-amount {
+        text-align: right;
+    }
+}
+
+/* Mobile (768px and below) */
+@media (max-width: 768px) {
+    .wallet-card {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .wallet-card h2 {
+        font-size: 24px;
+        justify-content: center !important;
+    }
+
+    .wallet-card h2 i {
+        font-size: 14px;
+    }
+
+    .option-card {
+        padding: 20px;
+    }
+
+    .option-card h3 {
+        font-size: 18px;
+    }
+
+    .option-card p {
+        font-size: 14px;
+    }
+
+    .funding-form {
+        padding: 15px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+    }
+
+    .form-group input {
+        font-size: 16px;
+        padding: 12px;
+    }
+
+    .funding-form button {
+        width: 100%;
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+
+    .transaction-history h3 {
+        font-size: 18px;
+    }
+
+    .transaction-item {
+        flex-direction: row;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .transaction-info {
+        width: 100%;
+    }
+
+    .transaction-info h4 {
+        font-size: 14px;
+    }
+
+    .transaction-info p {
+        font-size: 12px;
+    }
+
+    .transaction-amount {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+
+    .transaction-amount .amount {
+        font-size: 14px;
+    }
+
+    .transaction-amount .status {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
+
+    .no-transactions {
+        font-size: 14px;
+        padding: 20px;
+        text-align: center;
+    }
+}
+
+/* Small Mobile (480px and below) */
+@media (max-width: 480px) {
+    .wallet-card h2 {
+        font-size: 20px;
+    }
+
+    .option-card h3 {
+        font-size: 16px;
+    }
+
+    .option-card p {
+        font-size: 13px;
+    }
+
+    .funding-form {
+        padding: 12px;
+    }
+
+    .form-group input {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .transaction-info h4 {
+        font-size: 13px;
+    }
+
+    .transaction-amount .amount {
+        font-size: 13px;
+    }
+}
