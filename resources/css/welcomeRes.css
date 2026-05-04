@@ -1,0 +1,106 @@
+.mobile-section {
+    display: none;
+}
+
+@media (max-width: 780px) {
+    .header-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .header-content>.logo {
+        display: none;
+    }
+
+    .mobile-section {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 40px;
+    }
+
+    .mobile-menu-toggle {
+        display: block;
+    }
+
+    .nav {
+        display: none;
+    }
+
+    .nav.nav-open {
+        display: block;
+        position: relative;
+        top: -10px;
+        border-top: 1px solid green;
+        border-bottom: 1px solid green;
+        background-color: #fff;
+        width: 100%;
+        z-index: 1000;
+        left: 0;
+    }
+
+    .hero-content{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .hero-image{
+        display: none;
+    }
+
+    .how-it-works > .container > .section-header > h2{
+        margin: 0 auto;
+    }
+
+    .services{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .services > .container{
+        padding: 0;
+    }
+
+    .services-grid{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .service-card{
+        border: none !important;
+    }
+
+    .service-icon{
+        display: inline-flex;
+        padding: 0;
+        width: fit-content;
+    }
+
+    .service-icon > span{
+        font-size: 1.1rem !important;
+    }
+
+    .contact-options{
+        flex-direction: row;
+        width: 100%;
+        gap: -20px !important;
+    }
+
+    .why-grid{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .footer-content{
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contact-info > li{
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+}

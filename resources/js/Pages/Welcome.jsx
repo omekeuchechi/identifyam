@@ -2,6 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import '../../css/home.css'
 import '../../css/custom.css'
+import '../../css/welcomeRes.css'
 
 // image imporsts
 import logo from '../../assets/svg/identifyam_logo.svg';
@@ -115,21 +116,30 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             }} />
                             IdentifyAM
                         </Link>
-                        
-                        {/* Mobile Menu Toggle */}
-                        <button 
-                            className="mobile-menu-toggle" 
-                            onClick={toggleMobileMenu}
-                            aria-label="Toggle navigation menu"
-                        >
-                            <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
-                        </button>
-                        
+
+                        <div className="mobile-section">
+                            <Link href="/" className="logo">
+                                <img src={logo} alt="IdentifyAM" loading="lazy" style={{
+                                    background: '#059669',
+                                    padding: '10px',
+                                    borderRadius: '5px'
+                                }} />
+                                IdentifyAM
+                            </Link>
+                            {/* Mobile Menu Toggle */}
+                            <button
+                                className="mobile-menu-toggle"
+                                onClick={toggleMobileMenu}
+                                aria-label="Toggle navigation menu"
+                            >
+                                <i className={`fas ${isMobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
+                            </button>
+                        </div>
+
+
                         <nav className={`nav ${isMobileMenuOpen ? 'nav-open' : ''}`}>
                             <ul className="nav-links">
                                 <li><a href="#home" onClick={(e) => { scrollToSection(e, '#home'); setIsMobileMenuOpen(false); }}>NIN Services</a></li>
-                                <li><a href="#services" onClick={(e) => { scrollToSection(e, '#services'); setIsMobileMenuOpen(false); }}>CAC Registration</a></li>
-                                <li><a href="#about" onClick={(e) => { scrollToSection(e, '#about'); setIsMobileMenuOpen(false); }}>Education Travel</a></li>
                                 <li><a href="#contact" onClick={(e) => { scrollToSection(e, '#contact'); setIsMobileMenuOpen(false); }}>Contact</a></li>
                                 {auth.user ? (
                                     auth.user.isAdmin ? (
@@ -159,10 +169,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <p className="fade-in-scroll">Lost your NIN slip? Get it retrieved quickly with secure and
                                 professional support</p>
                             <div className="hero-buttons fade-in-scroll">
-                                <Link href={route('login')} className="btn-get-started">
+                                <a href="login" className="btn-get-started">
                                     <img src={logo} alt="IdentifyAM" loading="lazy" />
                                     <span>Get Your NIN Slip</span>
-                                </Link>
+                                </a>
                             </div>
                             <div className="hero-features fade-in-scroll">
                                 <div className="hero-feature fade-in-scroll">
@@ -255,7 +265,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 </a>
                                 <a href="#" className="contact-btn chat fade-in-scroll">
                                     <img src={liveChatIcon} alt="Live Chat" loading="lazy" />
-                                    Live Chat
+                                    Chat
                                 </a>
                             </div>
                         </div>
@@ -525,7 +535,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             <section className="cta fade-in-scroll">
                 <div className="container">
                     <h2 className='fade-in-scroll'>Don't Delay. Retrieve Your NIN Slip Today.</h2>
-                    <a href="#services" onClick={(e) => scrollToSection(e, '#services')} className="btn-primary fade-in-scroll"><img src={greenShieldIcon} alt="" /> Get Your NIN Slip</a>
+                    <a href="/lagacy-nin" className="btn-primary fade-in-scroll"><img src={greenShieldIcon} alt="" /> Get Your NIN Slip</a>
                 </div>
             </section>
 

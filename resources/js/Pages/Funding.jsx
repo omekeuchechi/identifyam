@@ -238,7 +238,8 @@ export default function Funding({ auth }) {
                             <div className="transactions-list">
                                 {transactions.length > 0 ? (
                                     transactions.slice(0, 10).map(transaction => (
-                                        <div key={transaction.id} className={`transaction-item ${transaction.status}`}>
+                                        <div key={transaction.id} className={`transaction-item $
+                                        {transaction.status}`}>
                                             <div className="transaction-info">
                                                 <h4>{transaction.description || transaction.type}</h4>
                                                 <p>{new Date(transaction.created_at).toLocaleDateString()}</p>
