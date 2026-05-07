@@ -57,8 +57,8 @@ const Settings = ({ auth }) => {
                         <a href={route('dashboard')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-home"></i>Dashboard</a>
                         <a href="lagacy-nin" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-id-card"></i> NIN Services</a>
                         <a href={route('exam.cards')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-credit-card"></i> Exam Cards</a>
-                        <a><i className="fas fa-building"></i> CAC Registration</a>
-                        <a><i className="fas fa-graduation-cap"></i> Study Abroad</a>
+                        {/* <a><i className="fas fa-building"></i> CAC Registration</a> */}
+                        {/* <a><i className="fas fa-graduation-cap"></i> Study Abroad</a> */}
                         <a href={route('funding')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-wallet"></i> Wallet</a>
                         <a href='history' onClick={() => setMobileMenuOpen(false)}><i className="fas fa-history"></i> History</a>
                         <a href={route('settings')} className="active" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-cog"></i> Settings</a>

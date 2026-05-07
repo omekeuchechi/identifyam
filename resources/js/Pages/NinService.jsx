@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
+import logoImage from '../../assets/svg/shield.svg';
 
 export default function NinService({ auth }) {
     const [searchType, setSearchType] = useState('nin');
@@ -298,8 +299,7 @@ export default function NinService({ auth }) {
                 {/* Sidebar */}
                 <aside className="sidebar">
                     <div className="sidebar-logo">
-                        <div className="logo-image">
-                    </div>
+                        <img src={logoImage} className="logo-image" />
                     <span>IDENTIFYAM</span>
                 </div>
 

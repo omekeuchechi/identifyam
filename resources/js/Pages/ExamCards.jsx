@@ -1,8 +1,11 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
+import logoImage from '../../assets/svg/shield.svg';
 
 import "../../css/dashboardRes.css";
 import "../../css/examCardsRes.css";
+
+import {addActivity, activityTypes } from '../utils/activityTracker';
 
 export default function ExamCards({ auth }) {
     const [availableCards, setAvailableCards] = useState([]);
@@ -16,6 +19,7 @@ export default function ExamCards({ auth }) {
     });
     const [purchaseLoading, setPurchaseLoading] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [expandedCards, setExpandedCards] = useState(new Set());
 
     // Fetch available cards on component mount
     useEffect(() => {
@@ -136,6 +140,23 @@ export default function ExamCards({ auth }) {
 
             // Check if purchase was actually successful based on API response
             if (data.status === 200 && !data.error) {
+                // Track scratch card purchase activity
+                const purchasedCard = availableCards.find(card => card.card_type_id === purchaseForm.card_type_id);
+                if (purchasedCard) {
+                    addActivity(
+                        activityTypes.BUY_SCRATCH_CARD,
+                        `Purchased ${purchasedCard.card_name}`,
+                        'completed',
+                        {
+                            cardName: purchasedCard.card_name,
+                            amount: (purchasedCard.unit_amount + 500) * purchaseForm.quantity,
+                            quantity: purchaseForm.quantity,
+                            card_type_id: purchaseForm.card_type_id,
+                            reference: data.reference || 'N/A'
+                        }
+                    );
+                }
+
                 // Refresh purchases
                 fetchUserPurchases();
                 // Reset form
@@ -169,6 +190,18 @@ export default function ExamCards({ auth }) {
         fetchAvailableCards();
     };
 
+    const toggleCardExpansion = (cardId) => {
+        setExpandedCards(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(cardId)) {
+                newSet.delete(cardId);
+            } else {
+                newSet.add(cardId);
+            }
+            return newSet;
+        });
+    };
+
     const formatCurrency = (amount) => {
         return new Intl.NumberFormat('en-NG', {
             style: 'currency',
@@ -187,6 +220,19 @@ export default function ExamCards({ auth }) {
             });
             
             if (response.ok) {
+                // Track PDF download activity
+                addActivity(
+                    activityTypes.DOWNLOAD_PDF,
+                    `Downloaded Exam Card PDF`,
+                    'completed',
+                    {
+                        documentType: 'Exam Card',
+                        reference: purchase.reference,
+                        card_name: purchase.card_name,
+                        download_time: new Date().toISOString()
+                    }
+                );
+
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -221,7 +267,7 @@ export default function ExamCards({ auth }) {
                 <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href='/' className="sidebar-logo">
                         <div className="logo-image">
-                            <img src="/assets/svg/shield.svg" alt="" />
+                            <img src={logoImage} alt="" />
                         </div>
                         <span>IDENTIFYAM</span>
                     </a>
@@ -260,9 +306,9 @@ export default function ExamCards({ auth }) {
                         </div>
 
                         <div className="topbar-right">
-                            <span className="notification"><i className="fas fa-bell"></i></span>
+                            {/* <span className="notification"><i className="fas fa-bell"></i></span> */}
                             <div className="user-profile">
-                                <img src="/assets/img/user_profile.png" alt="avatar" />
+                                {/* <img src="/assets/img/user_profile.png" alt="avatar" /> */}
                                 <span>{auth.user.name}</span>
                             </div>
                         </div>
@@ -270,7 +316,7 @@ export default function ExamCards({ auth }) {
 
                     {/* Page Content */}
                     <div className="dashboard-content">
-            <style jsx>{`
+            <style>{`
                 .download-btn {
                     background: #28a745;
                     color: white;
@@ -316,35 +362,43 @@ export default function ExamCards({ auth }) {
                                 <div className="cards-grid">
                                     {availableCards.map((card) => (
                                         <div key={card.card_type_id} className="card-item">
-                                            <div className="card-header">
-                                                <h5>{card.card_name}</h5>
-                                                <span className={`availability ${card.availability === 'In Stock' ? 'in-stock' : 'out-stock'}`}>
-                                                    {card.availability}
-                                                </span>
-                                            </div>
-                                            <div className="card-body">
-                                                <div className="price">
-                                                    {formatCurrency(card.unit_amount + 500)}
+                                            <div className="card-header" onClick={() => toggleCardExpansion(card.card_type_id)}>
+                                                <div className="card-header-left">
+                                                    <h5>{card.card_name}</h5>
+                                                    <span className={`availability ${card.availability === 'In Stock' ? 'in-stock' : 'out-stock'}`}>
+                                                        {card.availability}
+                                                    </span>
                                                 </div>
-                                                <div className="card-type-id">
-                                                    ID: {card.card_type_id}
+                                                <div className="chevron-icon">
+                                                    <i className={`fas fa-chevron-${expandedCards.has(card.card_type_id) ? 'up' : 'down'}`}></i>
                                                 </div>
                                             </div>
-                                            <div className="card-footer">
-                                                <button 
-                                                    className="purchase-btn"
-                                                    onClick={() => {
-                                                        setPurchaseForm({
-                                                        card_type_id: card.card_type_id,
-                                                        quantity: 1
-                                                    })
+                                            
+                                            <div className={`card-details ${expandedCards.has(card.card_type_id) ? 'expanded' : ''}`}>
+                                                <div className="card-body">
+                                                    <div className="price">
+                                                        {formatCurrency(card.unit_amount + 500)}
+                                                    </div>
+                                                    <div className="card-type-id">
+                                                        ID: {card.card_type_id}
+                                                    </div>
+                                                </div>
+                                                <div className="card-footer">
+                                                    <button 
+                                                        className="purchase-btn"
+                                                        onClick={() => {
+                                                            setPurchaseForm({
+                                                            card_type_id: card.card_type_id,
+                                                            quantity: 1
+                                                            })
 
-                                                    window.location.href = "#E-card";
-                                                }}
-                                                    disabled={card.availability !== 'In Stock'}
-                                                >
-                                                    Purchase
-                                                </button>
+                                                            window.location.href = "#E-card";
+                                                        }}
+                                                        disabled={card.availability !== 'In Stock'}
+                                                    >
+                                                        Purchase
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))}

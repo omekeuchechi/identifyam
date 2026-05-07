@@ -564,7 +564,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 .hero-text > p {
     font-size: 18px;
-    color: #64748b;
+    color: #1a365d;
     margin-bottom: 40px;
     line-height: 1.6;
 }
@@ -696,7 +696,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 .hero-feature > span {
     font-size: 14px;
-    color: #64748b;
+    color: #1a365d;
     font-weight: 500;
 }
 
@@ -1084,7 +1084,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 .section-header p {
     font-size: 20px;
-    color: #4B5563;
+    color: #1a365d;
 }
 
 .process-grid {
@@ -1132,7 +1132,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 .process-item p {
     font-size: 20px;
-    color: #4B5563;
+    color: #1a365d;
     line-height: 1.6;
 }
 
@@ -1146,7 +1146,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
     align-items: center;
     justify-content: center;
     padding: 20px;
-    gap: 40px;
+    gap: 30px;
 }
 
 .services > .container > .services-grid > .service-card {
@@ -1187,7 +1187,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 .services > .container > .services-grid > .service-card > p {
     font-size: 17px;
-    color: #4B5563;
+    color: #1a365d;
     line-height: 1.6;
     margin-bottom: 25px;
 }
@@ -1236,19 +1236,19 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 }
 
 .contact-btn.whatsapp {
-    color: #6B7280;
+    color: #1a365d;
 }
 
 .contact-btn.call {
-    color: #6B7280;
+    color: #1a365d;
 }
 
 .contact-btn.chat {
-    color: #6B7280;
+    color: #1a365d;
 }
 
 .contact-btn.email {
-    color: #6B7280;
+    color: #1a365d;
 }
 
 .contact-btn:hover {
@@ -1303,7 +1303,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 .why-item p {
     font-size: 14px;
-    color: #64748b;
+    color: #1a365d;
     line-height: 1.6;
 }
 

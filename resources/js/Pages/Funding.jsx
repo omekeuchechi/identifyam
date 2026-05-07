@@ -1,9 +1,12 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
+import logoImage from '../../assets/svg/shield.svg';
 
 import "../../css/dashboardRes.css";
 import "../../css/fundingRes.css";
+
+import { getRecentActivities, formatActivityDate, getActivityStatusClass, addActivity, activityTypes } from '../utils/activityTracker';
 
 export default function Funding({ auth }) {
     const [balance, setBalance] = useState(0);
@@ -121,7 +124,7 @@ export default function Funding({ auth }) {
                 <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href='/' className="sidebar-logo">
                         <div className="logo-image">
-                            <img src="/assets/svg/shield.svg" alt="" />
+                            <img src={logoImage} alt="" />
                         </div>
                         <span>IDENTIFYAM</span>
                     </a>
@@ -160,9 +163,9 @@ export default function Funding({ auth }) {
                         </div>
 
                         <div className="topbar-right">
-                            <span className="notification"><i className="fas fa-bell"></i></span>
+                            {/* <span className="notification"><i className="fas fa-bell"></i></span> */}
                             <div className="user-profile">
-                                <img src="/assets/img/user_profile.png" alt="avatar" />
+                                {/* <img src="/assets/img/user_profile.png" alt="avatar" /> */}
                                 <span>{auth.user.name}</span>
                             </div>
                         </div>

@@ -191,7 +191,7 @@ html, body {
 }
 
 .form-checkbox-label {
-    font-size: 14px;
+    font-size: 11px;
     color: #6b7280;
     cursor: pointer;
 }
@@ -259,7 +259,7 @@ html, body {
 }
 
 .forgot-password-link {
-    font-size: 14px;
+    font-size: 11px;
     color: #6b7280;
     text-decoration: none;
     transition: color 0.3s ease;
@@ -276,8 +276,8 @@ html, body {
         background: url("../assets/img/mobile_auth_overlay.png");
     }
     .auth-card {
-        padding: 30px 20px;
-        margin: 10px;
+        padding: 10px 10px;
+        margin: 0;
     }
     
     .auth-title {
@@ -301,6 +301,20 @@ html, body {
     .auth-subtitle {
         font-size: 20px;
     }
+
+    .auth-divider {
+    margin: 10px 0;
+}
+
+.auth-container {
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    overflow-y: scroll !important;
+    height: 100vh !important;
+    padding: 0 !important;
+}
 }
 
 
@@ -386,7 +400,7 @@ html, body {
     justify-content: center !important;
     text-decoration: none !important;
     gap: 12px !important;
-    margin-top: 16px !important;
+    margin-top: 5px !important;
 }
 
 .google-button:hover {
@@ -411,7 +425,7 @@ html, body {
 .auth-divider {
     display: flex;
     align-items: center;
-    margin: 24px 0;
+    margin: 20px 0;
     position: relative;
 }
 

@@ -43,7 +43,7 @@
 }
 
 /* Mobile (768px and below) */
-@media (max-width: 768px) {
+@media (max-width: 800px) {
     .cards-grid {
         grid-template-columns: 1fr;
         gap: 15px;
@@ -129,6 +129,80 @@
         padding: 6px 10px;
         font-size: 11px;
     }
+
+    /* Collapsible Card Styles for Mobile */
+
+    .exam-cards-container{
+        box-shadow: 0;
+        border: 0;
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+        padding: 0;
+        background-color: red !important;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .card-header h5 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+        padding-left: 2px;
+        margin: 0;
+    }
+
+    .chevron-icon {
+        font-size: 14px;
+        color: #6b7280;
+        transition: transform 0.3s ease;
+        padding: 5px;
+    }
+
+    .chevron-icon i {
+        transition: transform 0.3s ease;
+    }
+
+    .availability {
+        padding: 0;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .availability.in-stock {
+        background: transparent;
+        color: #fff;
+    }
+
+    .availability.out-stock {
+        background: #fef2f2;
+        color: #dc2626;
+    }
+
+    .card-details {
+        overflow: hidden;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    }
+
+    .card-details.expanded {
+        max-height: 200px;
+        opacity: 1;
+        margin-top: 10px;
+    }
 }
 
 /* Small Mobile (480px and below) */
@@ -152,4 +226,9 @@
     .form-input {
         font-size: 14px;
     }
+}
+
+
+.chevron-icon{
+    display: none;
 }

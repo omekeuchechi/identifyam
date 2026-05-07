@@ -4,6 +4,10 @@ import { usePage, Head, Link } from '@inertiajs/react';
 import "../../css/dashboardRes.css";
 import "../../css/lagacyNinRes.css";
 
+import logoImage from '../../assets/svg/shield.svg';
+
+import {addActivity, activityTypes } from '../utils/activityTracker';
+
 const LagacyNin = ({ auth }) => {
     const { props } = usePage();
     const [formData, setFormData] = useState({
@@ -109,6 +113,19 @@ const LagacyNin = ({ auth }) => {
             // Check if response is successful
             if (response.ok && data) {
                 setResult(data);
+                
+                // Track NIN verification activity
+                addActivity(
+                    activityTypes.LAGACY_NIN,
+                    'NIN verification completed',
+                    'completed',
+                    {
+                        nin: formData.nin || formData.phone,
+                        method: formData.nin ? 'NIN Number' : 'Phone Number',
+                        timestamp: new Date().toISOString(),
+                        success: true
+                    }
+                );
             } else if (!response.ok) {
                 const errorData = await response.json();
                 setError(errorData.error || 'Search failed');
@@ -534,8 +551,7 @@ const LagacyNin = ({ auth }) => {
                 {/* Sidebar */}
                 <aside className={`sidebar ${mobileMenuOpen ? 'mobile-open' : ''}`}>
                     <a href='/' className="sidebar-logo">
-                        <div className="logo-image">
-                        </div>
+                        <img src={logoImage} className="logo-image" />
                         <span>IDENTIFYAM</span>
                     </a>
 
@@ -573,9 +589,9 @@ const LagacyNin = ({ auth }) => {
                         </div>
 
                         <div className="topbar-right">
-                            <span className="notification"><i className="fas fa-bell"></i></span>
+                            {/* <span className="notification"><i className="fas fa-bell"></i></span> */}
                             <div className="user-profile">
-                                <img src="/assets/img/user_profile.png" alt="avatar" />
+                                {/* <img src="/assets/img/user_profile.png" alt="avatar" /> */}
                                 <span>{auth.user.name}</span>
                             </div>
                         </div>

@@ -11,6 +11,7 @@ import secureQuestionImage from '../../assets/img/secure_question.png';
 
 // responsiveness for dashboard who ever will read this code
 import "../../css/dashboardRes.css";
+import { getRecentActivities, formatActivityDate, getActivityStatusClass, addActivity, activityTypes } from '../utils/activityTracker';
 
 
 export default function Dashboard({ auth }) {
@@ -19,32 +20,27 @@ export default function Dashboard({ auth }) {
         const [loading, setLoading] = useState(true);
         const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-        // Fetch user activities on component mount
+        // Load user activities from local storage on component mount
         useEffect(() => {
-            fetchRecentActivities();
+            loadRecentActivities();
         }, []);
 
-        const fetchRecentActivities = async () => {
+        const loadRecentActivities = () => {
             try {
-                const response = await fetch('/api/user/history');
-                const data = await response.json();
-                if (data.activities) {
-                    // Map activities to table format and take only the first 3
-                    const mappedActivities = data.activities.slice(0, 3).map(activity => ({
-                        service: activity.description || activity.action,
-                        date: new Date(activity.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                        }),
-                        status: getActivityStatus(activity.type),
-                        action: 'View Details'
-                    }));
-                    console.log(data);
-                    setRecentActivities(mappedActivities);
-                }
+                // Get activities from local storage
+                const activities = getRecentActivities(3);
+                
+                // Map activities to table format
+                const mappedActivities = activities.map(activity => ({
+                    service: activity.description,
+                    date: formatActivityDate(activity.timestamp),
+                    status: getActivityStatusClass(activity.status),
+                    action: 'View Details'
+                }));
+                
+                setRecentActivities(mappedActivities);
             } catch (error) {
-                console.error('Failed to fetch recent activities:', error);
+                console.error('Failed to load recent activities:', error);
             } finally {
                 setLoading(false);
             }
@@ -66,6 +62,14 @@ export default function Dashboard({ auth }) {
         const handleLogout = (e) => {
             e.preventDefault();
             if (showLogoutConfirm) {
+                // Track logout activity
+                addActivity(
+                    activityTypes.LOGOUT,
+                    'User logged out',
+                    'completed',
+                    { timestamp: new Date().toISOString() }
+                );
+
                 // Create and submit a form for POST request
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -93,6 +97,71 @@ export default function Dashboard({ auth }) {
                 setTimeout(() => setShowLogoutConfirm(false), 3000);
             }
         };
+
+        // Activity tracking functions for different user actions
+        const trackLagacyNinActivity = (details = {}) => {
+            addActivity(
+                activityTypes.LAGACY_NIN,
+                'NIN verification completed',
+                'completed',
+                { ...details, timestamp: new Date().toISOString() }
+            );
+        };
+
+        const trackWalletFundingActivity = (amount, reference, details = {}) => {
+            addActivity(
+                activityTypes.FUND_WALLET,
+                `Wallet funded with ${amount}`,
+                'completed',
+                { amount, reference, ...details, timestamp: new Date().toISOString() }
+            );
+        };
+
+        const trackScratchCardPurchase = (cardName, amount, details = {}) => {
+            addActivity(
+                activityTypes.BUY_SCRATCH_CARD,
+                `Purchased ${cardName}`,
+                'completed',
+                { cardName, amount, ...details, timestamp: new Date().toISOString() }
+            );
+        };
+
+        const trackBugReport = (title, category, details = {}) => {
+            addActivity(
+                activityTypes.REPORT_BUG,
+                `Bug report: ${title}`,
+                'completed',
+                { title, category, ...details, timestamp: new Date().toISOString() }
+            );
+        };
+
+        const trackProfileUpdate = (fields, details = {}) => {
+            addActivity(
+                activityTypes.UPDATE_PROFILE,
+                'Profile information updated',
+                'completed',
+                { fields, ...details, timestamp: new Date().toISOString() }
+            );
+        };
+
+        const trackPDFDownload = (documentType, reference, details = {}) => {
+            addActivity(
+                activityTypes.DOWNLOAD_PDF,
+                `Downloaded ${documentType}`,
+                'completed',
+                { documentType, reference, ...details, timestamp: new Date().toISOString() }
+            );
+        };
+
+        // Make functions globally available for other components to call
+        if (typeof window !== 'undefined') {
+            window.trackLagacyNinActivity = trackLagacyNinActivity;
+            window.trackWalletFundingActivity = trackWalletFundingActivity;
+            window.trackScratchCardPurchase = trackScratchCardPurchase;
+            window.trackBugReport = trackBugReport;
+            window.trackProfileUpdate = trackProfileUpdate;
+            window.trackPDFDownload = trackPDFDownload;
+        }
 
     return (
         <>
@@ -148,9 +217,9 @@ export default function Dashboard({ auth }) {
                         </div>
 
                         <div className="topbar-right">
-                            <span className="notification"><i className="fas fa-bell"></i></span>
+                            {/* <span className="notification"><i className="fas fa-bell"></i></span> */}
                             <div className="user-profile">
-                                <img src={defaultProfileImage} alt="avatar" />
+                                {/* <img src={defaultProfileImage} alt="avatar" /> */}
                                 <span>{auth.user.name}</span>
                             </div>
                         </div>
@@ -225,7 +294,7 @@ export default function Dashboard({ auth }) {
                                         <th>Service</th>
                                         <th>Date</th>
                                         <th>Status</th>
-                                        <th>Action</th>
+                                        {/* <th>Action</th> */}
                                     </tr>
                                 </thead>
 
@@ -246,7 +315,7 @@ export default function Dashboard({ auth }) {
                                                         {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
                                                     </span>
                                                 </td>
-                                                <td data-label="Action">{activity.action}</td>
+                                                {/* <td data-label="Action">{activity.action}</td> */}
                                             </tr>
                                         ))
                                     ) : (

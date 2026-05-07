@@ -2,7 +2,7 @@
     display: none;
 }
 
-@media (max-width: 780px) {
+@media (max-width: 800px) {
     .header-content {
         display: flex;
         flex-direction: column;
@@ -39,68 +39,107 @@
         left: 0;
     }
 
-    .hero-content{
+    .hero-content {
         display: flex;
         flex-direction: column;
     }
 
-    .hero-image{
+    .hero-image {
         display: none;
     }
 
-    .how-it-works > .container > .section-header > h2{
+    .btn-get-started {
+        padding: 10px 7px;
+        font-size: 14px !important;
+        gap: 2px;
+    }
+
+    .how-it-works>.container>.section-header>h2 {
         margin: 0 auto;
     }
 
-    .services{
+    .services {
         display: flex;
         flex-direction: column;
-    }
-
-    .services > .container{
         padding: 0;
     }
 
-    .services-grid{
+    .services>.container {
+        padding: 0;
+    }
+
+    .services-grid {
         display: flex;
         flex-direction: column;
     }
 
-    .service-card{
-        border: none !important;
-    }
+    .services > .container > .services-grid > .service-card {
+    width: 100%;
+    max-width: 310px;
+    /* height: 300px; */
+    border-radius: 16px;
+    padding: 20px;
+    transition: transform 0.4s ease;
+    border: none;
+}
 
-    .service-icon{
+    .service-icon {
         display: inline-flex;
         padding: 0;
         width: fit-content;
     }
 
-    .service-icon > span{
+    .service-icon>span {
         font-size: 1.1rem !important;
     }
 
-    .contact-options{
+    .contact-options {
         flex-direction: row;
+        align-items: center;
+        justify-content: center;
         width: 100%;
         gap: -20px !important;
     }
 
-    .why-grid{
+    .why-grid {
         display: flex;
         flex-direction: column;
     }
 
-    .footer-content{
+    .footer-content {
         display: flex;
         flex-direction: column;
     }
 
-    .contact-info > li{
+    .contact-info>li {
         flex-direction: row;
         align-items: center;
         justify-content: center;
     }
 
+    .services {
+        margin: 0;
+        width: 100%;
+    }
 
+
+}
+
+@media (max-width: 344px) {
+    .btn-get-started {
+        padding: 7px 6px;
+        font-size: 12px !important;
+        gap: 1px;
+    }
+}
+
+.section-header {
+    margin: 0 auto;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.section-header>h2 {
+    font-size: 1.5rem;
 }

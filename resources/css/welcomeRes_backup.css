@@ -228,15 +228,20 @@
         line-height: 1.5;
     }
 
+    .hero-flex-btn{
+        display: flex;
+        flex-direction: column !important;
+    }
+
     .hero-buttons {
         justify-content: center;
         margin-bottom: 30px;
     }
 
     .btn-get-started {
-        padding: 15px 25px;
-        font-size: 16px;
-        gap: 10px;
+        padding: 4px 6px;
+        font-size: 10px !important;
+        gap: 2px;
     }
 
     .btn-get-started img {
@@ -541,7 +546,7 @@
     }
 
     .btn-get-started {
-        padding: 12px 20px;
+        padding: 4px 6px;
         font-size: 14px;
         gap: 8px;
     }

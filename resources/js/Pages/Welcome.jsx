@@ -22,6 +22,18 @@ import instagramIcon from "../../assets/svg/instagram_icon.svg";
 import eIcon from "../../assets/svg/eicon.svg";
 import greenShieldIcon from "../../assets/svg/green_shield_icon.svg";
 
+// nin service svg
+import longSlipSvg from "../../assets/svg/file-svg.svg";
+import ninCardSvg from "../../assets/svg/id-card-svg.svg";
+import retriveLostNinSvg from "../../assets/img/r-card-svg.png";
+
+// Exam scratch card images
+import weacExamImg from "../../assets/img/waec-exam-card.png";
+import weacVerificationImg from "../../assets/img/weac-verification-pin.png";
+import necoVerificationImg from "../../assets/img/neco-verification-pin.png";
+import necoExamImg from "../../assets/img/neco-exam-card.jpg";
+import nabtebExamImg from "../../assets/img/NABTEB-exam-card.png";
+
 import downloadIcon from '../../assets/img/download_icon.png';
 import fileIcon from '../../assets/img/file.png';
 import gearIcon from '../../assets/img/gear.png';
@@ -139,7 +151,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
                         <nav className={`nav ${isMobileMenuOpen ? 'nav-open' : ''}`}>
                             <ul className="nav-links">
-                                <li><a href="#home" onClick={(e) => { scrollToSection(e, '#home'); setIsMobileMenuOpen(false); }}>NIN Services</a></li>
+                                <li><a href="/lagacy-nin" onClick={(e) => {setIsMobileMenuOpen(false); }}>NIN Services</a></li>
+                                <li><a href="/exam-cards" onClick={(e) => {setIsMobileMenuOpen(false); }}>Buy Scratch Card</a></li>
                                 <li><a href="#contact" onClick={(e) => { scrollToSection(e, '#contact'); setIsMobileMenuOpen(false); }}>Contact</a></li>
                                 {auth.user ? (
                                     auth.user.isAdmin ? (
@@ -165,14 +178,21 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     <div className="hero-content">
                         <div className="hero-text fade-in-scroll">
                             <h1 className="fade-in-scroll">Retrieve Your <span style={{ color: '#059669' }}>NIN
-                                Slip</span> Fast & Securely</h1>
-                            <p className="fade-in-scroll">Lost your NIN slip? Get it retrieved quickly with secure and
-                                professional support</p>
-                            <div className="hero-buttons fade-in-scroll">
-                                <a href="login" className="btn-get-started">
+                                Slip</span> and Buy <span style={{ color: '#059669'}}>Exam Scratch Cards</span></h1>
+                            <p className="fade-in-scroll">Lost your NIN slip? Get it retrieved quickly . Get Exam scratch Cards and check result</p>
+                            <div className="hero-flex-btn">
+                                <div className="hero-buttons fade-in-scroll">
+                                <a href="/lagacy-nin" className="btn-get-started">
                                     <img src={logo} alt="IdentifyAM" loading="lazy" />
                                     <span>Get Your NIN Slip</span>
                                 </a>
+                            </div>
+                            <div className="hero-buttons fade-in-scroll">
+                                <a href="/exam-cards" className="btn-get-started">
+                                    <img src={logo} alt="IdentifyAM" loading="lazy" />
+                                    <span>Buy Exam Scratch Card</span>
+                                </a>
+                            </div>
                             </div>
                             <div className="hero-features fade-in-scroll">
                                 <div className="hero-feature fade-in-scroll">
@@ -206,6 +226,50 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </div>
             </section>
 
+            <section className='nin-services fade-in-scroll'>
+                <div className="container">
+                    <div className="services-header">
+                        <h2 className="fade-in-scroll">Our NIN Services</h2>
+                        <p className="fade-in-scroll">Comprehensive NIN solutions for all your needs</p>
+                    </div>
+                    
+                    <div className="services-grid fade-in-scroll">
+                        <div className="service-item fade-in-scroll">
+                            <div className="nin-service-icon fade-in-scroll">
+                                <img src={longSlipSvg} alt="Long Slip" loading="lazy" />
+                            </div>
+                            <div className="service-content fade-in-scroll">
+                                <h3 className='fade-in-scroll'>NIN Long Slip</h3>
+                                <p className='fade-in-scroll'>Get your complete NIN slip with detailed information for official purposes</p>
+                                <a href="/lagacy-nin" className="service-btn fade-in-scroll">Get Started</a>
+                            </div>
+                        </div>
+
+                        <div className="service-item fade-in-scroll">
+                            <div className="nin-service-icon fade-in-scroll">
+                                <img src={ninCardSvg} alt="NIN Card" loading="lazy" />
+                            </div>
+                            <div className="service-content fade-in-scroll">
+                                <h3 className='fade-in-scroll'>NIN Card</h3>
+                                <p className='fade-in-scroll'>Access your digital NIN card for quick verification and identification</p>
+                                <a href="/lagacy-nin" className="service-btn fade-in-scroll">Access Card</a>
+                            </div>
+                        </div>
+
+                        <div className="service-item fade-in-scroll">
+                            <div className="nin-service-icon fade-in-scroll">
+                                <img src={retriveLostNinSvg} alt="Retrieve Lost NIN" loading="lazy" />
+                            </div>
+                            <div className="service-content fade-in-scroll">
+                                <h3 className='fade-in-scroll'>Retrieve Lost NIN</h3>
+                                <p className='fade-in-scroll'>Recover your lost NIN slip quickly with our secure retrieval service</p>
+                                <a href="/lagacy-nin" className="service-btn fade-in-scroll">Retrieve Now</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* How It Works Section */}
             <section className="how-it-works fade-in-scroll" id="process">
                 <div className="container">
@@ -226,7 +290,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <img src={gearIcon} alt="Process & Retrieve" loading="lazy" />
                             </div>
                             <h3 className="fade-in-scroll">We Process & Retrieve</h3>
-                            <p className="fade-in-scroll">Our team securely processes your request and retrieves your NIN slip</p>
+                            <p className="fade-in-scroll">The Server securely processes your request and retrieves your NIN slip</p>
                         </div>
                         <div className="process-item fade-in-scroll">
                             <div className="process-icon fade-in-scroll">
@@ -234,6 +298,92 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             </div>
                             <h3 className="fade-in-scroll">Receive Your NIN Slip</h3>
                             <p className="fade-in-scroll">Get your official NIN slip delivered securely to your preferred method</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section className='exam-scratch-card fade-in-scroll'>
+                <div className="container">
+                    <div className="exam-header fade-in-scroll">
+                        <h2 className="fade-in-scroll">Exam Scratch Cards</h2>
+                        <p className="fade-in-scroll">Purchase authentic examination scratch cards for various exam bodies</p>
+                    </div>
+                    
+                    <div className="exam-cards-grid">
+                        <div className="exam-card-item fade-in-scroll">
+                            <div className="exam-card-image fade-in-scroll">
+                                <img src={weacExamImg} alt="WAEC Exam Card" loading="lazy" />
+                            </div>
+                            <div className="exam-card-content fade-in-scroll">
+                                <h3 className='fade-in-scroll'>WAEC Exam Card</h3>
+                                <p className='fade-in-scroll'>Original WAEC examination scratch card for result checking and verification</p>
+                                <div className="exam-price fade-in-scroll">
+                                    <span className="price-amount fade-in-scroll">₦3,840</span>
+                                    <span className="price-original fade-in-scroll">₦5,200</span>
+                                </div>
+                                <a href="/exam-cards" className="exam-btn fade-in-scroll">Purchase Now</a>
+                            </div>
+                        </div>
+
+                        <div className="exam-card-item fade-in-scroll">
+                            <div className="exam-card-image fade-in-scroll">
+                                <img src={weacVerificationImg} alt="WAEC Verification Pin" loading="lazy" />
+                            </div>
+                            <div className="exam-card-content fade-in-scroll">
+                                <h3 className='fade-in-scroll'>WAEC Verification Pin</h3>
+                                <p className='fade-in-scroll'>WAEC verification PIN for certificate verification and confirmation</p>
+                                <div className="exam-price fade-in-scroll">
+                                    <span className="price-amount fade-in-scroll">₦4,200</span>
+                                    <span className="price-original fade-in-scroll">₦4,700</span>
+                                </div>
+                                <a href="/exam-cards" className="exam-btn fade-in-scroll">Purchase Now</a>
+                            </div>
+                        </div>
+
+                        <div className="exam-card-item fade-in-scroll">
+                            <div className="exam-card-image fade-in-scroll">
+                                <img src={necoVerificationImg} alt="NECO Verification Pin" loading="lazy" />
+                            </div>
+                            <div className="exam-card-content fade-in-scroll">
+                                <h3>NECO Verification Pin</h3>
+                                <p>NECO verification PIN for result authentication and certificate verification</p>
+                                <div className="exam-price fade-in-scroll">
+                                    <span className="price-amount fade-in-scroll">₦6,200</span>
+                                    <span className="price-original fade-in-scroll">₦7,000</span>
+                                </div>
+                                <a href="/exam-cards" className="exam-btn fade-in-scroll">Purchase Now</a>
+                            </div>
+                        </div>
+
+                        <div className="exam-card-item fade-in-scroll">
+                            <div className="exam-card-image fade-in-scroll">
+                                <img src={necoExamImg} alt="NECO Exam Card" loading="lazy" />
+                            </div>
+                            <div className="exam-card-content fade-in-scroll">
+                                <h3 className='fade-in-scroll'>NECO Exam Card</h3>
+                                <p className='fade-in-scroll'>Original NECO examination scratch card for result checking and verification</p>
+                                <div className="exam-price fade-in-scroll">
+                                    <span className="price-amount fade-in-scroll">₦2,500</span>
+                                    <span className="price-original fade-in-scroll">₦3,000</span>
+                                </div>
+                                <a href="/exam-cards" className="exam-btn fade-in-scroll">Purchase Now</a>
+                            </div>
+                        </div>
+
+                        <div className="exam-card-item fade-in-scroll">
+                            <div className="exam-card-image fade-in-scroll">
+                                <img src={nabtebExamImg} alt="NABTEB Exam Card" loading="lazy" />
+                            </div>
+                            <div className="exam-card-content">
+                                <h3>NABTEB Exam Card</h3>
+                                <p>NABTEB examination scratch card for technical and business education results</p>
+                                <div className="exam-price">
+                                    <span className="price-amount">₦1,320</span>
+                                    <span className="price-original">₦2,000</span>
+                                </div>
+                                <a href="/exam-cards" className="exam-btn">Purchase Now</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -493,7 +643,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <span className="faq-toggle" aria-hidden="true">+</span>
                             </div>
                             <div className="faq-answer">
-                                You can receive your NIN slip via secure email, WhatsApp, or physical delivery based on your preference.
+                                You can receive your NIN slip in PDF format, available as both a long slip and card version for your convenience.
                             </div>
                         </div>
 
@@ -534,8 +684,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             {/* CTA Section */}
             <section className="cta fade-in-scroll">
                 <div className="container">
-                    <h2 className='fade-in-scroll'>Don't Delay. Retrieve Your NIN Slip Today.</h2>
-                    <a href="/lagacy-nin" className="btn-primary fade-in-scroll"><img src={greenShieldIcon} alt="" /> Get Your NIN Slip</a>
+                    <h2 className='fade-in-scroll'>Need Help? Chat Support</h2>
+                    <a href="https://wa.me/2349030057489" className="btn-primary fade-in-scroll"><img src={whatsappIcon} alt="" /> Chat Now</a>
                 </div>
             </section>
 
