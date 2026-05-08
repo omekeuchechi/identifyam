@@ -235,33 +235,33 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     
                     <div className="services-grid fade-in-scroll">
                         <div className="service-item fade-in-scroll">
-                            <div className="nin-service-icon fade-in-scroll">
-                                <img src={longSlipSvg} alt="Long Slip" loading="lazy" />
+                            <div className="nin-service-icon-header fade-in-scroll">
+                                <img src={longSlipSvg} alt="Long Slip" className='nin-service-icon ' loading="lazy" />
+                                <h3 className='fade-in-scroll'>NIN Long Slip</h3>
                             </div>
                             <div className="service-content fade-in-scroll">
-                                <h3 className='fade-in-scroll'>NIN Long Slip</h3>
                                 <p className='fade-in-scroll'>Get your complete NIN slip with detailed information for official purposes</p>
                                 <a href="/lagacy-nin" className="service-btn fade-in-scroll">Get Started</a>
                             </div>
                         </div>
 
                         <div className="service-item fade-in-scroll">
-                            <div className="nin-service-icon fade-in-scroll">
-                                <img src={ninCardSvg} alt="NIN Card" loading="lazy" />
+                            <div className="nin-service-icon-header fade-in-scroll">
+                                <img src={ninCardSvg} alt="NIN Card" className='nin-service-icon' loading="lazy" />
+                                <h3 className='fade-in-scroll'>NIN Card</h3>
                             </div>
                             <div className="service-content fade-in-scroll">
-                                <h3 className='fade-in-scroll'>NIN Card</h3>
                                 <p className='fade-in-scroll'>Access your digital NIN card for quick verification and identification</p>
                                 <a href="/lagacy-nin" className="service-btn fade-in-scroll">Access Card</a>
                             </div>
                         </div>
 
                         <div className="service-item fade-in-scroll">
-                            <div className="nin-service-icon fade-in-scroll">
-                                <img src={retriveLostNinSvg} alt="Retrieve Lost NIN" loading="lazy" />
+                            <div className="nin-service-icon-header fade-in-scroll">
+                                <img src={retriveLostNinSvg} className='nin-service-icon' alt="Retrieve Lost NIN" loading="lazy" />
+                                <h3 className='fade-in-scroll'>Retrieve Lost NIN</h3>
                             </div>
                             <div className="service-content fade-in-scroll">
-                                <h3 className='fade-in-scroll'>Retrieve Lost NIN</h3>
                                 <p className='fade-in-scroll'>Recover your lost NIN slip quickly with our secure retrieval service</p>
                                 <a href="/lagacy-nin" className="service-btn fade-in-scroll">Retrieve Now</a>
                             </div>
@@ -403,9 +403,13 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <span>CAC Business Registration</span>
                             </div>
                             <p className='fade-in-scroll'>Professional assistance with NIN documentation and application processes</p>
-                            <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' />Contact Support</button>
+                            <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' onClick={
+                                () => { 
+                                    window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1"; 
+
+                                }} />Contact Support</button>
                             <div className="contact-options fade-in-scroll">
-                                <a href="https://wa.me/2348000000000" className="contact-btn whatsapp">
+                                <a href="https://wa.me/message/CX5BRFJSKSVLN1" className="contact-btn whatsapp">
                                     <img src={whatsappIcon} alt="WhatsApp" loading="lazy" />
                                     WhatsApp
                                 </a>
@@ -413,7 +417,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     <img src={phoneIcon} alt="Call" loading="lazy" />
                                     Call
                                 </a>
-                                <a href="#" className="contact-btn chat fade-in-scroll">
+                                <a href="https://wa.me/message/CX5BRFJSKSVLN1" className="contact-btn chat fade-in-scroll">
                                     <img src={liveChatIcon} alt="Live Chat" loading="lazy" />
                                     Chat
                                 </a>
@@ -426,9 +430,13 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <span>Education & Travel Abroad Services</span>
                             </div>
                             <p className='fade-in-scroll'>NIN verification for educational institutions and international travel requirements</p>
-                            <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' />Contact Support</button>
+                            <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' onClick={
+                                () => { 
+                                    window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1"; 
+
+                                }} />Contact Support</button>
                             <div className="contact-options fade-in-scroll">
-                                <a href="https://wa.me/2348000000000" className="contact-btn whatsapp fade-in-scroll">
+                                <a href="https://wa.me/message/CX5BRFJSKSVLN1" className="contact-btn whatsapp fade-in-scroll">
                                     <img src={whatsappIcon} alt="WhatsApp" loading="lazy" />
                                     WhatsApp
                                 </a>
@@ -685,7 +693,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             <section className="cta fade-in-scroll">
                 <div className="container">
                     <h2 className='fade-in-scroll'>Need Help? Chat Support</h2>
-                    <a href="https://wa.me/2349030057489" className="btn-primary fade-in-scroll"><img src={whatsappIcon} alt="" /> Chat Now</a>
+                    <a href="https://wa.me/message/CX5BRFJSKSVLN1" className="btn-primary fade-in-scroll"><img src={whatsappIcon} alt="" /> Chat Now</a>
                 </div>
             </section>
 
@@ -731,9 +739,9 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                     <img src={eIcon} alt="Email" loading="lazy" />
                                     <span>support@identifyam.com</span>
                                 </li>
-                                <li>
+                                <li onClick={() => window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1"} style={{ cursor: "pointer" }}>
                                     <img src={whatsappIcon} alt="WhatsApp" loading="lazy" />
-                                    <span>+234 903 005 7489</span>
+                                    <span>Whatsapp</span>
                                 </li>
                             </ul>
                         </div>

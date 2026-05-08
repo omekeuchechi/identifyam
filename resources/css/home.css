@@ -585,14 +585,25 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 .nin-service-icon{
     background-color: #059669;
     width: 100%;
-    max-width: 50px;
-    border-radius: 10px;
-    padding: 20px 0;
+    max-width: 60px;
+    max-height: 60px;
+    border-radius: 15px;
+    padding: 10px 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 25px;
     position: relative;
+}
+
+.nin-service-icon-header{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.nin-service-icon-header > h3{
+    color: #1a365d;
+    font-size: 1.5rem;
 }
 
 .services-header {
