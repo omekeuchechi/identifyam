@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Head, useForm, Link } from '@inertiajs/react';
-import logoImage from '../../assets/svg/shield.svg';
+import logoImage from '../../assets/img/identifyam_logo.png';
 import defaultProfileImage from '../../assets/img/user_profile.png';
 
 import "../../css/dashboardRes.css";

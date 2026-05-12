@@ -207,6 +207,13 @@
 
 /* Small Mobile (480px and below) */
 @media (max-width: 480px) {
+
+    .cards-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
     .card-header h5 {
         font-size: 14px;
     }

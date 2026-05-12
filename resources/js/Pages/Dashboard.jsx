@@ -1,7 +1,7 @@
 import { Head, Link } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 
-import logoImage from '../../assets/svg/shield.svg';
+import logoImage from '../../assets/img/identifyam_logo.png';
 import defaultProfileImage from '../../assets/img/user_profile.png';
 
 import retrieveNin from '../../assets/img/Retrieve_nin_slip.png';

@@ -1,7 +1,7 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
-import logoImage from '../../assets/svg/shield.svg';
+import logoImage from '../../assets/img/identifyam_logo.png';
 
 import "../../css/dashboardRes.css";
 import "../../css/fundingRes.css";

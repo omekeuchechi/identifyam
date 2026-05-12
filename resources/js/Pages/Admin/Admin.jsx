@@ -88,9 +88,6 @@ const Admin = ({ auth }) => {
                         <Link href={route('admin.dashboard')} className="sidebar-link active">
                             <i className="fas fa-tachometer-alt"></i>Dashboard
                         </Link>
-                        <Link href={route('dashboard')} className="sidebar-link">
-                            <i className="fas fa-home"></i>User Dashboard
-                        </Link>
                         <Link href="lagacy-nin" className="sidebar-link">
                             <i className="fas fa-history"></i> Lagacy NIN
                         </Link>
@@ -195,6 +192,10 @@ const Admin = ({ auth }) => {
                                 <Link href="/admin/system-logs" className="action-card">
                                     <i className="fas fa-file-alt"></i>
                                     <span>System Logs</span>
+                                </Link>
+                                <Link href="/admin/nin-profit" className="action-card">
+                                    <i className="fas fa-cog"></i>
+                                    <span>Nin profit</span>
                                 </Link>
                                 <Link href="/admin/settings" className="action-card">
                                     <i className="fas fa-cog"></i>

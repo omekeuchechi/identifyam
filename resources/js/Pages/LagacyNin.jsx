@@ -4,7 +4,7 @@ import { usePage, Head, Link } from '@inertiajs/react';
 import "../../css/dashboardRes.css";
 import "../../css/lagacyNinRes.css";
 
-import logoImage from '../../assets/svg/shield.svg';
+import logoImage from '../../assets/img/identifyam_logo.png';
 
 import {addActivity, activityTypes } from '../utils/activityTracker';
 

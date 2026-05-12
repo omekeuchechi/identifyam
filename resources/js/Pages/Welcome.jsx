@@ -5,7 +5,7 @@ import '../../css/custom.css'
 import '../../css/welcomeRes.css'
 
 // image imporsts
-import logo from '../../assets/svg/identifyam_logo.svg';
+import logo from '../../assets/img/identifyam_logo.png';
 import heroImage from '../../assets/img/img.png';
 import secureIcon from '../../assets/svg/secure_processing.svg';
 import fastIcon from '../../assets/svg/fast_processing_support_icon.svg';
@@ -183,13 +183,13 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             <div className="hero-flex-btn">
                                 <div className="hero-buttons fade-in-scroll">
                                 <a href="/lagacy-nin" className="btn-get-started">
-                                    <img src={logo} alt="IdentifyAM" loading="lazy" />
+                                    <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
                                     <span>Get Your NIN Slip</span>
                                 </a>
                             </div>
                             <div className="hero-buttons fade-in-scroll">
                                 <a href="/exam-cards" className="btn-get-started">
-                                    <img src={logo} alt="IdentifyAM" loading="lazy" />
+                                    <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
                                     <span>Buy Exam Scratch Card</span>
                                 </a>
                             </div>

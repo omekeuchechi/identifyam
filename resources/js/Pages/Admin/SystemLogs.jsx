@@ -13,7 +13,7 @@ const AdminSystemLogs = ({ logs }) => {
 
     useState(() => {
         if (searchTerm) {
-            const filtered = logs.filter(log => 
+            const filtered = logs.filter(log =>
                 log.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setFilteredLogs(filtered);
@@ -45,6 +45,26 @@ const AdminSystemLogs = ({ logs }) => {
         );
     };
 
+    const DeleteLog = () => {
+        fetch(route('admin.system-logs.clear'), {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Logs cleared successfully!');
+                    // Refresh the logs page
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+    }
+
     return (
         <>
             <Head title="System Logs - Admin" />
@@ -63,6 +83,16 @@ const AdminSystemLogs = ({ logs }) => {
                         <button className="btn btn-secondary">
                             <i className="fas fa-download"></i>
                             Download Logs
+                        </button>
+                         <button className="btn btn-danger" onClick={() => {
+                           const clearConfirm = window.confirm('Do you want to clear the logs data? This action cannot be undone.');
+
+                           if (clearConfirm) {
+                                DeleteLog()
+                           }
+                         } }>
+                            <i className="fas fa-trash"></i>
+                            Delete Log Data
                         </button>
                     </div>
                 </div>
@@ -83,7 +113,7 @@ const AdminSystemLogs = ({ logs }) => {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .admin-page {
                     padding: 20px;
                 }

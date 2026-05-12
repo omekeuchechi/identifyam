@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import PrimaryButton from '@/Components/PrimaryButton';
-import logoImage from '../../assets/svg/shield.svg';
+import logoImage from '../../assets/img/identifyam_logo.png';
 
 export default function NinService({ auth }) {
     const [searchType, setSearchType] = useState('nin');
