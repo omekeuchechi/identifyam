@@ -421,6 +421,12 @@ html, body {
     flex-shrink: 0;
 }
 
+.arrow-back{
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
 /* Auth Divider */
 .auth-divider {
     display: flex;
