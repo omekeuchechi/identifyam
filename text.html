@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta name="generator" content="Imagetotext.io" />
+    <title>NIMC - National Identification Number Slip (A4 Print Ready)</title>
+    <style type="text/css">
+        /* RESET & GLOBAL */
+        * {
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #e2e8f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            margin: 0;
+            padding: 24px 16px;
+        }
+
+        /* MAIN PRINT CONTAINER – EXACTLY A4 PORTRAIT DIMENSIONS (in screen + print) */
+        .a4-container {
+            background: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            margin: 0 auto;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+            position: relative;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* inner wrapper for relative positioning (same as original logic, but adapted for A4) */
+        .print-wrapper {
+            position: relative;
+            width: 100%;
+            height: auto;
+            background: white;
+        }
+
+        /* background image (nin_sp.png) should fill exactly as in original */
+        .print-wrapper > p {
+            margin: 0;
+            line-height: 0;
+        }
+
+        .background-slip {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* ----- ABSOLUTE LAYER : exactly mimics original desktop structure but aligned inside A4 ----- */
+        .nin-section {
+            position: absolute;
+            z-index: 1000;
+            width: 100%;
+            max-width: 950px;
+            top: 22px;
+            left: 20px;
+        }
+
+        /* make sure header images follow original style - REDUCED IMAGE SIZE */
+        .nin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nin-header > img {
+            width: 100%;
+            max-width: 65px;
+        }
+
+        .nin-header > img.h-img-1 {
+            padding-top: 10px;
+            padding-left: 20px;
+            max-width: 60px;
+        }
+
+        .nin-header > img.h-img-2 {
+            padding-top: 10px;
+            padding-right: 40px;
+            max-width: 70px;
+        }
+
+        .nin-data {
+            display: block;
+        }
+
+        .nin-data > .trackking-id {
+            font-size: 11px;
+            position: absolute;
+            left: 70px;
+            top: 85px;
+        }
+
+        .nin-data > .nin {
+            position: absolute;
+            left: 78px;
+            top: 125px;
+            font-size: 14px;
+        }
+
+        .nin-data > .surname {
+            position: absolute;
+            left: 300px;
+            top: 85px;
+            font-size: 14px;
+        }
+
+        .nin-data > .firstname {
+            position: absolute;
+            left: 300px;
+            top: 126px;
+            font-size: 14px;
+        }
+
+        .nin-data > .middlname {
+            position: absolute;
+            left: 300px;
+            top: 163px;
+            font-size: 14px;
+        }
+
+        .nin-data > .gender {
+            position: absolute;
+            left: 300px;
+            top: 198px;
+            font-size: 14px;
+        }
+
+        .nin-data > .address {
+            position: absolute;
+            left: 420px;
+            top: 100px;
+            width: 130px;
+            font-size: 14px;
+        }
+
+        .nin-data > .passport {
+            position: absolute;
+            left: 615px;
+            top: 135px;
+            width: 100%;
+            max-width: 115px;
+            height: 30px;
+            font-size: 14px;
+        }
+
+        .passport img {
+            width: 100%;
+            max-width: 115px;
+            height: 130px;
+            border-radius: 4px;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* NOTE SECTION - TEXT ALIGN LEFT (as requested) */
+        .note {
+            font-size: 12px;
+            position: absolute;
+            left: 0;
+            top: 230px;
+            padding: 10px;
+            width: 95%;
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.35;
+            text-align: left;
+        }
+
+        /* SOCIALS SECTION - CENTERED HORIZONTALLY, but inner text stays left-aligned */
+        .socials {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            left: 0;
+            right: 0;
+            gap: 45px;
+            top: 274px;
+            padding: 10px;
+            width: 100%;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
+
+        .socials > div {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+            text-align: center;
+            min-width: 130px;
+        }
+
+        .socials > div > span {
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .socials > div > small {
+            font-size: 7px;
+            text-align: center;
+        }
+
+        .socials > div > img {
+            width: 20px;
+            height: 20px;
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* ENSURE that all images used in snippet exist or display fallback, we do not remove any code
+           but we also need to keep the exact same markup. I will preserve all original images references 
+           (nin_sp.png, coatofarm.png, nimc.png, passport.jpg, cloud.png, explorer.png, phone.png, R.png)
+           To make print view behave exactly like desktop screen view within A4 dimensions, we also define 
+           @media print rules to remove background artifacts and ensure full A4 rendering without scaling issues.
+        */
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .a4-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                min-height: 0;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+            .print-wrapper {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .background-slip {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .nin-section {
+                position: absolute;
+                top: 22px;
+                left: 20px;
+            }
+            /* keep reduced image sizes in print */
+            .nin-header > img {
+                max-width: 65px;
+            }
+            .nin-header > img.h-img-1 {
+                max-width: 60px;
+            }
+            .nin-header > img.h-img-2 {
+                max-width: 70px;
+            }
+            .socials {
+                justify-content: center;
+                /* gap: 45px; */
+            }
+            .note {
+                text-align: left;
+            }
+        }
+
+        .a4-container {
+            page-break-after: avoid;
+            break-inside: avoid;
+            position: relative;
+        }
+
+        .nin-data > .address {
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        .socials {
+            flex-wrap: wrap;
+            row-gap: 12px;
+        }
+
+        .socials > .social-1{
+            position: absolute;
+            top: 5px;
+            left: 0px;
+        }
+        .socials > .social-2{
+            position: absolute;
+            top: 5px;
+            left: 170px;
+        }
+        .socials > .social-3{
+            position: absolute;
+            top: 5px;
+            left: 330px;
+        }
+        .socials > .social-4{
+            position: absolute;
+            left: 490px;
+            top: 5px;
+            width: 100%;
+            max-width: 250px;
+        }
+
+        /* Additional adjustments: keep passport image properly positioned */
+        .nin-data > .passport {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* .passport img {
+            margin: 0 auto;
+        } */
+    </style>
+</head>
+
+<body>
+    <!-- A4 EXACT CONTAINER: PRINT VIEW OBSERVES EXACT DESKTOP LAYOUT INSIDE A4 SHEET -->
+    <div class="a4-container">
+        <div class="print-wrapper">
+            <!-- ORIGINAL CODE: never removed or altered. everything exactly as provided -->
+            <p style="text-align: justify">
+                <img src="nin_sp.png" alt="downloajpeg" height="auto" class="background-slip">
+            </p>
+            <div class="nin-section">
+                <div class="nin-header">
+                    <img src="coatofarm.png" alt="" class="h-img-1">
+                    <img src="nimc.png" alt="" class="h-img-2">
+                </div>
+                <div class="nin-data">
+                    <span class="trackking-id">17781548471778154847</span>
+                    <span class="nin">7902467893</span>
+                    <span class="surname">Peter</span>
+                    <span class="firstname">James</span>
+                    <Span class="middlname">Joe</Span>
+                    <span class="gender">M</span>
+                    <span class="address">No 7 Umouda Road Aluu</span>
+                    <span class="passport">
+                        <img src="passport.jpg" alt="">
+                    </span>
+                </div>
+                <div class="note">
+                    <b>Note:</b> The National Identification Number (NIN) is your identity. It is confidential and may only be
+                    released for legitimate transactions. You will be notified
+                    when your National Identity Card is ready (for any enquiries please contact NIMC)
+                </div>
+                <div class="socials">
+                    <div class="social-1">
+                        <img src="cloud.png" alt="">
+                        <span>helpdesk@nimc.gov.ng</span>
+                    </div>
+                    <div class="social-2">
+                        <img src="explorer.png" alt="">
+                        <span>www.nimc.gov.ng</span>
+                    </div>
+                    <div class="social-3">
+                        <img src="phone.png" alt="">
+                        <span>0700-CALL-NIMC</span>
+                    </div>
+                    <div class="social-4">
+                        <img src="R.png" alt="">
+                        <span>National Identity Management Commission</span>
+                        <small>11 Sokoto Crescent, Off Dalaba Street, Zone 5 Wuse, Abuja Nigeria</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
