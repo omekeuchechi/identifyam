@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WalletController;
 use App\Http\Controllers\ExamCardController;
 use App\Http\Controllers\LagacyNinController;
+use App\Http\Controllers\PagesController;
 use App\Http\Controllers\SettingsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +18,8 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+Route::get('/terms-and-condition', [PagesController::class, 'TermsAndCondition'])->name('terms-and-condition');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

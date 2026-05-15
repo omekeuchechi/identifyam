@@ -790,7 +790,7 @@ const LagacyNin = ({ auth }) => {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 .nin-search-card {
                     background: white;
                     padding: 25px;

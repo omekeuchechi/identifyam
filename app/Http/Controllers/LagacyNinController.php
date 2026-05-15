@@ -779,6 +779,7 @@ class LagacyNinController extends Controller
         $explorerIcon = $this->getLocalAsset('explorer.png', 'png');
         $phoneIcon = $this->getLocalAsset('phone.png', 'png');
         $addressIcon = $this->getLocalAsset('R.png', 'png');
+        $slip_bg = $this->getLocalAsset('nin_sp.png', 'png');
         
         // Format data for the template
         $trackingId = $ninRecord->id . time();
@@ -800,405 +801,383 @@ class LagacyNinController extends Controller
 
         return '<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-  <title>NIN Slip - 
-  Official National Identity Management System</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta name="generator" content="Imagetotext.io" />
+    <title>NIMC - National Identification Number Slip (A4 Print Ready)</title>
+    <style type="text/css">
+        /* RESET & GLOBAL */
+        * {
+            max-width: 100%;
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-    body {
-      background: #fff;
-      font-family: "Segoe UI", "Roboto", "Arial", sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 32px 20px;
-    }
+       
 
-    .nin-slip {
-      max-width: 880px;
-      width: 100%;
-      background: #ffffff;
-      border:2px solid #222;
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-      margin: 0 auto;
-      font-family: "Segoe UI", "Arial", sans-serif;
-    }
+        /* MAIN PRINT CONTAINER – EXACTLY A4 PORTRAIT DIMENSIONS (in screen + print) */
+        .a4-container {
+            background: white;
+            width: 21cm;
+            height: 29.7cm;
+            max-height: 29.7cm;
+            margin: 0 auto;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+            position: relative;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+            overflow: hidden;
+        }
 
-    .slip-inner {
-      padding: 13px 14px 13px 14px;
-    }
+        /* inner wrapper for relative positioning (same as original logic, but adapted for A4) */
+        .print-wrapper {
+            position: relative;
+            width: 100%;
+            height: auto;
+            background: white;
+        }
 
-    .slip-header {
-      margin-bottom: 5px;
-      padding-bottom: 2px;
-      min-height: 60px;
-    }
+        /* background image (nin_sp.png) should fill exactly as in original */
+        .print-wrapper > p {
+            margin: 0;
+            line-height: 0;
+        }
 
-    .slip-header-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+        .background-slip {
+            width: 100%;
+            height: auto;
+            max-height: 29.7cm;
+            display: block;
+        }
 
-    .slip-header-table td {
-      vertical-align: middle;
-      text-align: center;
-      padding: 0;
-    }
+        /* ----- ABSOLUTE LAYER : exactly mimics original desktop structure but aligned inside A4 ----- */
+        .nin-section {
+            position: absolute;
+            z-index: 1000;
+            width: 100%;
+            max-width: 950px;
+            top: 22px;
+            left: 20px;
+        }
 
-    .slip-header-table td:first-child,
-    .slip-header-table td:last-child {
-      width: 80px;
-    }
+        /* make sure header images follow original style - REDUCED IMAGE SIZE */
+        .nin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-    .slip-header-table td.center-cell {
-      width: auto;
-    }
+        .nin-header > img {
+            width: 100%;
+            max-width: 65px;
+        }
 
-    .logo-left, .logo-right {
-      text-align: center;
-      width: 80px;
-    }
+        .nin-header > img.h-img-1 {
+            padding-top: 10px;
+            padding-left: 20px;
+            max-width: 60px;
+        }
 
-    .logo-left img, .logo-right img {
-      width: 58px;
-      height: auto;
-      max-width: 58px;
-    }
+        .nin-header > img.h-img-2 {
+            padding-top: 10px;
+            position: absolute;
+            left: 660px;
+            top: -8px;
+            max-width: 70px;
+        }
 
-    .center-text {
-      text-align: center;
-      flex: 1;
-      display: inline-block;
-      vertical-align: top;
-    }
+        .nin-data {
+            display: block;
+        }
 
-    .center-text h2 {
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      color: #0b3f2a;
-      margin: 0;
-    }
+        .nin-data > .trackking-id {
+            font-size: 11px;
+            position: absolute;
+            left: 72px;
+            top: 91px;
+        }
 
-    .center-text p {
-      font-size: 12px;
-      color: #2c3e2f;
-      margin: 4px 0 2px;
-    }
+        .nin-data > .nin {
+            position: absolute;
+            left: 78px;
+            top: 131px;
+            font-size: 14px;
+        }
 
-    .center-text h3 {
-      font-size: 15px;
-      font-weight: 700;
-      color: #0b8640;
-      margin-top: 5px;
-      letter-spacing: 0.3px;
-    }
+        .nin-data > .surname {
+            position: absolute;
+            left: 300px;
+            top: 92px;
+            font-size: 14px;
+        }
 
-    .slip-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 14px 0 10px;
-    }
+        .nin-data > .firstname {
+            position: absolute;
+            left: 300px;
+            top: 132px;
+            font-size: 14px;
+        }
 
-    .slip-table td {
-      border: 1.5px solid #1e2a2e;
-      padding: 2px 2px;
-      vertical-align: middle;
-      font-size: 13px;
-    }
+        .nin-data > .middlname {
+            position: absolute;
+            left: 300px;
+            top: 170px;
+            font-size: 14px;
+        }
 
-    .slip-table strong {
-      font-weight: 700;
-      color: #000;
-      display: inline-block;
-      min-width: 90px;
-      font-size: 13px;
-    }
+        .nin-data > .gender {
+            position: absolute;
+            left: 300px;
+            top: 202px;
+            font-size: 14px;
+        }
 
-    .field-value {
-      font-weight: 600;
-      color: #0c2b1c;
-      word-break: break-word;
-    }
+        .nin-data > .address {
+            position: absolute;
+            left: 435px;
+            top: 100px;
+            width: 130px;
+            font-size: 14px;
+        }
 
-    .photo-cell {
-      text-align: center;
-      width: 140px;
-      background: #fff;
-    }
+        .nin-data > .passport {
+            position: absolute;
+            left: 646.5px;
+            top: 79px;
+            width: 100%;
+            max-width: 113px;
+            height: 30px;
+            font-size: 14px;
+        }
 
-    .photo-frame {
-      width: 120px;
-      height: 140px;
-      margin: 0 auto;
-      border: 1px solid #bdc3c7;
-      background: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 4px;
-    }
+        .passport img {
+            width: 100%;
+            max-width: 113px;
+            height: 149px;
+            border-radius: 4px;
+            object-fit: cover;
+            display: block;
+        }
 
-    .photo-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+        /* NOTE SECTION - TEXT ALIGN LEFT (as requested) */
+        .note {
+            font-size: 12px;
+            position: absolute;
+            left: -4px;
+            top: 230px;
+            padding: 9px;
+            padding-right: 11px;
+            width: 95%;
+            font-family: "Times New Roman", Times, serif;
+            line-height: 1.35;
+            text-align: left;
+        }
 
-    .photo-placeholder-text {
-      font-size: 11px;
-      color: #7f8c8d;
-      text-align: center;
-    }
+        /* SOCIALS SECTION - CENTERED HORIZONTALLY, but inner text stays left-aligned */
+        .socials {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: absolute;
+            left: 0;
+            right: 0;
+            gap: 45px;
+            top: 310px;
+            padding: 10px;
+            width: 100%;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
 
-    .address-box {
-      margin-top: 2px;
-      line-height: 1.4;
-    }
+        .socials > div {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 8px;
+            text-align: center;
+            min-width: 130px;
+        }
 
-    #clientAddress {
-      font-weight: 500;
-      font-size: 13px;
-      display: inline-block;
-      width: 100%;
-    }
+        .socials > div > span {
+            font-size: 11px;
+            font-weight: 800;
+            text-align: center;
+        }
 
-    .nin-note {
-      font-size: 10.5px;
-      padding: 6px 8px 2px 8px;
-      margin: 0 0 8px 0;
-      color: #000000f3;
-    }
+        .socials > div > small {
+            font-size: 7px;
+            text-align: center;
+        }
 
-    .contact-row {
-      border-top: 1.5px solid #1e2a2e;
-      margin-top: 10px;
-      padding-top: 12px;
-      background: #ffffff;
-    }
+        .socials > div > img {
+            position: absolute;
+            top: -20px;
+            left: 50px;
+            width: 20px;
+            height: 20px;
+            display: block;
+            margin: 0 auto;
+        }
 
-    .contact-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .a4-container {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                min-height: 0;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+            }
+            .print-wrapper {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .background-slip {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .nin-section {
+                position: absolute;
+                top: 22px;
+                left: 20px;
+            }
+            /* keep reduced image sizes in print */
+            .nin-header > img {
+                max-width: 65px;
+            }
+            .nin-header > img.h-img-1 {
+                max-width: 60px;
+            }
+            .nin-header > img.h-img-2 {
+                max-width: 70px;
+            }
+            .socials {
+                justify-content: center;
+                /* gap: 45px; */
+            }
+            .note {
+                text-align: left;
+            }
+        }
 
-    .contact-table td {
-      vertical-align: top;
-      text-align: center;
-      padding: 6px 8px;
-      border-right: 1px solid #000;
-    }
+        .a4-container {
+            page-break-after: avoid;
+            break-inside: avoid;
+            position: relative;
+        }
 
-    .contact-table td:last-child {
-      border-right: none;
-    }
+        .nin-data > .address {
+            word-break: break-word;
+            white-space: normal;
+        }
 
-    .contact-item {
-      text-align: center;
-    }
+        .socials {
+            flex-wrap: wrap;
+            row-gap: 12px;
+        }
 
-    .digital-icon {
-      width: 28px;
-      height: 28px;
-      object-fit: contain;
-      margin-bottom: 6px;
-      opacity: 0.9;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
+        .socials > .social-1{
+            position: absolute;
+            top: 10px;
+            left: 0px;
+        }
+        .socials > .social-2{
+            position: absolute;
+            top: 10px;
+            left: 170px;
+        }
+        .socials > .social-3{
+            position: absolute;
+            top: 10px;
+            left: 330px;
+        }
+        .socials > .social-4{
+            position: absolute;
+            left: 490px;
+            top: 5px;
+            width: 100%;
+            max-width: 250px;
+        }
 
-    .contact-item strong {
-      font-size: 11px;
-      font-weight: 700;
-      color: #0b3f2a;
-    }
-
-    .contact-item div {
-      font-size: 10px;
-      color: #2d3748;
-      line-height: 1.3;
-    }
-
-    @media print {
-      body {
-        background: white;
-        padding: 0;
-        margin: 0;
-      }
-      .nin-slip {
-        box-shadow: none;
-        border: 1.5px solid #000;
-        margin: 0;
-        max-width: 100%;
-      }
-      .slip-inner {
-        padding: 0.4in;
-      }
-      .contact-item {
-        border-right: 1px solid #000;
-      }
-      .photo-frame {
-        break-inside: avoid;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .slip-header .logo-left img, .slip-header .logo-right img {
-        width: 42px;
-      }
-      .center-text h2 {
-        font-size: 16px;
-      }
-      .center-text h3 {
-        font-size: 12px;
-      }
-      .slip-table td {
-        padding: 6px 8px;
-      }
-      .slip-table strong {
-        min-width: 70px;
-        font-size: 11px;
-      }
-      .contact-item {
-        padding: 6px 4px;
-      }
-      .slip-inner {
-        padding: 16px;
-      }
-    }
-
-    @media (max-width: 580px) {
-      .contact-row {
-        flex-direction: column;
-      }
-      .contact-item {
-        border-right: none;
-        border-bottom: 1px solid #ddd;
-        padding: 10px;
-      }
-      .contact-item:last-child {
-        border-bottom: none;
-      }
-    }
-  </style>
+        /* Additional adjustments: keep passport image properly positioned */
+        .nin-data > .passport {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        /* .passport img {
+            margin: 0 auto;
+        } */
+    </style>
 </head>
+
 <body>
-
-<div class="nin-slip" id="ninSlipContainer">
-  <div class="slip-inner">
-    <div class="slip-header">
-      <table class="slip-header-table">
-        <tr>
-          <td>
-            <div class="logo-left">
-              <img src="' . $coatOfArm . '" alt="Nigerian Coat of Arms">
+    <!-- A4 EXACT CONTAINER: PRINT VIEW OBSERVES EXACT DESKTOP LAYOUT INSIDE A4 SHEET -->
+    <div class="a4-container">
+        <div class="print-wrapper">
+            <!-- ORIGINAL CODE: never removed or altered. everything exactly as provided -->
+            <p style="text-align: justify">
+                <img src="' . $slip_bg .'" alt="downloajpeg" height="auto" class="background-slip">
+            </p>
+            <div class="nin-section">
+                <div class="nin-header">
+                    <img src="'. $coatOfArm .'" alt="" class="h-img-1">
+                    <img src="'. $nimcLogo .'" alt="" class="h-img-2">
+                </div>
+                <div class="nin-data">
+                    <span class="trackking-id">'. $trackingId .'</span>
+                    <span class="nin">'. $nin .'</span>
+                    <span class="surname">'. $surname .'</span>
+                    <span class="firstname">'. $firstName .'</span>
+                    <Span class="middlname">'. $middleName .'</Span>
+                    <span class="gender">'. $gender .'</span>
+                    <span class="address">'. $address .'</span>
+                    <span class="passport">
+                        <img src="'. $photoSrc .'" alt="">
+                    </span>
+                </div>
+                <div class="note">
+                    <b>Note:</b> The National Identification Number (NIN) is your identity. It is confidential and may only be
+                    released for legitimate transactions. You will be notified
+                    when your National Identity Card is ready (for any enquiries please contact NIMC)
+                </div>
+                <div class="socials">
+                    <div class="social-1">
+                        <img src="'. $cloudIcon .'" alt="">
+                        <span>helpdesk@nimc.gov.ng</span>
+                    </div>
+                    <div class="social-2">
+                        <img src="'. $explorerIcon .'" alt="">
+                        <span>www.nimc.gov.ng</span>
+                    </div>
+                    <div class="social-3">
+                        <img src="'. $phoneIcon .'" alt="">
+                        <span>0700-CALL-NIMC</span>
+                    </div>
+                    <div class="social-4">
+                        <img src="'. $addressIcon .'" alt="" style="left: 110px">
+                        <span>National Identity Management Commission</span>
+                        <br>
+                        <small>11 Sokoto Crescent, Off Dalaba Street, Zone 5 Wuse, Abuja Nigeria</small>
+                    </div>
+                </div>
             </div>
-          </td>
-          <td class="center-cell">
-            <div class="center-text">
-              <h2>National Identity Management System</h2>
-              <p>Federal Republic of Nigeria</p>
-              <h3>National Identification Number Slip (NINS)</h3>
-            </div>
-          </td>
-          <td>
-            <div class="logo-right">
-              <img src="' . $nimcLogo . '" alt="NIMC Logo">
-            </div>
-          </td>
-        </tr>
-      </table>
+        </div>
     </div>
-
-    <table class="slip-table" id="detailsTable">
-      <tbody>
-        <tr>
-          <td><strong>Tracking ID:</strong> <span id="trackingVal" class="field-value">' . $trackingId . '</span></td>
-          <td><strong>Surname:</strong> <span id="surnameVal" class="field-value">' . htmlspecialchars($surname) . '</span></td>
-          <td rowspan="4" class="photo-cell">
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="width: 50%; vertical-align: top; border: none; padding-right: 4px;">
-                  <div class="address-box" style="font-size: 9px; text-align: left;">
-                    <strong>Address:</strong><br>
-                    <span>' . htmlspecialchars($address) . '</span>
-                  </div>
-                </td>
-                <td style="width: 50%; vertical-align: top; border: none; padding-left: 4px;">
-                  <div class="photo-frame" id="photoFrame">
-                    <img id="passportImage" src="' . $photoSrc . '" alt="Passport Photo">
-                  </div>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-        <tr>
-          <td><strong>NIN:</strong> <span id="ninVal" class="field-value">' . htmlspecialchars($nin) . '</span></td>
-          <td><strong>First Name:</strong> <span id="firstnameVal" class="field-value">' . htmlspecialchars($firstName) . '</span></td>
-        </tr>
-        <tr>
-          <td><strong>Issue Date:</strong> <span id="issueDateVal" class="field-value">' . $issueDate . '</span></td>
-          <td><strong>Middle Name:</strong> <span id="middlenameVal" class="field-value">' . htmlspecialchars($middleName) . '</span></td>
-        </tr>
-        <tr>
-          <td>&nbsp;</td>
-          <td><strong>Gender:</strong> <span id="genderVal" class="field-value">' . htmlspecialchars($gender) . '</span></td>
-        </tr>
-              </tbody>
-    </table>
-
-    <div class="nin-note">
-      <strong>Note:</strong> The National Identification Number (NIN) is your identity. It is confidential and may only be released for legitimate transactions. 
-      You will be notified when your National Identity Card is ready (for any enquiries please contact NIMC).
-    </div>
-
-    <div class="contact-row">
-      <table class="contact-table">
-        <tr>
-          <td>
-            <div class="contact-item">
-              <img class="digital-icon" src="' . $cloudIcon . '" alt="Email Icon">
-              <div><strong>helpdesk@nimc.gov.ng</strong> <br> Email Support</div>
-            </div>
-          </td>
-          <td>
-            <div class="contact-item">
-              <img class="digital-icon" src="' . $explorerIcon . '" alt="Website">
-              <div><strong>www.nimc.gov.ng</strong> <br> Official Portal</div>
-            </div>
-          </td>
-          <td>
-            <div class="contact-item">
-              <img class="digital-icon" src="' . $phoneIcon . '" alt="Phone">
-              <div><strong>0700-CALL-NIMC</strong> <br> (0700-2255-6462)</div>
-            </div>
-          </td>
-          <td>
-            <div class="contact-item">
-              <img class="digital-icon" src="' . $addressIcon . '" alt="Address Icon">
-              <div><strong>National Identity Management Commission</strong><br>11 Sokoto Crescent, Off Dalaba Street, Zone 5 Wuse, Abuja Nigeria</div>
-            </div>
-          </td>
-        </tr>
-      </table>
-    </div>
-  </div>
-</div>
-
 </body>
+
 </html>';
     }
 

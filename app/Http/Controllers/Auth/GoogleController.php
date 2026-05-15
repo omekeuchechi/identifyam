@@ -105,6 +105,7 @@ class GoogleController extends Controller
                     'email' => $googleUser['email'],
                     'password' => Hash::make(Str::random(40)), // Random password
                     'email_verified_at' => now(),
+                    'terms_and_condition' => true,
                     'google_id' => $googleUser['id'],
                     'walletAmount' => 0, // Default wallet amount
                 ]);

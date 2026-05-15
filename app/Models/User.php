@@ -25,6 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'google_id',
         'email_verification_code',
         'email_verification_expires_at',
+        'terms_and_condition',
         'walletAmount',
         'isAdmin',
     ];

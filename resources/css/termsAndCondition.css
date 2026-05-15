@@ -1,0 +1,147 @@
+ * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #ffffff;   /* pure white background */
+      color: #000000;              /* pure black text */
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      line-height: 1.5;
+      font-weight: 400;
+      scroll-behavior: smooth;
+    }
+
+    /* main container – responsive, centered, comfortable reading width */
+    .legal-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    /* headers and spacing – clean and minimal */
+    h1 {
+      font-size: 1.9rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      border-left: 4px solid #000;
+      padding-left: 1rem;
+      margin-top: 0;
+      margin-bottom: 0.5rem;
+    }
+
+    .effective-date {
+      font-size: 0.95rem;
+      color: #3b3b3b;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid #eaeef2;
+      padding-bottom: 0.75rem;
+      display: inline-block;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 1.8rem 0 0.75rem 0;
+      padding-top: 0.5rem;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 1.25rem 0 0.5rem 0;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      font-size: 1rem;
+      line-height: 1.55;
+      color: #111;
+    }
+
+    /* lists */
+    ul, ol {
+      margin: 0.75rem 0 1.2rem 1.8rem;
+    }
+
+    li {
+      margin-bottom: 0.4rem;
+      line-height: 1.5;
+    }
+
+    /* subtle block/ note styling */
+    .legal-note {
+      background-color: #fafafc;
+      border-left: 3px solid #aaa;
+      padding: 0.8rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+    }
+
+    hr {
+      margin: 2rem 0;
+      border: 0;
+      height: 1px;
+      background: #e6e9ed;
+    }
+
+    /* contact block / footer */
+    .contact-block {
+      background-color: #f8f8fa;
+      padding: 1.5rem;
+      border-radius: 20px;
+      margin: 2rem 0 1rem 0;
+      border: 1px solid #eceef2;
+    }
+
+    .contact-block p {
+      margin: 0.3rem 0;
+    }
+
+    .contact-block strong {
+      font-weight: 600;
+    }
+
+    /* simple responsive touches */
+    @media (max-width: 768px) {
+      .legal-container {
+        padding: 1.5rem 1.2rem;
+      }
+      h1 {
+        font-size: 1.65rem;
+      }
+      h2 {
+        font-size: 1.35rem;
+      }
+      h3 {
+        font-size: 1.15rem;
+      }
+      ul, ol {
+        margin-left: 1.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .legal-container {
+        padding: 1.2rem 1rem;
+      }
+      body {
+        font-size: 0.96rem;
+      }
+      .contact-block {
+        padding: 1rem;
+      }
+    }
+
+    /* no extra decorations — pure readability */
+    a {
+      color: #000;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    a:hover {
+      text-decoration: none;
+    }
