@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import logoImage from '../../assets/img/identifyam_logo.png';
 import defaultProfileImage from '../../assets/img/user_profile.png';
 
@@ -7,32 +7,12 @@ import "../../css/dashboardRes.css";
 import "../../css/settingsRes.css";
 
 const Settings = ({ auth }) => {
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     const handleLogout = (e) => {
         e.preventDefault();
-        if (showLogoutConfirm) {
-            // Create and submit a form for POST request
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = route('logout');
-            
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
-            }
-            
-            document.body.appendChild(form);
-            form.submit();
-        } else {
-            setShowLogoutConfirm(true);
-            setTimeout(() => setShowLogoutConfirm(false), 3000);
+        if (confirm("Are you sure you want to logout?")) {
+            router.post(route('logout'));
         }
     };
 
@@ -229,46 +209,42 @@ const Settings = ({ auth }) => {
                                             display: 'flex',
                                             alignItems: 'center',
                                             padding: '16px',
-                                            border: showLogoutConfirm ? '2px solid #dc2626' : '1px solid #fecaca',
+                                            border: '1px solid #fecaca',
                                             borderRadius: '8px',
                                             textDecoration: 'none',
-                                            color: showLogoutConfirm ? '#dc2626' : '#374151',
+                                            color: '#374151',
                                             transition: 'all 0.2s',
-                                            backgroundColor: showLogoutConfirm ? '#fef2f2' : 'white',
+                                            backgroundColor: 'white',
                                             cursor: 'pointer',
                                             width: '100%',
                                             textAlign: 'left'
                                         }} 
                                         onMouseOver={(e) => {
-                                            if (!showLogoutConfirm) {
-                                                e.currentTarget.style.backgroundColor = '#fef2f2';
-                                                e.currentTarget.style.borderColor = '#dc2626';
-                                            }
+                                            e.currentTarget.style.backgroundColor = '#fef2f2';
+                                            e.currentTarget.style.borderColor = '#dc2626';
                                         }}
                                         onMouseOut={(e) => {
-                                            if (!showLogoutConfirm) {
-                                                e.currentTarget.style.backgroundColor = 'white';
-                                                e.currentTarget.style.borderColor = '#fecaca';
-                                            }
+                                            e.currentTarget.style.backgroundColor = 'white';
+                                            e.currentTarget.style.borderColor = '#fecaca';
                                         }}>
                                         <i className="fas fa-sign-out-alt" style={{ 
                                             fontSize: '20px', 
                                             marginRight: '16px', 
-                                            color: showLogoutConfirm ? '#dc2626' : '#ef4444',
+                                            color: '#ef4444',
                                             width: '24px',
                                             textAlign: 'center'
                                         }}></i>
                                         <div>
                                             <div style={{ fontWeight: '600', marginBottom: '4px' }}>
-                                                {showLogoutConfirm ? 'Click again to confirm logout' : 'Log Out'}
+                                                Log Out
                                             </div>
-                                            <div style={{ fontSize: '14px', color: showLogoutConfirm ? '#dc2626' : '#6b7280' }}>
-                                                {showLogoutConfirm ? 'This action will end your session' : 'Sign out of your account'}
+                                            <div style={{ fontSize: '14px', color: '#6b7280' }}>
+                                                Sign out of your account
                                             </div>
                                         </div>
                                         <i className="fas fa-chevron-right" style={{ 
                                             marginLeft: 'auto', 
-                                            color: showLogoutConfirm ? '#dc2626' : '#ef4444',
+                                            color: '#ef4444',
                                             fontSize: '14px'
                                         }}></i>
                                     </button>

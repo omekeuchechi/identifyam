@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { usePage, Head, Link } from '@inertiajs/react';
+import { usePage, Head, Link, router } from '@inertiajs/react';
 
-const Admin = ({ auth }) => {
-    const { props } = usePage();
-    const [stats, setStats] = useState({
+const Admin = ({ auth, initialStats }) => {
+    const [stats, setStats] = useState(initialStats || {
         totalUsers: 0,
         activeUsers: 0,
         totalNinVerifications: 0,
@@ -12,8 +11,12 @@ const Admin = ({ auth }) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        fetchAdminStats();
-    }, []);
+        if (initialStats) {
+            setStats(initialStats);
+        } else {
+            fetchAdminStats();
+        }
+    }, [initialStats]);
 
     const fetchAdminStats = async () => {
         try {
@@ -38,36 +41,10 @@ const Admin = ({ auth }) => {
         }
     };
 
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
     const handleLogout = (e) => {
         e.preventDefault();
-        if (showLogoutConfirm) {
-            // Create and submit a form for POST request
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = route('logout');
-
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
-            }
-
-            document.body.appendChild(form);
-            const logoutConfirm = confirm("Do you want to logout");
-
-            if (logoutConfirm) {
-                form.submit();
-            }
-
-        } else {
-            setShowLogoutConfirm(true);
-            setTimeout(() => setShowLogoutConfirm(false), 3000);
+        if (confirm("Are you sure you want to logout?")) {
+            router.post(route('logout'));
         }
     };
 
@@ -96,6 +73,9 @@ const Admin = ({ auth }) => {
                         </Link>
                         <Link href="/admin/users" className="sidebar-link">
                             <i className="fas fa-credit-card"></i> Manage Users
+                        </Link>
+                        <Link href="/admin/send-email" className="sidebar-link">
+                            <i className="fas fa-envelope"></i> Send Email
                         </Link>
                         <Link href="history" className="sidebar-link">
                             <i className="fas fa-history"></i>History

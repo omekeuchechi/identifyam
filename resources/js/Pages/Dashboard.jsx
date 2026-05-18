@@ -1,4 +1,4 @@
-import { Head, Link } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 
 import logoImage from '../../assets/img/identifyam_logo.png';
@@ -15,7 +15,6 @@ import { getRecentActivities, formatActivityDate, getActivityStatusClass, addAct
 
 
 export default function Dashboard({ auth }) {
-        const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
         const [recentActivities, setRecentActivities] = useState([]);
         const [loading, setLoading] = useState(true);
         const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -61,7 +60,7 @@ export default function Dashboard({ auth }) {
     
         const handleLogout = (e) => {
             e.preventDefault();
-            if (showLogoutConfirm) {
+            if (confirm("Do you want to logout?")) {
                 // Track logout activity
                 addActivity(
                     activityTypes.LOGOUT,
@@ -69,32 +68,8 @@ export default function Dashboard({ auth }) {
                     'completed',
                     { timestamp: new Date().toISOString() }
                 );
-
-                // Create and submit a form for POST request
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = route('logout');
-    
-                // Add CSRF token
-                const csrfToken = document.querySelector('meta[name="csrf-token"]');
-                if (csrfToken) {
-                    const csrfInput = document.createElement('input');
-                    csrfInput.type = 'hidden';
-                    csrfInput.name = '_token';
-                    csrfInput.value = csrfToken.getAttribute('content');
-                    form.appendChild(csrfInput);
-                }
-    
-                document.body.appendChild(form);
-                const logoutConfirm = confirm("Do you want to logout");
                 
-                if (logoutConfirm) {
-                    form.submit();
-                }
-
-            } else {
-                setShowLogoutConfirm(true);
-                setTimeout(() => setShowLogoutConfirm(false), 3000);
+                router.post(route('logout'));
             }
         };
 

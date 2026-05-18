@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\ActivityLog;
+use App\Models\UserActivity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -30,49 +31,43 @@ class HistoryController extends Controller
             $activities = [];
 
             if ($user->isAdmin) {
-                // Admin can see all activities
-                $activities = ActivityLog::with('user')
-                    ->latest()
-                    ->limit(100)
-                    ->get()
-                    ->map(function ($activity) {
-                        return [
-                            'id' => $activity->id,
-                            'action' => $activity->action,
-                            'description' => $activity->description,
-                            'details' => $activity->details,
-                            'type' => $activity->type,
-                            'ip_address' => $activity->ip_address,
-                            'user_agent' => $activity->user_agent,
-                            'created_at' => $activity->created_at,
-                            'user' => $activity->user ? [
-                                'name' => $activity->user->name,
-                                'email' => $activity->user->email
-                            ] : null
-                        ];
-                    });
+                // Admin can see all activities (merged from both tables)
+                $businessActivities = UserActivity::with('user')->latest()->limit(50)->get();
+                $genericLogs = ActivityLog::with('user')->latest()->limit(50)->get();
             } else {
                 // Regular users see only their own activities
-                $activities = ActivityLog::where('user_id', $user->id)
-                    ->latest()
-                    ->limit(50)
-                    ->get()
-                    ->map(function ($activity) {
-                        return [
-                            'id' => $activity->id,
-                            'action' => $activity->action,
-                            'description' => $activity->description,
-                            'details' => $activity->details,
-                            'type' => $activity->type,
-                            'ip_address' => $activity->ip_address,
-                            'user_agent' => $activity->user_agent,
-                            'created_at' => $activity->created_at
-                        ];
-                    });
+                $businessActivities = UserActivity::where('user_id', $user->id)->latest()->limit(50)->get();
+                $genericLogs = ActivityLog::where('user_id', $user->id)->latest()->limit(50)->get();
             }
 
+            // Map and merge
+            $merged = $businessActivities->map(function($a) {
+                return [
+                    'id' => 'biz_' . $a->id,
+                    'action' => $a->action,
+                    'description' => $a->description,
+                    'type' => $this->mapType($a->type),
+                    'details' => $a->details,
+                    'amount' => $a->amount,
+                    'reference' => $a->reference,
+                    'status' => $a->status,
+                    'created_at' => $a->created_at,
+                    'user' => $a->user ? ['name' => $a->user->name, 'email' => $a->user->email] : null
+                ];
+            })->concat($genericLogs->map(function($a) {
+                return [
+                    'id' => 'log_' . $a->id,
+                    'action' => $a->action,
+                    'description' => $a->description,
+                    'type' => $a->type,
+                    'details' => $a->details,
+                    'created_at' => $a->created_at,
+                    'user' => $a->user ? ['name' => $a->user->name, 'email' => $a->user->email] : null
+                ];
+            }))->sortByDesc('created_at')->values()->take(100);
+
             return response()->json([
-                'activities' => $activities
+                'activities' => $merged
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to fetch user history: ' . $e->getMessage());
@@ -80,6 +75,19 @@ class HistoryController extends Controller
                 'activities' => []
             ], 500);
         }
+    }
+
+    /**
+     * Map UserActivity type to frontend-expected type.
+     */
+    private function mapType($type)
+    {
+        $map = [
+            'funding' => 'transaction',
+            'nin_search' => 'verification',
+            'exam_card' => 'transaction'
+        ];
+        return $map[$type] ?? 'system';
     }
 
     /**

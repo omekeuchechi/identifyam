@@ -58,9 +58,7 @@ Route::middleware('auth')->group(function () {
     
     // Admin routes
     Route::middleware(['auth', 'admin'])->group(function () {
-        Route::get('/admin', function () {
-            return Inertia::render('Admin/Admin');
-        })->name('admin.dashboard');
+        Route::get('/admin', [App\Http\Controllers\AdminController::class, 'index'])->name('admin.dashboard');
         
         Route::get('/admin/stats', [App\Http\Controllers\AdminController::class, 'getStats'])->name('admin.stats');
         Route::get('/admin/users', [App\Http\Controllers\AdminController::class, 'getUsers'])->name('admin.users');
@@ -73,6 +71,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('/admin/system-logs/clear', [App\Http\Controllers\AdminController::class, 'clearSystemLogs'])->name('admin.system-logs.clear');
         Route::post('/admin/log-ip', [App\Http\Controllers\AdminController::class, 'logCurrentUserIP'])->name('admin.log-ip');
         Route::get('/admin/security', [App\Http\Controllers\AdminController::class, 'securityMonitoring'])->name('admin.security');
+        
+        // Admin Email routes
+        Route::get('/admin/send-email', [App\Http\Controllers\AdminEmailController::class, 'index'])->name('admin.send-email');
+        Route::post('/admin/send-email', [App\Http\Controllers\AdminEmailController::class, 'send'])->name('admin.send-email.submit');
     });
     
     // Bug report routes

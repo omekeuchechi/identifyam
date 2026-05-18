@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { usePage, Head, Link } from '@inertiajs/react';
+import { usePage, Head, Link, router } from '@inertiajs/react';
 
-const SecurityMonitoring = ({ auth }) => {
-    const { props } = usePage();
-    const [securityLogs, setSecurityLogs] = useState([]);
-    const [stats, setStats] = useState({
+const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
+    const [securityLogs, setSecurityLogs] = useState(initialLogs || []);
+    const [stats, setStats] = useState(initialStats || {
         totalLogs: 0,
         highSeverity: 0,
         criticalSeverity: 0,
@@ -15,60 +14,16 @@ const SecurityMonitoring = ({ auth }) => {
     const [loading, setLoading] = useState(false);
     const [selectedLog, setSelectedLog] = useState(null);
 
+    // No need to fetch on mount as data is provided via props
     useEffect(() => {
-        fetchSecurityData();
-    }, []);
-
-    const fetchSecurityData = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(route('admin.security-monitoring'), {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setSecurityLogs(data.logs);
-                setStats(data.stats);
-            }
-        } catch (err) {
-            console.error('Failed to fetch security data:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+        if (initialLogs) setSecurityLogs(initialLogs);
+        if (initialStats) setStats(initialStats);
+    }, [initialLogs, initialStats]);
 
     const handleLogout = (e) => {
         e.preventDefault();
-        if (showLogoutConfirm) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = route('logout');
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
-            }
-
-            document.body.appendChild(form);
-            const logoutConfirm = confirm("Do you want to logout");
-
-            if (logoutConfirm) {
-                form.submit();
-            }
-
-        } else {
-            setShowLogoutConfirm(true);
-            setTimeout(() => setShowLogoutConfirm(false), 3000);
+        if (confirm("Are you sure you want to logout?")) {
+            router.post(route('logout'));
         }
     };
 
@@ -109,7 +64,7 @@ const SecurityMonitoring = ({ auth }) => {
                         <Link href={route('admin.users')} className="sidebar-link">
                             <i className="fas fa-users"></i>Manage Users
                         </Link>
-                        <Link href={route('admin.security-monitoring')} className="sidebar-link active">
+                        <Link href={route('admin.security')} className="sidebar-link active">
                             <i className="fas fa-shield-alt"></i>Security Monitor
                         </Link>
                         <Link href="/admin/nin-profit" className="sidebar-link">

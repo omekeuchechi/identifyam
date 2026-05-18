@@ -66,6 +66,18 @@ return [
         'cash' => env('NIN_CASH')
     ],
 
+    'slip_money' => [
+        'cash' => env('SLIP_MONEY')
+    ],
+
+    'card_money' => [
+        'cash' => env('CARD_MONEY')
+    ],
+
+    'default_nin_money' => [
+        'cash' => env('DEFAULT_NIN_MONEY')
+    ],
+
     'nin_profile_image_fallback' => [
         'image' => env('FALLBACKPROFILEIMAGE')
     ]

@@ -132,11 +132,11 @@ class LagacyNinController extends Controller
             
             $extractedData = [
                 'nin' => $nin === 'demographic_search' ? null : $nin,
-                'telephone' => $responseData['telephoneno'] ?? $responseData['phone'] ?? $responseData['phoneNumber'] ?? null,
+                'telephoneno' => $responseData['telephoneno'] ?? $responseData['phone'] ?? $responseData['phoneNumber'] ?? null,
                 'image' => $responseData['image'] ?? $responseData['photo'] ?? null,
                 'surname' => $responseData['surname'] ?? $responseData['lastName'] ?? $responseData['surName'] ?? null,
                 'first_name' => $responseData['first_name'] ?? $responseData['firstName'] ?? null,
-                'birth_data' => $responseData['birth_date'] ?? $responseData['birthdate'] ?? $responseData['dateOfBirth'] ?? null,
+                'birth_date' => $responseData['birth_date'] ?? $responseData['birthdate'] ?? $responseData['dateOfBirth'] ?? null,
                 'gender' => $responseData['gender'] ?? null,
                 'email' => $responseData['email'] ?? null,
                 'search_type' => $searchType . ' (v' . $version . ')',
@@ -177,17 +177,50 @@ class LagacyNinController extends Controller
     /**
      * Common cURL request handler
      */
-    private function makeApiRequest($url, $requestData, $token, $version)
+    private function makeApiRequest($url, $requestData, $token, $version, $selectedAction = 'slip')
     {
-        // Check user's wallet balance FIRST
+        $this->logLagacyNin('INFO', "Starting API request v{$version}", [
+            'url' => $url,
+            'action' => $selectedAction,
+            'user_id' => Auth::id()
+        ]);
+
+        // Check user's wallet balance FIRST - ensure we have fresh data
         $user = Auth::user();
+        if (!$user instanceof \App\Models\User) {
+            $this->logLagacyNin('ERROR', 'User not authenticated in makeApiRequest');
+            return [
+                'error' => 'Authentication required.',
+                'code' => 'UNAUTHENTICATED',
+                'status' => 401
+            ];
+        }
+        
+        $user->refresh();
         $walletAmount = $user->walletAmount ?? 0;
-        $serviceCharge = config('services.nin_cash.cash', 100);
-        $purchaseAmount = $serviceCharge;
+        
+        // Dynamic pricing based on selected action
+        if ($selectedAction === 'slip') {
+            $purchaseAmount = config('services.slip_money.cash');
+        } elseif ($selectedAction === 'card') {
+            $purchaseAmount = config('services.card_money.cash');
+        } else {
+            $purchaseAmount = config('services.default_nin_money.cash') ?? config('services.nin_cash.cash');
+        }
+
+        $this->logLagacyNin('INFO', 'Wallet balance check', [
+            'wallet_amount' => $walletAmount,
+            'required_amount' => $purchaseAmount,
+            'selected_action' => $selectedAction
+        ]);
 
         if ($walletAmount < $purchaseAmount) {
+            $this->logLagacyNin('WARNING', 'Insufficient wallet balance', [
+                'wallet_amount' => $walletAmount,
+                'required_amount' => $purchaseAmount
+            ]);
             return [
-                'error' => 'Insufficient wallet balance. Your current balance is ₦' . number_format($walletAmount, 2) . ' but this purchase requires ₦' . number_format($purchaseAmount, 2),
+                'error' => 'Insufficient wallet balance. Your current balance is ₦' . number_format($walletAmount, 2) . ' but this ' . ($selectedAction === 'card' ? 'NIN Card' : 'NIN Slip') . ' purchase requires ₦' . number_format($purchaseAmount, 2),
                 'code' => 'INSUFFICIENT_FUNDS',
                 'status' => 400
             ];
@@ -198,10 +231,12 @@ class LagacyNinController extends Controller
         $walletDeducted = false;
         
         while ($retryCount < $maxRetries) {
+            $this->logLagacyNin('INFO', "API Attempt " . ($retryCount + 1), ['url' => $url]);
             // Initialize cURL
             $ch = curl_init();
 
             if (!$ch) {
+                $this->logLagacyNin('ERROR', 'Failed to initialize cURL');
                 return [
                     'error' => 'Failed to initialize cURL',
                     'code' => 'CURL_INIT_ERROR',
@@ -228,13 +263,17 @@ class LagacyNinController extends Controller
             $responseBody = curl_exec($ch);
             $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $curlError = curl_error($ch);
-            $curlErrno = curl_errno($ch);
             
             curl_close($ch);
 
+            $this->logLagacyNin('INFO', 'API Response received', [
+                'http_code' => $httpCode,
+                'curl_error' => $curlError
+            ]);
+
             // Check for connection errors
             if ($curlError && strpos($curlError, 'connection') !== false) {
-                
+                $this->logLagacyNin('WARNING', "Connection error on attempt " . ($retryCount + 1), ['error' => $curlError]);
                 if ($retryCount === $maxRetries - 1) {
                     return [
                         'error' => 'Service temporarily unavailable due to network issues. Please check your internet connection and try again.',
@@ -250,7 +289,7 @@ class LagacyNinController extends Controller
 
             // Check for other cURL errors
             if ($curlError) {
-                
+                $this->logLagacyNin('ERROR', 'CURL request failed', ['error' => $curlError]);
                 return [
                     'error' => 'API request failed: ' . $curlError,
                     'code' => 'CURL_ERROR',
@@ -263,6 +302,7 @@ class LagacyNinController extends Controller
             $jsonError = json_last_error();
             
             if ($jsonError !== JSON_ERROR_NONE) {
+                $this->logLagacyNin('ERROR', 'JSON parse error', ['error' => $jsonError, 'body' => $responseBody]);
                 return [
                     'error' => 'API response parsing failed',
                     'code' => 'JSON_PARSE_ERROR',
@@ -272,7 +312,7 @@ class LagacyNinController extends Controller
 
             // Check if response is HTML error page (503 Service Unavailable)
             if ($httpCode === 503 || (isset($responseData['title']) && str_contains($responseData['title'], '503 Service Unavailable'))) {
-                
+                $this->logLagacyNin('WARNING', "503 Service Unavailable on attempt " . ($retryCount + 1));
                 if ($retryCount === $maxRetries - 1) {
                     return [
                         'error' => 'Service temporarily unavailable. The server is busy, please try again later.',
@@ -288,9 +328,33 @@ class LagacyNinController extends Controller
 
             // Check if request was successful and deduct wallet only once
             if (isset($responseData['status']) && $responseData['status'] === 'success' && !$walletDeducted) {
-                // Deduct from wallet ONLY for successful API calls
-                $user->walletAmount = $walletAmount - $purchaseAmount;
-                $user->save();
+                $this->logLagacyNin('INFO', 'API Success, deducting wallet', [
+                    'amount' => $purchaseAmount,
+                    'user_id' => $user->id
+                ]);
+                
+                // Deduct from wallet using the model method (atomic decrement)
+                if ($user->removeFromWallet($purchaseAmount)) {
+                    $this->logLagacyNin('INFO', 'Wallet deducted successfully', [
+                        'new_balance' => $user->walletAmount
+                    ]);
+
+                    // Log history activity
+                    $this->logUserActivity(
+                        'nin_search',
+                        'nin_verified',
+                        "NIN verification (" . ($selectedAction === 'card' ? 'NIN Card' : 'NIN Slip') . ") for NIN: " . ($requestData['nin'] ?? 'N/A'),
+                        $purchaseAmount,
+                        $requestData['nin'] ?? null,
+                        ['action' => $selectedAction, 'version' => $version]
+                    );
+                } else {
+                    $this->logLagacyNin('ERROR', 'Wallet deduction failed in model', [
+                        'required' => $purchaseAmount,
+                        'current' => $user->walletAmount
+                    ]);
+                }
+                
                 $walletDeducted = true;
             }
             
@@ -300,6 +364,7 @@ class LagacyNinController extends Controller
                 (strpos(strtolower($responseData['message']), 'insufficient balance') !== false ||
                  strpos(strtolower($responseData['message']), 'balance') !== false)) {
                 
+                $this->logLagacyNin('ERROR', 'External API balance error', ['message' => $responseData['message']]);
                 return [
                     'error' => 'The external API service reports insufficient balance. This may be separate from your local wallet balance. Please contact support or try a different search method.',
                     'code' => 'API_BALANCE_ERROR',
@@ -309,12 +374,14 @@ class LagacyNinController extends Controller
             }
 
             // Success - return data
+            $this->logLagacyNin('INFO', 'API Request completed successfully');
             return [
                 'data' => $responseData,
                 'status' => $httpCode
             ];
         }
         
+        $this->logLagacyNin('ERROR', 'Maximum retries exceeded');
         return [
             'error' => 'Maximum retries exceeded. Please try again later.',
             'code' => 'MAX_RETRIES_EXCEEDED',
@@ -435,7 +502,7 @@ class LagacyNinController extends Controller
             // Make API request to appropriate version
             $url = 'https://ideefied.com/api/v' . $version . '/nin-search';
             
-            $result = $this->makeApiRequest($url, $requestData, $token, $version);
+            $result = $this->makeApiRequest($url, $requestData, $token, $version, $request->selected_action ?? 'slip');
 
             if (isset($result['error'])) {
                 return response()->json($result, $result['status'] ?? 500);
@@ -476,10 +543,16 @@ class LagacyNinController extends Controller
      */
     public function generatePDF(Request $request)
     {
+        $this->logLagacyNin('INFO', 'generatePDF called', [
+            'nin' => $request->nin,
+            'template_type' => $request->template_type,
+            'api_version' => $request->api_version
+        ]);
         
         try {
             // Check authentication first
             if (!Auth::check()) {
+                $this->logLagacyNin('WARNING', 'PDF Generation: User not authenticated');
                 return response()->json([
                     'error' => 'Session expired. Please refresh the page and login again.',
                     'authenticated' => false
@@ -500,6 +573,10 @@ class LagacyNinController extends Controller
             // Check if the API response was successful
             $responseData = $request->data;
             if (isset($responseData['status']) && $responseData['status'] !== 'success') {
+                $this->logLagacyNin('WARNING', 'PDF Generation: API response not success', [
+                    'status' => $responseData['status'] ?? 'unknown',
+                    'message' => $responseData['message'] ?? 'no message'
+                ]);
                 return response()->json([
                     'error' => $responseData['message'] ?? 'API request failed. Please try again.',
                     'status' => 'failed'
@@ -518,11 +595,13 @@ class LagacyNinController extends Controller
             ];
 
             // Generate PDF content based on template type
+            $this->logLagacyNin('INFO', 'Generating PDF content', ['type' => $request->template_type]);
             $pdfContent = $this->generateNinPDF($data, $ninRecord, $request->template_type);
 
             // Check if we got PDF content or HTML fallback
             if (is_string($pdfContent) && strlen($pdfContent) > 1000 && strpos($pdfContent, '%PDF') === 0) {
                 // We have a valid PDF
+                $this->logLagacyNin('INFO', 'Valid PDF generated', ['type' => $request->template_type]);
                 $filename = $request->template_type === 'card' 
                     ? 'nin-card-' . $request->nin . '.pdf' 
                     : 'nin-slip-' . $request->nin . '.pdf';
@@ -534,6 +613,7 @@ class LagacyNinController extends Controller
                     ->header('Content-Length', strlen($pdfContent));
             } else {
                 // We have HTML fallback - return it as HTML with download prompt
+                $this->logLagacyNin('WARNING', 'PDF generation failed, using HTML fallback', ['type' => $request->template_type]);
                 $filename = $request->template_type === 'card' 
                     ? 'nin-card-' . $request->nin . '.html' 
                     : 'nin-slip-' . $request->nin . '.html';
@@ -544,6 +624,10 @@ class LagacyNinController extends Controller
             }
 
         } catch (\Exception $e) {
+            $this->logLagacyNin('ERROR', 'PDF generation exception', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             // Return HTML fallback if PDF generation fails
             return $this->generateHTMLFallback($request, $e->getMessage());
         }
@@ -554,14 +638,22 @@ class LagacyNinController extends Controller
      */
     private function generateHTMLFallback($request, $errorMessage = null)
     {
+        $this->logLagacyNin('INFO', 'Generating HTML fallback', [
+            'nin' => $request->nin,
+            'error' => $errorMessage
+        ]);
+
         $data = $request->data['data'] ?? $request->data;
+
         $ninRecord = (object)[
             'id' => time(),
-            'nin' => $request->nin,
-            'api_version' => $request->api_version
+            'api_response' => json_encode($request->data),
+            'nin' => $request->nin ?? ($data['nin'] ?? 'N/A'),
+            'api_version' => $request->api_version ?? 'v1'
         ];
         
-        $html = $request->template_type === 'card' 
+        $templateType = $request->input('template_type', 'slip');
+        $html = $templateType === 'card' 
             ? $this->getPlasticCardHTML($data, $ninRecord)
             : $this->getPDFHTML($data, $ninRecord);
         
@@ -617,9 +709,9 @@ class LagacyNinController extends Controller
         </body>
         </html>';
         
-        $filename = $request->template_type === 'card' 
-            ? 'nin-card-' . $request->nin . '.html' 
-            : 'nin-slip-' . $request->nin . '.html';
+        $filename = $templateType === 'card' 
+            ? 'nin-card-' . $ninRecord->nin . '.html' 
+            : 'nin-slip-' . $ninRecord->nin . '.html';
         
         return response($fullHtml)
             ->header('Content-Type', 'text/html')
@@ -631,6 +723,7 @@ class LagacyNinController extends Controller
      */
     private function generateQRCode($data)
     {
+        $this->logLagacyNin('INFO', 'Generating QR Code');
         // Since GD extension is required for QR code generation,
         // we'll return a placeholder or use an external API
         $qrText = is_array($data) ? json_encode($data) : $data;
@@ -642,6 +735,7 @@ class LagacyNinController extends Controller
         try {
             $qrImageData = @file_get_contents($qrCodeUrl);
             if ($qrImageData !== false) {
+                $this->logLagacyNin('INFO', 'QR Code generated successfully');
                 return 'data:image/png;base64,' . base64_encode($qrImageData);
             }
         } catch (\Exception $e) {
@@ -650,6 +744,7 @@ class LagacyNinController extends Controller
             ]);
         }
         
+        $this->logLagacyNin('WARNING', 'QR Code generation failed');
         // Return empty string to trigger the fallback in the HTML
         return '';
     }
@@ -659,6 +754,7 @@ class LagacyNinController extends Controller
      */
     private function generateNinPDF($data, $ninRecord, $templateType = 'slip')
     {
+        $this->logLagacyNin('INFO', 'generateNinPDF internal called', ['type' => $templateType]);
         try {
             // Generate HTML content
             if ($templateType === 'card') {
@@ -668,6 +764,7 @@ class LagacyNinController extends Controller
             }
 
             // Initialize DomPDF
+            $this->logLagacyNin('INFO', 'Initializing DomPDF');
             $options = new \Dompdf\Options();
             $options->set('defaultFont', 'Arial');
             $options->set('isRemoteEnabled', true);

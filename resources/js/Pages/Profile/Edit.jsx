@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import DeleteUserForm from './Partials/DeleteUserForm';
 import UpdatePasswordForm from './Partials/UpdatePasswordForm';
 import UpdateProfileInformationForm from './Partials/UpdateProfileInformationForm';
@@ -8,31 +8,10 @@ import defaultProfileImage from '../../../assets/img/user_profile.png';
 
 export default function Edit({ auth, mustVerifyEmail, status }) {
 
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-
     const handleLogout = (e) => {
         e.preventDefault();
-        if (showLogoutConfirm) {
-            // Create and submit a form for POST request
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = route('logout');
-
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
-            }
-
-            document.body.appendChild(form);
-            form.submit();
-        } else {
-            setShowLogoutConfirm(true);
-            setTimeout(() => setShowLogoutConfirm(false), 3000);
+        if (confirm("Are you sure you want to logout?")) {
+            router.post(route('logout'));
         }
     };
 

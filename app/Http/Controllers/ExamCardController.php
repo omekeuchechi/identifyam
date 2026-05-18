@@ -537,77 +537,172 @@ class ExamCardController extends Controller
     {
         $cards = is_array($purchase->cards) ? $purchase->cards : [];
         $cardsHTML = '';
+        $cardName = htmlspecialchars($purchase->card_name);
+        $purchaseDate = $purchase->created_at->format('d M Y, H:i');
+        $currentDate = now()->format('d M Y, H:i');
         
-        if (!empty($cards)) {
-            $cardsHTML = '<div class="cards-section">
-                <h3>Generated Cards</h3>
-                <table class="cards-table">
-                    <thead>
-                        <tr>
-                            <th>Serial Number</th>
-                            <th>PIN</th>
-                        </tr>
-                    </thead>
-                    <tbody>';
+        foreach ($cards as $card) {
+            $pin = htmlspecialchars($card['pin'] ?? 'N/A');
+            $serial = htmlspecialchars($card['serial_no'] ?? 'N/A');
             
-            foreach ($cards as $card) {
-                $cardsHTML .= '
-                    <tr>
-                        <td>' . htmlspecialchars($card['serial_no'] ?? 'N/A') . '</td>
-                        <td>' . htmlspecialchars($card['pin'] ?? 'N/A') . '</td>
-                    </tr>';
-            }
-            
-            $cardsHTML .= '
-                    </tbody>
-                </table>
-            </div>';
+            $cardsHTML .= "
+            <div class='exam-card'>
+                <div class='card-header'>
+                    <h4>{$cardName}</h4>
+                </div>
+                <div class='card-body'>
+                    <div class='pin-container'>
+                        <div class='pin-label'>Examination PIN</div>
+                        <div class='pin-value'>{$pin}</div>
+                    </div>
+                    <div class='serial-container'>
+                        <span>Serial: <strong>{$serial}</strong></span>
+                    </div>
+                </div>
+                <div class='card-footer'>
+                    IDENTIFYAM VERIFIED • {$purchaseDate}
+                </div>
+            </div>";
         }
 
         return "
-        <html>
+        <!DOCTYPE html>
+        <html lang='en'>
         <head>
+            <meta charset='UTF-8'>
             <style>
-                body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
-                .card-container { border: 2px solid #28a745; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                .header { background: #28a745; color: white; padding: 20px; border-radius: 8px 8px 0 0; text-align: center; }
-                .card-info { margin: 20px 0; text-align: left; }
-                .card-info p { margin: 10px 0; font-size: 14px; }
-                .reference { font-weight: bold; color: #28a745; }
-                .cards-section { margin-top: 30px; }
-                .cards-section h3 { color: #28a745; margin-bottom: 15px; text-align: center; }
-                .cards-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                .cards-table th, .cards-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-                .cards-table th { background: #f8f9fa; font-weight: bold; }
-                .cards-table tr:nth-child(even) { background: #f8f9fa; }
-                .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; border-top: 1px solid #eee; padding-top: 20px; }
-                .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                body { 
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: #f0f2f5; 
+                    color: #1a1a1a;
+                }
+                .container {
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+                .receipt-header {
+                    background: white;
+                    padding: 20px;
+                    border-radius: 12px;
+                    margin-bottom: 25px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+                    border-left: 5px solid #10b981;
+                }
+                .receipt-header h2 {
+                    margin: 0 0 10px 0;
+                    color: #10b981;
+                    font-size: 24px;
+                }
+                .receipt-details {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 15px;
+                    font-size: 14px;
+                }
+                .detail-item {
+                    color: #64748b;
+                }
+                .detail-item strong {
+                    color: #1e293b;
+                    display: block;
+                    margin-bottom: 2px;
+                }
+                .cards-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                    gap: 20px;
+                }
+                .exam-card {
+                    background: white;
+                    border-radius: 15px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+                    position: relative;
+                    border: 1px solid #e2e8f0;
+                    margin-bottom: 20px;
+                }
+                .card-header {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white;
+                    padding: 15px;
+                    text-align: center;
+                }
+                .card-header h4 {
+                    margin: 0;
+                    font-size: 16px;
+                    letter-spacing: 1px;
+                    text-transform: uppercase;
+                }
+                .card-body {
+                    padding: 20px;
+                    background-image: radial-gradient(#10b981 0.5px, transparent 0.5px);
+                    background-size: 15px 15px;
+                    background-color: #ffffff;
+                    opacity: 0.95;
+                }
+                .pin-container {
+                    background: #f8fafc;
+                    border: 2px dashed #cbd5e1;
+                    padding: 15px;
+                    border-radius: 10px;
+                    text-align: center;
+                    margin-bottom: 15px;
+                }
+                .pin-label {
+                    font-size: 12px;
+                    color: #64748b;
+                    text-transform: uppercase;
+                    margin-bottom: 5px;
+                }
+                .pin-value {
+                    font-family: 'Courier New', Courier, monospace;
+                    font-size: 24px;
+                    font-weight: bold;
+                    color: #1e293b;
+                    letter-spacing: 2px;
+                }
+                .serial-container {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    font-size: 13px;
+                    color: #475569;
+                    padding-top: 10px;
+                    border-top: 1px solid #f1f5f9;
+                }
+                .card-footer {
+                    background: #f8fafc;
+                    padding: 10px;
+                    text-align: center;
+                    font-size: 11px;
+                    color: #94a3b8;
+                }
+                .warning-box {
+                    background: #fffbeb;
+                    border: 1px solid #fef3c7;
+                    padding: 15px;
+                    border-radius: 10px;
+                    margin-top: 20px;
+                    color: #92400e;
+                    font-size: 13px;
+                }
+                @media print {
+                    body { background: white; }
+                    .receipt-header { box-shadow: none; border: 1px solid #e2e8f0; }
+                    .exam-card { box-shadow: none; border: 1px solid #e2e8f0; break-inside: avoid; }
+                }
             </style>
         </head>
         <body>
-            <div class='card-container'>
-                <div class='header'>
-                    <h2>IDENTIFYAM EXAM CARD</h2>
-                </div>
-                <div class='card-info'>
-                    <p><strong>Card Name:</strong> {$purchase->card_name}</p>
-                    <p><strong>Quantity:</strong> {$purchase->quantity}</p>
-                    <p><strong>Amount:</strong> ₦" . number_format($purchase->amount, 2) . "</p>
-                    <p><strong>Reference:</strong> <span class='reference'>{$purchase->reference}</span></p>
-                    <p><strong>Purchase Date:</strong> {$purchase->created_at->format('d M Y, H:i')}</p>
-                    <p><strong>Status:</strong> {$purchase->status}</p>
-                    <p><strong>Transaction Date:</strong> " . ($purchase->created_at ?? 'N/A') . "</p>
+            <div class='container'>
+                <div class='cards-grid'>
+                    {$cardsHTML}
                 </div>
                 
-                {$cardsHTML}
-                
-                <div class='warning'>
-                    <strong>⚠️ Important:</strong> Keep these card details safe. Do not share with unauthorized persons.
-                </div>
-                
-                <div class='footer'>
-                    <p>This is an official exam card receipt from Identifyam</p>
-                    <p>Generated on: " . now()->format('d M Y, H:i') . "</p>
+                <div style='text-align: center; margin-top: 20px; font-size: 12px; color: #666;'>
+                    <p>Generated on: {$currentDate}</p>
                 </div>
             </div>
         </body>

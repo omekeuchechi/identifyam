@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
+use App\Models\UserActivity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 abstract class Controller
 {
     /**
-     * Log user activity.
+     * Log user activity (Generic).
      */
     protected function logActivity($action, $description = null, $type = 'auth', $details = [])
     {
@@ -21,13 +22,38 @@ abstract class Controller
                 'action' => $action,
                 'description' => $description ?: $this->getActionDescription($action),
                 'type' => $type,
-                'details' => json_encode($details),
+                'details' => $details,
                 'ip_address' => request()->ip(),
                 'user_agent' => request()->userAgent(),
             ]);
         } catch (\Exception $e) {
-            // Don't break the application if activity logging fails
             Log::error('Failed to log activity: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Log specific business activity (History).
+     */
+    protected function logUserActivity($type, $action, $description, $amount = null, $reference = null, $details = [], $status = 'success')
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) return;
+
+            UserActivity::create([
+                'user_id' => $user->id,
+                'type' => $type,
+                'action' => $action,
+                'description' => $description,
+                'amount' => $amount,
+                'reference' => $reference,
+                'status' => $status,
+                'details' => $details,
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to log user activity: ' . $e->getMessage());
         }
     }
 

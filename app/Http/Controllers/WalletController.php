@@ -274,6 +274,16 @@ class WalletController extends Controller
 
                 $newBalance = $user->fresh()->walletAmount;
 
+                // Log history activity
+                $this->logUserActivity(
+                    'funding',
+                    'wallet_funded',
+                    "Wallet funded with ₦" . number_format($transaction->amount, 2),
+                    $transaction->amount,
+                    $reference,
+                    ['gateway' => 'paystack', 'new_balance' => $newBalance]
+                );
+
                 return redirect()->route('funding')->with(
                     'success',
                     'Wallet funded successfully! New balance: ' . $user->formatted_wallet_balance

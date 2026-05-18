@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { usePage, Head, Link } from '@inertiajs/react';
+import { usePage, Head, Link, router } from '@inertiajs/react';
 import { formatCurrency } from '../../utils/formatCurrency';
 
-const NinProfit = ({ auth }) => {
-    const { props } = usePage();
-    const [analytics, setAnalytics] = useState({
+const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytics, profitData: initialProfitData }) => {
+    const [analytics, setAnalytics] = useState(initialAnalytics || {
         totalRequests: 0,
         totalRevenue: 0,
         totalProfit: 0,
@@ -13,65 +12,21 @@ const NinProfit = ({ auth }) => {
         avgYearlyProfit: 0,
         totalWalletBalance: 0
     });
-    const [profitData, setProfitData] = useState([]);
-    const [requests, setRequests] = useState([]);
+    const [profitData, setProfitData] = useState(initialProfitData || []);
+    const [requests, setRequests] = useState(initialRequests?.data || []);
     const [loading, setLoading] = useState(false);
 
+    // No need to fetch on mount as data is provided via props
     useEffect(() => {
-        fetchNinProfitData();
-    }, []);
-
-    const fetchNinProfitData = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(route('admin.nin-profit'), {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setAnalytics(data.analytics);
-                setProfitData(data.profitData);
-                setRequests(data.requests.data);
-            }
-        } catch (err) {
-            console.error('Failed to fetch NIN profit data:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+        if (initialAnalytics) setAnalytics(initialAnalytics);
+        if (initialProfitData) setProfitData(initialProfitData);
+        if (initialRequests) setRequests(initialRequests.data);
+    }, [initialAnalytics, initialProfitData, initialRequests]);
 
     const handleLogout = (e) => {
         e.preventDefault();
-        if (showLogoutConfirm) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = route('logout');
-
-            const csrfToken = document.querySelector('meta[name="csrf-token"]');
-            if (csrfToken) {
-                const csrfInput = document.createElement('input');
-                csrfInput.type = 'hidden';
-                csrfInput.name = '_token';
-                csrfInput.value = csrfToken.getAttribute('content');
-                form.appendChild(csrfInput);
-            }
-
-            document.body.appendChild(form);
-            const logoutConfirm = confirm("Do you want to logout");
-
-            if (logoutConfirm) {
-                form.submit();
-            }
-
-        } else {
-            setShowLogoutConfirm(true);
-            setTimeout(() => setShowLogoutConfirm(false), 3000);
+        if (confirm("Are you sure you want to logout?")) {
+            router.post(route('logout'));
         }
     };
 

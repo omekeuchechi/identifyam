@@ -15,11 +15,11 @@ class lagacy_nin extends Model
      */
     protected $fillable = [
         'nin',
-        'telephone',
+        'telephoneno',
         'image',
         'surname',
         'first_name',
-        'birth_data',
+        'birth_date',
         'gender',
         'email',
         'search_type',

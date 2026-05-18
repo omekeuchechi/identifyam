@@ -18,20 +18,22 @@ class AdminController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Admin');
+        $stats = $this->getStatsData();
+        return Inertia::render('Admin/Admin', [
+            'initialStats' => $stats
+        ]);
     }
 
     /**
-     * Get admin statistics
+     * Get admin statistics data (helper)
      */
-    public function getStats()
+    private function getStatsData()
     {
         try {
             // Get total users
             $totalUsers = User::count();
             
             // Get active users (users who logged in within last 30 days)
-            // Check if last_login_at column exists, otherwise use updated_at
             $activeUsers = User::where(function($query) {
                 if (Schema::hasColumn('users', 'last_login_at')) {
                     $query->where('last_login_at', '>=', now()->subDays(30));
@@ -40,36 +42,38 @@ class AdminController extends Controller
                 }
             })->count();
             
-            // Get NIN verifications - check if table exists
-            $totalNinVerifications = 0;
-            $todayVerifications = 0;
+            // Get NIN verifications - use UserActivity for accurate counts
+            $totalNinVerifications = \App\Models\UserActivity::where('type', 'nin_search')
+                ->where('status', 'success')
+                ->count();
             
-            try {
-                if (Schema::hasTable('lagacy_nins')) {
-                    $totalNinVerifications = lagacy_nin::count();
-                    $todayVerifications = lagacy_nin::whereDate('created_at', today())->count();
-                }
-            } catch (\Exception $e) {
-                // Table doesn't exist or other issue, keep values as 0
-            }
+            $todayVerifications = \App\Models\UserActivity::where('type', 'nin_search')
+                ->where('status', 'success')
+                ->whereDate('created_at', today())
+                ->count();
 
-            return response()->json([
+            return [
                 'totalUsers' => $totalUsers,
                 'activeUsers' => $activeUsers,
                 'totalNinVerifications' => $totalNinVerifications,
                 'todayVerifications' => $todayVerifications
-            ]);
+            ];
         } catch (\Exception $e) {
-            // Return default values if there's any error
-            return response()->json([
+            return [
                 'totalUsers' => 0,
                 'activeUsers' => 0,
                 'totalNinVerifications' => 0,
-                'todayVerifications' => 0,
-                'error' => 'Failed to fetch statistics',
-                'message' => $e->getMessage()
-            ], 500);
+                'todayVerifications' => 0
+            ];
         }
+    }
+
+    /**
+     * Get admin statistics (JSON endpoint)
+     */
+    public function getStats()
+    {
+        return response()->json($this->getStatsData());
     }
 
     /**
@@ -126,19 +130,19 @@ class AdminController extends Controller
 
     public function getNinProfit()
     {
-        $requests = lagacy_nin::with(['user'])
-            ->latest()
-            ->paginate(10);
+        // Get NIN related activities from UserActivity for more accurate financial stats
+        $ninActivities = \App\Models\UserActivity::where('type', 'nin_search')
+            ->where('status', 'success');
+        
+        $totalRequests = $ninActivities->count();
+        $totalRevenue = $ninActivities->sum('amount');
+        
+        // External API cost is fixed at 140 per successful request
+        $externalApiCostPerRequest = 140;
+        $totalCost = $totalRequests * $externalApiCostPerRequest;
+        $totalProfit = $totalRevenue - $totalCost;
 
-        // Fixed pricing
-        $chargePerRequest = 1000; // ₦1,000 per NIN verification
-        $externalApiCost = 140; // ₦140 external API cost
-        $profitPerRequest = $chargePerRequest - $externalApiCost; // ₦860 profit per request
-
-        // Calculate analytics
-        $totalRequests = lagacy_nin::count();
-        $totalRevenue = $totalRequests * $chargePerRequest;
-        $totalProfit = $totalRequests * $profitPerRequest;
+        // Calculate averages
         $avgDailyProfit = $totalRequests > 0 ? $totalProfit / max(1, ceil($totalRequests / 30)) : 0;
         $avgMonthlyProfit = $avgDailyProfit * 30;
         $avgYearlyProfit = $avgMonthlyProfit * 12;
@@ -147,8 +151,10 @@ class AdminController extends Controller
         $totalWalletBalance = User::sum('walletAmount');
 
         // Get profit data for graph (last 30 days)
-        $profitData = lagacy_nin::selectRaw('DATE(created_at) as date, COUNT(*) * ? as daily_profit', [$profitPerRequest])
+        $profitData = \App\Models\UserActivity::where('type', 'nin_search')
+            ->where('status', 'success')
             ->where('created_at', '>=', now()->subDays(30))
+            ->selectRaw('DATE(created_at) as date, SUM(amount) - (COUNT(*) * ?) as daily_profit', [$externalApiCostPerRequest])
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -159,21 +165,24 @@ class AdminController extends Controller
                 ];
             });
 
-            return Inertia::render('Admin/NinProfit', [
-                    'requests' => $requests,
-                    'analytics' => [
-                        'totalRequests' => $totalRequests,
-                        'totalRevenue' => $totalRevenue,
-                        'totalProfit' => $totalProfit,
-                        'avgDailyProfit' => $avgDailyProfit,
-                        'avgMonthlyProfit' => $avgMonthlyProfit,
-                        'avgYearlyProfit' => $avgYearlyProfit,
-                        'totalWalletBalance' => $totalWalletBalance,
-                        'chargePerRequest' => $chargePerRequest,
-                        'externalApiCost' => $externalApiCost,
-                        'profitPerRequest' => $profitPerRequest
-                    ],
-                    'profitData' => $profitData
+        // Still get the requests for the table
+        $requests = lagacy_nin::with(['user'])
+            ->latest()
+            ->paginate(10);
+
+        return Inertia::render('Admin/NinProfit', [
+            'requests' => $requests,
+            'analytics' => [
+                'totalRequests' => $totalRequests,
+                'totalRevenue' => $totalRevenue,
+                'totalProfit' => $totalProfit,
+                'avgDailyProfit' => $avgDailyProfit,
+                'avgMonthlyProfit' => $avgMonthlyProfit,
+                'avgYearlyProfit' => $avgYearlyProfit,
+                'totalWalletBalance' => $totalWalletBalance,
+                'externalApiCost' => $externalApiCostPerRequest
+            ],
+            'profitData' => $profitData
         ]);
     }
 
@@ -244,7 +253,33 @@ class AdminController extends Controller
 
     public function securityMonitoring()
     {
-        return Inertia::render('Admin/SecurityMonitoring');
+        // Get recent security logs
+        $logs = SecurityLog::with('user')
+            ->latest()
+            ->limit(100)
+            ->get();
+            
+        // Get security statistics
+        $stats = [
+            'totalLogs' => SecurityLog::count(),
+            'highSeverity' => SecurityLog::where('severity', 'high')->count(),
+            'criticalSeverity' => SecurityLog::where('severity', 'critical')->count(),
+            'todayLogs' => SecurityLog::whereDate('created_at', today())->count(),
+            'activeUsers' => SecurityLog::where('created_at', '>', now()->subHours(24))
+                ->distinct('user_id')
+                ->count(),
+            'suspiciousIPs' => SecurityLog::where('created_at', '>', now()->subHours(24))
+                ->distinct('ip_address')
+                ->count(),
+            'walletAttacks' => SecurityLog::where('activity_type', 'wallet_change')
+                ->where('severity', 'high')
+                ->count(),
+        ];
+
+        return Inertia::render('Admin/SecurityMonitoring', [
+            'initialLogs' => $logs,
+            'initialStats' => $stats
+        ]);
     }
 
     /**

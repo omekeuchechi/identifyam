@@ -136,34 +136,17 @@ const History = ({ auth }) => {
                             <button
                                 onClick={() => clearCache('user')}
                                 disabled={clearingCache}
-                                className="btn btn-secondary"
-                                style={{
-                                    backgroundColor: '#6b7280',
-                                    color: 'white',
-                                    padding: '10px 20px',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    cursor: clearingCache ? 'not-allowed' : 'pointer',
-                                    fontSize: '14px',
-                                    fontWeight: '500',
-                                    transition: 'background-color 0.2s'
-                                }}
-                                onMouseOver={(e) => {
-                                    if (!clearingCache) e.currentTarget.style.backgroundColor = '#4b5563';
-                                }}
-                                onMouseOut={(e) => {
-                                    if (!clearingCache) e.currentTarget.style.backgroundColor = '#6b7280';
-                                }}
+                                className="btn btn-clear-user"
                             >
                                 {clearingCache ? (
                                     <>
-                                        <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
-                                        Clearing...
+                                        <i className="fas fa-spinner fa-spin"></i>
+                                        <span>Clearing...</span>
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fas fa-trash-alt" style={{ marginRight: '8px' }}></i>
-                                        Clear My Cache
+                                        <i className="fas fa-trash-alt"></i>
+                                        <span>Clear My Cache</span>
                                     </>
                                 )}
                             </button>
@@ -172,35 +155,17 @@ const History = ({ auth }) => {
                                 <button
                                     onClick={() => clearCache('all')}
                                     disabled={clearingCache}
-                                    className="btn btn-danger"
-                                    style={{
-                                        backgroundColor: '#ef4444',
-                                        color: 'white',
-                                        padding: '10px 20px',
-                                        border: 'none',
-                                        borderRadius: '8px',
-                                        cursor: clearingCache ? 'not-allowed' : 'pointer',
-                                        fontSize: '14px',
-                                        fontWeight: '500',
-                                        transition: 'background-color 0.2s',
-                                        marginLeft: '12px'
-                                    }}
-                                    onMouseOver={(e) => {
-                                        if (!clearingCache) e.currentTarget.style.backgroundColor = '#dc2626';
-                                    }}
-                                    onMouseOut={(e) => {
-                                        if (!clearingCache) e.currentTarget.style.backgroundColor = '#ef4444';
-                                    }}
+                                    className="btn btn-clear-all"
                                 >
                                     {clearingCache ? (
                                         <>
-                                            <i className="fas fa-spinner fa-spin" style={{ marginRight: '8px' }}></i>
-                                            Clearing...
+                                            <i className="fas fa-spinner fa-spin"></i>
+                                            <span>Clearing...</span>
                                         </>
                                     ) : (
                                         <>
-                                            <i className="fas fa-server" style={{ marginRight: '8px' }}></i>
-                                            Clear All Cache
+                                            <i className="fas fa-server"></i>
+                                            <span>Clear All Cache</span>
                                         </>
                                     )}
                                 </button>
@@ -212,57 +177,49 @@ const History = ({ auth }) => {
                 {/* Filters */}
                 <div className="filters-section">
                     <div className="filter-controls">
-                        <input
-                            type="text"
-                            placeholder="Search activities..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
-                            style={{
-                                padding: '10px 16px',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                width: '300px'
-                            }}
-                        />
+                        <div className="search-box">
+                            <i className="fas fa-search"></i>
+                            <input
+                                type="text"
+                                placeholder="Search activities..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="search-input"
+                            />
+                        </div>
                         
-                        <select
-                            value={filterType}
-                            onChange={(e) => setFilterType(e.target.value)}
-                            className="filter-select"
-                            style={{
-                                padding: '10px 16px',
-                                border: '1px solid #d1d5db',
-                                borderRadius: '8px',
-                                fontSize: '14px',
-                                marginLeft: '12px'
-                            }}
-                        >
-                            <option value="all">All Activities</option>
-                            <option value="auth">Authentication</option>
-                            <option value="profile">Profile</option>
-                            <option value="security">Security</option>
-                            <option value="verification">Verification</option>
-                            <option value="transaction">Transactions</option>
-                            {auth.user.isAdmin && <option value="admin">Admin Actions</option>}
-                            <option value="system">System</option>
-                        </select>
+                        <div className="filter-box">
+                            <i className="fas fa-filter"></i>
+                            <select
+                                value={filterType}
+                                onChange={(e) => setFilterType(e.target.value)}
+                                className="filter-select"
+                            >
+                                <option value="all">All Activities</option>
+                                <option value="auth">Authentication</option>
+                                <option value="profile">Profile</option>
+                                <option value="security">Security</option>
+                                <option value="verification">Verification</option>
+                                <option value="transaction">Transactions</option>
+                                {auth.user.isAdmin && <option value="admin">Admin Actions</option>}
+                                <option value="system">System</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
                 {/* Activities List */}
                 <div className="activities-container">
                     {loading ? (
-                        <div className="loading-state" style={{ textAlign: 'center', padding: '40px' }}>
-                            <i className="fas fa-spinner fa-spin" style={{ fontSize: '24px', color: '#6b7280' }}></i>
-                            <p style={{ marginTop: '16px', color: '#6b7280' }}>Loading activity history...</p>
+                        <div className="loading-state">
+                            <i className="fas fa-spinner fa-spin"></i>
+                            <p>Loading activity history...</p>
                         </div>
                     ) : filteredActivities.length === 0 ? (
-                        <div className="empty-state" style={{ textAlign: 'center', padding: '40px' }}>
-                            <i className="fas fa-history" style={{ fontSize: '48px', color: '#d1d5db' }}></i>
-                            <h3 style={{ marginTop: '16px', color: '#6b7280' }}>No activities found</h3>
-                            <p style={{ marginTop: '8px', color: '#9ca3af' }}>
+                        <div className="empty-state">
+                            <i className="fas fa-history"></i>
+                            <h3>No activities found</h3>
+                            <p>
                                 {searchTerm || filterType !== 'all' 
                                     ? 'Try adjusting your search or filters'
                                     : 'Your activity will appear here as you use the application'
@@ -282,25 +239,50 @@ const History = ({ auth }) => {
                                     
                                     <div className="activity-content">
                                         <div className="activity-header">
-                                            <h4>{activity.description || activity.action}</h4>
+                                            <div className="activity-title-row">
+                                                <h4>{activity.description || activity.action}</h4>
+                                                {activity.amount && (
+                                                    <span className="activity-amount">
+                                                        ₦{Number(activity.amount).toLocaleString()}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <span className="activity-time" title={formatTime(activity.created_at)}>
                                                 {getRelativeTime(activity.created_at)}
                                             </span>
                                         </div>
                                         
+                                        {activity.reference && (
+                                            <div className="activity-reference">
+                                                REF: {activity.reference}
+                                            </div>
+                                        )}
+                                        
                                         {activity.details && (
-                                            <p className="activity-details">{activity.details}</p>
+                                            <div className="activity-details">
+                                                {typeof activity.details === 'object' ? (
+                                                    <div className="details-grid">
+                                                        {Object.entries(activity.details).map(([key, value]) => (
+                                                            <span key={key} className="detail-tag">
+                                                                <strong>{key.replace(/_/g, ' ')}:</strong> {String(value)}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p>{activity.details}</p>
+                                                )}
+                                            </div>
                                         )}
                                         
                                         {activity.ip_address && (
                                             <div className="activity-meta">
                                                 <span className="meta-item">
-                                                    <i className="fas fa-globe" style={{ marginRight: '4px' }}></i>
+                                                    <i className="fas fa-globe"></i>
                                                     {activity.ip_address}
                                                 </span>
                                                 {activity.user_agent && (
                                                     <span className="meta-item">
-                                                        <i className="fas fa-desktop" style={{ marginRight: '4px' }}></i>
+                                                        <i className="fas fa-desktop"></i>
                                                         {activity.user_agent.split(' ')[0]}
                                                     </span>
                                                 )}
@@ -326,13 +308,14 @@ const History = ({ auth }) => {
                     border-radius: 12px;
                     padding: 24px;
                     margin-bottom: 24px;
-                    box-shadow: '0 1px 3px rgba(0, 0, 0, 0.1)';
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 }
 
                 .header-content {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    gap: 20px;
                 }
 
                 .header-text h2 {
@@ -353,24 +336,122 @@ const History = ({ auth }) => {
                     gap: 12px;
                 }
 
+                .btn {
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    font-weight: 500;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    transition: all 0.2s;
+                    white-space: nowrap;
+                }
+
+                .btn:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+
+                .btn-clear-user {
+                    background-color: #10b981;
+                    color: white;
+                }
+
+                .btn-clear-user:hover:not(:disabled) {
+                    background-color: #059669;
+                }
+
+                .btn-clear-all {
+                    background-color: #ef4444;
+                    color: white;
+                }
+
+                .btn-clear-all:hover:not(:disabled) {
+                    background-color: #dc2626;
+                }
+
                 .filters-section {
                     background: white;
                     border-radius: 12px;
                     padding: 20px;
                     margin-bottom: 24px;
-                    box-shadow: '0 1px 3px rgba(0, 0, 0, 0.1)';
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                 }
 
                 .filter-controls {
                     display: flex;
+                    gap: 16px;
+                }
+
+                .search-box, .filter-box {
+                    position: relative;
+                    display: flex;
                     align-items: center;
                 }
+
+                .search-box i, .filter-box i {
+                    position: absolute;
+                    left: 14px;
+                    color: #9ca3af;
+                    font-size: 14px;
+                }
+
+                .search-input, .filter-select {
+                    padding: 10px 16px 10px 40px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    width: 100%;
+                    outline: none;
+                    transition: border-color 0.2s;
+                }
+
+                .search-input:focus, .filter-select:focus {
+                    border-color: #10b981;
+                }
+
+                .search-box { flex: 1; max-width: 400px; }
+                .filter-box { width: 220px; }
 
                 .activities-container {
                     background: white;
                     border-radius: 12px;
                     padding: 24px;
-                    box-shadow: '0 1px 3px rgba(0, 0, 0, 0.1)';
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                }
+
+                .loading-state, .empty-state {
+                    text-align: center;
+                    padding: 60px 20px;
+                }
+
+                .loading-state i {
+                    font-size: 24px;
+                    color: #10b981;
+                }
+
+                .loading-state p {
+                    margin-top: 16px;
+                    color: #6b7280;
+                }
+
+                .empty-state i {
+                    font-size: 48px;
+                    color: #d1d5db;
+                }
+
+                .empty-state h3 {
+                    margin: 16px 0 8px 0;
+                    color: #374151;
+                }
+
+                .empty-state p {
+                    color: #6b7280;
+                    font-size: 14px;
                 }
 
                 .activities-list {
@@ -384,59 +465,99 @@ const History = ({ auth }) => {
                     gap: 16px;
                     padding: 16px;
                     border: 1px solid #f3f4f6;
-                    border-radius: 8px;
+                    border-radius: 12px;
                     transition: all 0.2s;
                 }
 
                 .activity-item:hover {
                     background: #f9fafb;
                     border-color: #e5e7eb;
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
                 }
 
                 .activity-icon {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 8px;
+                    width: 44px;
+                    height: 44px;
+                    border-radius: 10px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     flex-shrink: 0;
+                    font-size: 18px;
                 }
 
                 .activity-content {
                     flex: 1;
+                    min-width: 0;
                 }
 
                 .activity-header {
                     display: flex;
                     justify-content: space-between;
                     align-items: flex-start;
-                    margin-bottom: 4px;
+                    gap: 12px;
+                    margin-bottom: 6px;
                 }
 
-                .activity-header h4 {
+                .activity-title-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                }
+
+                .activity-title-row h4 {
                     margin: 0;
-                    color: #1f2937;
+                    color: #111827;
+                    font-size: 15px;
+                    font-weight: 600;
+                }
+
+                .activity-amount {
+                    font-weight: 700;
+                    color: #10b981;
                     font-size: 14px;
-                    font-weight: 500;
                 }
 
                 .activity-time {
                     color: #6b7280;
                     font-size: 12px;
                     white-space: nowrap;
+                    background: #f3f4f6;
+                    padding: 2px 8px;
+                    border-radius: 4px;
                 }
 
-                .activity-details {
-                    color: #6b7280;
-                    font-size: 13px;
-                    margin: 4px 0 0 0;
+                .activity-reference {
+                    font-size: 11px;
+                    color: #9ca3af;
+                    margin-bottom: 6px;
+                    font-family: monospace;
+                }
+
+                .details-grid {
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                    margin-top: 8px;
+                }
+
+                .detail-tag {
+                    background: #f3f4f6;
+                    padding: 4px 10px;
+                    border-radius: 6px;
+                    font-size: 12px;
+                    color: #4b5563;
+                    border: 1px solid #e5e7eb;
                 }
 
                 .activity-meta {
                     display: flex;
                     gap: 16px;
-                    margin-top: 8px;
+                    margin-top: 12px;
+                    border-top: 1px solid #f3f4f6;
+                    padding-top: 8px;
                 }
 
                 .meta-item {
@@ -444,6 +565,11 @@ const History = ({ auth }) => {
                     font-size: 11px;
                     display: flex;
                     align-items: center;
+                    gap: 6px;
+                }
+
+                @media (max-width: 1024px) {
+                    .filter-box { width: 200px; }
                 }
 
                 @media (max-width: 768px) {
@@ -453,34 +579,76 @@ const History = ({ auth }) => {
 
                     .header-content {
                         flex-direction: column;
-                        gap: 16px;
                         align-items: flex-start;
+                        gap: 20px;
                     }
 
                     .header-actions {
                         width: 100%;
-                        justify-content: flex-start;
+                        flex-direction: column;
+                    }
+
+                    .btn {
+                        width: 100%;
                     }
 
                     .filter-controls {
                         flex-direction: column;
+                    }
+
+                    .search-box, .filter-box {
+                        width: 100%;
+                        max-width: none;
+                    }
+
+                    .activity-item {
+                        padding: 12px;
                         gap: 12px;
                     }
 
-                    .search-input,
-                    .filter-select {
-                        width: 100%;
-                        margin-left: 0 !important;
+                    .activity-icon {
+                        width: 36px;
+                        height: 36px;
+                        font-size: 16px;
                     }
 
                     .activity-header {
                         flex-direction: column;
-                        gap: 4px;
+                        gap: 8px;
+                    }
+
+                    .activity-title-row {
+                        width: 100%;
+                        justify-content: space-between;
+                    }
+
+                    .activity-time {
+                        align-self: flex-start;
                     }
 
                     .activity-meta {
+                        flex-wrap: wrap;
+                        gap: 10px;
+                    }
+                }
+
+                @media (max-width: 480px) {
+                    .activity-item {
                         flex-direction: column;
+                    }
+
+                    .activity-icon {
+                        align-self: flex-start;
+                    }
+
+                    .activity-title-row {
+                        flex-direction: column;
+                        align-items: flex-start;
                         gap: 4px;
+                    }
+
+                    .activity-amount {
+                        font-size: 16px;
                     }
                 }
             `}</style>
