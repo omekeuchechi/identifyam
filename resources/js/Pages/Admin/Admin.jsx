@@ -9,6 +9,7 @@ const Admin = ({ auth, initialStats }) => {
         todayVerifications: 0
     });
     const [loading, setLoading] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (initialStats) {
@@ -53,34 +54,51 @@ const Admin = ({ auth, initialStats }) => {
             <Head title="Admin Dashboard" />
 
             <div className="dashboard-layout">
+                {/* Sidebar Overlay for Mobile */}
+                {isSidebarOpen && (
+                    <div 
+                        className="sidebar-overlay" 
+                        onClick={() => setIsSidebarOpen(false)}
+                    ></div>
+                )}
+
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                     <div className="sidebar-logo">
-                        <div className="logo-image">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div className="logo-image">
+                            </div>
+                            <span>IDENTIFYAM</span>
                         </div>
-                        <span>IDENTIFYAM</span>
+                        <button 
+                            className="sidebar-close-btn"
+                            onClick={() => setIsSidebarOpen(false)}
+                            aria-label="Close sidebar"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
                     </div>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('admin.dashboard')} className="sidebar-link active">
+                        <Link href={route('admin.dashboard')} className="sidebar-link active" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-tachometer-alt"></i>Dashboard
                         </Link>
-                        <Link href="lagacy-nin" className="sidebar-link">
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-history"></i> Lagacy NIN
                         </Link>
-                        <Link href={route('exam.cards')} className="sidebar-link">
+                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href="/admin/users" className="sidebar-link">
+                        <Link href="/admin/users" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-credit-card"></i> Manage Users
                         </Link>
-                        <Link href="/admin/send-email" className="sidebar-link">
+                        <Link href="/admin/send-email" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-envelope"></i> Send Email
                         </Link>
-                        <Link href="history" className="sidebar-link">
+                        <Link href="history" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="profile" className="sidebar-link">
+                        <Link href="profile" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-user-edit"></i>Profile Edit
                         </Link>
 
@@ -91,7 +109,8 @@ const Admin = ({ auth, initialStats }) => {
                             fontSize: '15px',
                             border: 'none',
                             borderRadius: '20px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            marginTop: '15px'
                         }}><i className='fas fa-sign-out'></i> Logout</button>
 
                     </nav>
@@ -101,12 +120,19 @@ const Admin = ({ auth, initialStats }) => {
                 <div className="dashboard-main">
                     {/* Topbar */}
                     <header className="topbar">
-                        <h3>Admin Dashboard</h3>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <button 
+                                className="sidebar-toggle-btn"
+                                onClick={() => setIsSidebarOpen(true)}
+                                aria-label="Toggle sidebar"
+                            >
+                                <i className="fas fa-bars"></i>
+                            </button>
+                            <h3>Admin Dashboard</h3>
+                        </div>
 
                         <div className="topbar-right">
-                            <span className="notification"><i className="fas fa-bell"></i></span>
                             <div className="user-profile">
-                                <img src="/assets/img/user_profile.png" alt="avatar" />
                                 <span>{auth.user?.name}</span>
                             </div>
                         </div>
@@ -284,13 +310,135 @@ const Admin = ({ auth, initialStats }) => {
                     font-weight: 500;
                 }
 
-                @media (max-width: 768px) {
+                .sidebar-close-btn {
+                    display: none !important;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 991px) {
+                    .dashboard-layout {
+                        flex-direction: column !important;
+                    }
+
+                    .sidebar {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: -270px !important;
+                        width: 260px !important;
+                        height: 100vh !important;
+                        z-index: 1000 !important;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1) !important;
+                        overflow-y: auto !important;
+                        display: block !important;
+                    }
+
+                    .sidebar.open {
+                        left: 0 !important;
+                    }
+
+                    .sidebar-logo {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                    }
+
+                    .sidebar-close-btn {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        border: none !important;
+                        font-size: 20px !important;
+                        color: #ef4444 !important;
+                        cursor: pointer !important;
+                        padding: 4px !important;
+                    }
+
+                    .sidebar-menu {
+                        position: static !important;
+                        width: 100% !important;
+                        padding-bottom: 30px !important;
+                    }
+
+                    .sidebar-toggle-btn {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        border: none !important;
+                        font-size: 20px !important;
+                        color: #374151 !important;
+                        cursor: pointer !important;
+                        padding: 8px !important;
+                        margin-right: 15px !important;
+                        border-radius: 6px !important;
+                        transition: background-color 0.2s !important;
+                    }
+
+                    .sidebar-toggle-btn:hover {
+                        background-color: #f3f4f6 !important;
+                    }
+
+                    .sidebar-overlay {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background: rgba(0, 0, 0, 0.4) !important;
+                        z-index: 999 !important;
+                        backdrop-filter: blur(2px) !important;
+                    }
+
+                    .dashboard-main {
+                        margin-left: 0 !important;
+                        width: 100% !important;
+                    }
+
+                    .topbar {
+                        padding: 15px 20px !important;
+                        position: sticky !important;
+                        top: 0 !important;
+                        z-index: 100 !important;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+                    }
+
+                    .topbar h3 {
+                        font-size: 18px !important;
+                    }
+
+                    .dashboard-content {
+                        padding: 20px 15px !important;
+                    }
+
                     .stats-grid {
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        grid-template-columns: 1fr !important;
+                        gap: 15px !important;
+                    }
+
+                    .stat-card {
+                        padding: 20px !important;
+                    }
+
+                    .admin-actions {
+                        padding: 20px 15px !important;
+                    }
+
+                    .action-grid {
+                        grid-template-columns: 1fr !important;
+                        gap: 10px !important;
                     }
                     
-                    .action-grid {
-                        grid-template-columns: 1fr;
+                    .action-card {
+                        padding: 15px !important;
+                    }
+                }
+
+                @media (min-width: 992px) {
+                    .sidebar-toggle-btn {
+                        display: none !important;
                     }
                 }
             `}</style>

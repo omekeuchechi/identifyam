@@ -2,7 +2,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 
 import '../../../css/auth.css';
 
@@ -30,7 +30,10 @@ export default function ForgotPassword({ status }) {
             <div className="auth-container">
                 <div className="auth-card">
                     <div className="auth-header">
-                        <h1 className="auth-title">Forgot Password</h1>
+                        <h1 className="auth-title">
+                            <span className="auth-first-short">Forg</span>
+                            <span className="auth-second-short">ot</span> Password
+                        </h1>
                         <p className="auth-subtitle">No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.</p>
                     </div>
                     
@@ -43,6 +46,7 @@ export default function ForgotPassword({ status }) {
                                 type="email"
                                 name="email"
                                 value={data.email}
+                                placeholder="Your Email"
                                 className="form-input"
                                 isFocused={true}
                                 onChange={(e) => setData('email', e.target.value)}
@@ -66,13 +70,13 @@ export default function ForgotPassword({ status }) {
                                 href={route('login')} 
                                 className="google-button"
                             >
-                                <svg className="arrow-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg className="arrow-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                                 </svg>
                                 Back to Login
                             </a>
 
-                            <p>Remember your password? <a href={route('login')}>Sign in</a></p>
+                            <p>Remember your password? <Link href={route('login')}>Sign in</Link></p>
                         </div>
                     </form>
                 </div>

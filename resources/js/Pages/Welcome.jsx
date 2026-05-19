@@ -226,6 +226,22 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </div>
             </section>
 
+            <section className="about-us">
+                <div className="container">
+                    <div className="about-us-content">
+                        <div className="about-us-text fade-in-scroll">
+                            <h1 className="fade-in-scroll">About Us</h1>
+                            <p className="fade-in-scroll">
+                                We assist with comprehensive identity verification and management services. We help individuals and organizations with secure identity management, premium plastic ID card production, secure database verification, and advanced cybersecurity services to ensure safety in the digital space.
+                            </p>
+                            <p className="fade-in-scroll">
+                                Beyond identity services, we are a trusted provider of instant national Exam Scratch Cards, professional CAC Business Registration, and reliable documentation assistance for individuals preparing to Travel Abroad.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section className='nin-services fade-in-scroll'>
                 <div className="container">
                     <div className="services-header">
@@ -297,7 +313,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 <img src={downloadIcon} alt="Receive Results" loading="lazy" />
                             </div>
                             <h3 className="fade-in-scroll">Receive Your NIN Slip</h3>
-                            <p className="fade-in-scroll">Get your official NIN slip delivered securely to your preferred method</p>
+                            <p className="fade-in-scroll">Instantly retrieve and download your official NIN slip in secure, print-ready PDF format.</p>
                         </div>
                     </div>
                 </div>
@@ -526,101 +542,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         e.currentTarget.click();
                                     }
                                 }}>
-                                What is NIN verification?
+                                What services does IdentifyAM offer?
                                 <span className="faq-toggle" aria-hidden="true">+</span>
                             </div>
                             <div className="faq-answer">
-                                NIN verification is the process of confirming the authenticity of a National Identification Number through official government databases. This service helps individuals and organizations verify identity information for various purposes.
-                            </div>
-                        </div>
-                        <div className="faq-item fade-in-scroll">
-                            <div className="faq-question fade-in-scroll"
-                                onClick={(e) => {
-                                    const faqItem = e.currentTarget.parentElement;
-                                    const isActive = faqItem.classList.contains('active');
-
-                                    // Close all other FAQ items
-                                    document.querySelectorAll('.faq-item').forEach(item => {
-                                        item.classList.remove('active');
-                                    });
-
-                                    // Toggle current item
-                                    if (!isActive) {
-                                        faqItem.classList.add('active');
-                                    }
-                                }}
-                                tabIndex="0"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        e.currentTarget.click();
-                                    }
-                                }}>
-                                How long does the verification process take?
-                                <span className="faq-toggle" aria-hidden="true">+</span>
-                            </div>
-                            <div className="faq-answer">
-                                Standard verification typically takes 24-48 hours. However, processing time may vary depending on server availability and the completeness of your submitted information.
-                            </div>
-                        </div>
-                        <div className="faq-item fade-in-scroll">
-                            <div className="faq-question fade-in-scroll"
-                                onClick={(e) => {
-                                    const faqItem = e.currentTarget.parentElement;
-                                    const isActive = faqItem.classList.contains('active');
-
-                                    // Close all other FAQ items
-                                    document.querySelectorAll('.faq-item').forEach(item => {
-                                        item.classList.remove('active');
-                                    });
-
-                                    // Toggle current item
-                                    if (!isActive) {
-                                        faqItem.classList.add('active');
-                                    }
-                                }}
-                                tabIndex="0"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        e.currentTarget.click();
-                                    }
-                                }}>
-                                Is my personal information secure?
-                                <span className="faq-toggle" aria-hidden="true">+</span>
-                            </div>
-                            <div className="faq-answer">
-                                Yes, we use industry-standard encryption and security protocols to protect your personal information. All data is transmitted securely and stored in compliance with data protection regulations.
-                            </div>
-                        </div>
-                        <div className="faq-item fade-in-scroll">
-                            <div className="faq-question fade-in-scroll"
-                                onClick={(e) => {
-                                    const faqItem = e.currentTarget.parentElement;
-                                    const isActive = faqItem.classList.contains('active');
-
-                                    // Close all other FAQ items
-                                    document.querySelectorAll('.faq-item').forEach(item => {
-                                        item.classList.remove('active');
-                                    });
-
-                                    // Toggle current item
-                                    if (!isActive) {
-                                        faqItem.classList.add('active');
-                                    }
-                                }}
-                                tabIndex="0"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        e.currentTarget.click();
-                                    }
-                                }}>
-                                What documents do I need for verification?
-                                <span className="faq-toggle" aria-hidden="true">+</span>
-                            </div>
-                            <div className="faq-answer">
-                                You'll need your 11-digit NIN number, a valid form of identification (such as a driver's license or international passport), and a recent passport photograph.
+                                IdentifyAM provides comprehensive identity management services, database verification, premium plastic ID cards printing, instant national Exam Scratch Cards (WAEC, NECO, NABTEB), professional corporate CAC Business Registration, travel abroad documentation verification, and specialized cybersecurity services.
                             </div>
                         </div>
 
@@ -647,11 +573,11 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         e.currentTarget.click();
                                     }
                                 }}>
-                                How will I receive my slip?
+                                How fast can I purchase and receive Exam Scratch Cards?
                                 <span className="faq-toggle" aria-hidden="true">+</span>
                             </div>
                             <div className="faq-answer">
-                                You can receive your NIN slip in PDF format, available as both a long slip and card version for your convenience.
+                                Our Exam Scratch Cards (including WAEC, NECO, and NABTEB) are processed instantly. Once payment is confirmed, your PIN and Serial number are displayed immediately and sent directly to your account.
                             </div>
                         </div>
 
@@ -678,11 +604,104 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                         e.currentTarget.click();
                                     }
                                 }}>
-                                How do I contact support for CAC or Education Travel?
+                                What is required for corporate CAC Business Registration?
                                 <span className="faq-toggle" aria-hidden="true">+</span>
                             </div>
                             <div className="faq-answer">
-                                Use the contact support buttons in their respective sections, or reach out via WhatsApp, phone, or email for personalized assistance.
+                                To register a business with the Corporate Affairs Commission (CAC), you will need to provide your proposed business names, details of directors/shareholders, proof of identification, and business address. Our experts will handle the entire filing process.
+                            </div>
+                        </div>
+
+                        <div className="faq-item fade-in-scroll">
+                            <div className="faq-question fade-in-scroll"
+                                onClick={(e) => {
+                                    const faqItem = e.currentTarget.parentElement;
+                                    const isActive = faqItem.classList.contains('active');
+
+                                    // Close all other FAQ items
+                                    document.querySelectorAll('.faq-item').forEach(item => {
+                                        item.classList.remove('active');
+                                    });
+
+                                    // Toggle current item
+                                    if (!isActive) {
+                                        faqItem.classList.add('active');
+                                    }
+                                }}
+                                tabIndex="0"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        e.currentTarget.click();
+                                    }
+                                }}>
+                                How does IdentifyAM assist with Travel Abroad preparations?
+                                <span className="faq-toggle" aria-hidden="true">+</span>
+                            </div>
+                            <div className="faq-answer">
+                                We help verify and secure crucial travel-related documentation, including identity slips, background record checks, and academic credential verifications, ensuring fully compliant filings for travel and embassy purposes.
+                            </div>
+                        </div>
+
+                        <div className="faq-item fade-in-scroll">
+                            <div className="faq-question fade-in-scroll"
+                                onClick={(e) => {
+                                    const faqItem = e.currentTarget.parentElement;
+                                    const isActive = faqItem.classList.contains('active');
+
+                                    // Close all other FAQ items
+                                    document.querySelectorAll('.faq-item').forEach(item => {
+                                        item.classList.remove('active');
+                                    });
+
+                                    // Toggle current item
+                                    if (!isActive) {
+                                        faqItem.classList.add('active');
+                                    }
+                                }}
+                                tabIndex="0"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        e.currentTarget.click();
+                                    }
+                                }}>
+                                Is my personal and financial information secure?
+                                <span className="faq-toggle" aria-hidden="true">+</span>
+                            </div>
+                            <div className="faq-answer">
+                                Yes, we use industry-standard encryption protocols and advanced cybersecurity measures to secure all customer information. All identity and transaction records are kept confidential and protected from unauthorized access.
+                            </div>
+                        </div>
+
+                        <div className="faq-item fade-in-scroll">
+                            <div className="faq-question fade-in-scroll"
+                                onClick={(e) => {
+                                    const faqItem = e.currentTarget.parentElement;
+                                    const isActive = faqItem.classList.contains('active');
+
+                                    // Close all other FAQ items
+                                    document.querySelectorAll('.faq-item').forEach(item => {
+                                        item.classList.remove('active');
+                                    });
+
+                                    // Toggle current item
+                                    if (!isActive) {
+                                        faqItem.classList.add('active');
+                                    }
+                                }}
+                                tabIndex="0"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        e.currentTarget.click();
+                                    }
+                                }}>
+                                How do I receive my plastic ID cards or retrieve my NIN slip?
+                                <span className="faq-toggle" aria-hidden="true">+</span>
+                            </div>
+                            <div className="faq-answer">
+                                For NIN retrieval, you can download your slip instantly in PDF format. For plastic ID card production, we design and print durable plastic cards with high-grade physical security features, shipped directly to your location.
                             </div>
                         </div>
                     </div>

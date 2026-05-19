@@ -22,7 +22,10 @@ export default function VerifyEmail({ status }) {
             <div className="auth-container">
                 <div className="auth-card">
                     <div className="auth-header">
-                        <h1 className="auth-title">Verify Email</h1>
+                        <h1 className="auth-title">
+                            <span className="auth-first-short">Veri</span>
+                            <span className="auth-second-short">fy</span> Email
+                        </h1>
                         <p className="auth-subtitle">Please check your email for a verification link</p>
                     </div>
                     

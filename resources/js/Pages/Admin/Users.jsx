@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { usePage, Head, Link } from '@inertiajs/react';
+import { usePage, Head, Link, router } from '@inertiajs/react';
 
-const AdminUsers = ({ users, securityStats }) => {
+const AdminUsers = ({ auth, users, securityStats }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredUsers, setFilteredUsers] = useState(users.data || []);
     const [selectedUser, setSelectedUser] = useState(null);
     const [showSecurityModal, setShowSecurityModal] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (users?.data) {
@@ -33,9 +34,25 @@ const AdminUsers = ({ users, securityStats }) => {
         return { level: 'safe', color: '#10b981', icon: '✅' };
     };
 
+    const getSeverityColor = (severity) => {
+        switch (severity?.toLowerCase()) {
+            case 'critical': return '#dc2626';
+            case 'high': return '#f59e0b';
+            case 'medium': return '#3b82f6';
+            default: return '#10b981';
+        }
+    };
+
     const showUserSecurityDetails = (user) => {
         setSelectedUser(user);
         setShowSecurityModal(true);
+    };
+
+    const handleLogout = (e) => {
+        e.preventDefault();
+        if (confirm("Are you sure you want to logout?")) {
+            router.post(route('logout'));
+        }
     };
 
     const logCurrentIP = () => {
@@ -70,270 +87,450 @@ const AdminUsers = ({ users, securityStats }) => {
         <>
             <Head title="Manage Users - Admin" />
 
-            <div className="admin-page">
-                <div className="admin-header">
-                    <h2>Manage Users</h2>
-                    <div className="admin-actions">
-                        <input
-                            type="text"
-                            placeholder="Search users, IPs..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="search-input"
-                        />
-                        <Link href={route('admin.security')} className="btn btn-security">
-                            <i className="fas fa-shield-alt"></i> Security Monitor
-                        </Link>
-                        <button className="btn btn-info" onClick={logCurrentIP}>
-                            <i className="fas fa-map-marker-alt"></i> Log Current IP
-                        </button>
-                        <Link href={route('admin.users', {}, false)} className="btn btn-primary">
-                            <i className="fas fa-refresh"></i> Refresh
-                        </Link>
-                    </div>
-                </div>
-
-                {/* Security Stats Overview */}
-                <div className="security-overview">
-                    <div className="stat-card">
-                        <div className="stat-icon security">
-                            <i className="fas fa-shield-alt"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{securityStats?.totalSecurityLogs || 0}</h3>
-                            <p>Total Security Logs</p>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon high-risk">
-                            <i className="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{securityStats?.highSeverityLogs || 0}</h3>
-                            <p>High Severity Alerts</p>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon critical">
-                            <i className="fas fa-bomb"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{securityStats?.criticalSeverityLogs || 0}</h3>
-                            <p>Critical Alerts</p>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon today">
-                            <i className="fas fa-calendar-day"></i>
-                        </div>
-                        <div className="stat-content">
-                            <h3>{securityStats?.todayLogs || 0}</h3>
-                            <p>Today's Activities</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="users-table-container">
-                    <table className="admin-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Wallet</th>
-                                <th>IP Address</th>
-                                <th>Security</th>
-                                <th>Last Login</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredUsers.map(user => {
-                                const security = getSecurityLevel(user);
-                                return (
-                                    <tr key={user.id} className={security.level !== 'safe' ? 'suspicious-row' : ''}>
-                                        <td>{user.id}</td>
-                                        <td>
-                                            <div className="user-info">
-                                                <span className="user-name">{user.name}</span>
-                                                {user.suspicious_activities > 0 && (
-                                                    <span className="suspicious-badge" title={`${user.suspicious_activities} suspicious activities`}>
-                                                        ⚠️
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>{user.email}</td>
-                                        <td>
-                                            <span className={user.isAdmin ? 'role-badge admin' : 'role-badge user'}>
-                                                {user.isAdmin ? 'Admin' : 'User'}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="wallet-info">
-                                                <span className="wallet-amount">₦{user.walletAmount?.toLocaleString() || 0}</span>
-                                                {user.walletAmount > 50000 && (
-                                                    <span className="high-wallet" title="High wallet balance">
-                                                        💰
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="ip-info">
-                                                <span className="ip-address">{user.last_login_ip || 'Unknown'}</span>
-                                                {user.last_login_ip && (
-                                                    <button 
-                                                        className="btn-locate" 
-                                                        onClick={() => window.open(`https://www.ipinfo.io/${user.last_login_ip}`, '_blank')}
-                                                        title="Locate IP"
-                                                    >
-                                                        📍
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="security-indicator">
-                                                <span 
-                                                    className="security-badge" 
-                                                    style={{ backgroundColor: security.color }}
-                                                    title={`Security Level: ${security.level}`}
-                                                >
-                                                    {security.icon} {security.level.toUpperCase()}
-                                                </span>
-                                                <div className="security-count">
-                                                    {user.suspicious_activities} alerts
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="login-info">
-                                                <span>{user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : 'Never'}</span>
-                                                {user.last_login_at && (
-                                                    <span className="login-time">
-                                                        {new Date(user.last_login_at).toLocaleTimeString()}
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="action-buttons">
-                                                <button 
-                                                    className="btn btn-sm btn-security"
-                                                    onClick={() => showUserSecurityDetails(user)}
-                                                    title="View Security Details"
-                                                >
-                                                    <i className="fas fa-shield-alt"></i>
-                                                </button>
-                                                <button className="btn btn-sm btn-secondary" title="Edit User">
-                                                    <i className="fas fa-edit"></i>
-                                                </button>
-                                                <button className="btn btn-sm btn-danger" title="Delete User">
-                                                    <i className="fas fa-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-
-                    {users?.links && (
-                        <div className="pagination">
-                            {users.links.map((link, index) => (
-                                <Link 
-                                    key={index}
-                                    href={link.url || '#'}
-                                    className={link.active ? 'pagination-link active' : 'pagination-link'}
-                                    dangerouslySetInnerHTML={{ __html: link.label }}
-                                />
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Security Details Modal */}
-                {showSecurityModal && selectedUser && (
-                    <div className="modal-overlay" onClick={() => setShowSecurityModal(false)}>
-                        <div className="modal-content security-modal" onClick={(e) => e.stopPropagation()}>
-                            <div className="modal-header">
-                                <h3>Security Details - {selectedUser.name}</h3>
-                                <button className="modal-close" onClick={() => setShowSecurityModal(false)}>×</button>
-                            </div>
-                            <div className="modal-body">
-                                <div className="security-summary">
-                                    <div className="summary-item">
-                                        <label>Security Level:</label>
-                                        <span className={`security-level ${getSecurityLevel(selectedUser).level}`}>
-                                            {getSecurityLevel(selectedUser).icon} {getSecurityLevel(selectedUser).level.toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <label>Suspicious Activities:</label>
-                                        <span className="alert-count">{selectedUser.suspicious_activities}</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <label>Last Login IP:</label>
-                                        <span className="ip-address">{selectedUser.last_login_ip || 'Unknown'}</span>
-                                    </div>
-                                    <div className="summary-item">
-                                        <label>Wallet Balance:</label>
-                                        <span className="wallet-balance">₦{selectedUser.walletAmount?.toLocaleString() || 0}</span>
-                                    </div>
-                                </div>
-
-                                <div className="recent-logs">
-                                    <h4>Recent Security Logs</h4>
-                                    {selectedUser.recent_security_logs && selectedUser.recent_security_logs.length > 0 ? (
-                                        <div className="logs-list">
-                                            {selectedUser.recent_security_logs.map((log) => (
-                                                <div key={log.id} className="log-item">
-                                                    <div className="log-header">
-                                                        <span className="log-type">{log.activity_type || 'General Activity'}</span>
-                                                        <span className="log-time">{new Date(log.created_at).toLocaleString()}</span>
-                                                    </div>
-                                                    <div className="log-details">
-                                                        <span className="log-ip">IP: {log.ip_address}</span>
-                                                        <span className="log-severity" style={{ color: getSeverityColor(log.severity) }}>
-                                                            {log.severity?.toUpperCase()}
-                                                        </span>
-                                                    </div>
-                                                    {log.location && (
-                                                        <div className="log-location">
-                                                            📍 {log.location.city}, {log.location.country}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <p className="no-logs">No recent security logs found</p>
-                                    )}
-                                </div>
-
-                                <div className="security-actions">
-                                    <button className="btn btn-danger">
-                                        <i className="fas fa-ban"></i> Block User
-                                    </button>
-                                    <button className="btn btn-warning">
-                                        <i className="fas fa-exclamation-triangle"></i> Flag for Review
-                                    </button>
-                                    <button className="btn btn-secondary">
-                                        <i className="fas fa-envelope"></i> Send Warning
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div className="dashboard-layout">
+                {/* Sidebar Overlay for Mobile */}
+                {isSidebarOpen && (
+                    <div 
+                        className="sidebar-overlay" 
+                        onClick={() => setIsSidebarOpen(false)}
+                    ></div>
                 )}
+
+                {/* Sidebar */}
+                <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
+                    <div className="sidebar-logo">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div className="logo-image">
+                            </div>
+                            <span>IDENTIFYAM</span>
+                        </div>
+                        <button 
+                            className="sidebar-close-btn"
+                            onClick={() => setIsSidebarOpen(false)}
+                            aria-label="Close sidebar"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <nav className="sidebar-menu">
+                        <Link href={route('admin.dashboard')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-tachometer-alt"></i>Dashboard
+                        </Link>
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-history"></i> Lagacy NIN
+                        </Link>
+                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-credit-card"></i> Exam Cards
+                        </Link>
+                        <Link href="/admin/users" className="sidebar-link active" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-credit-card"></i> Manage Users
+                        </Link>
+                        <Link href="/admin/nin-requests" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-search"></i> NIN Requests
+                        </Link>
+                        <Link href="/admin/send-email" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-envelope"></i> Send Email
+                        </Link>
+                        <Link href="history" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-history"></i>History
+                        </Link>
+                        <Link href="profile" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-user-edit"></i>Profile Edit
+                        </Link>
+                        <Link href={route('admin.nin-profit')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-chart-line"></i> NIN Profit
+                        </Link>
+
+                        <button onClick={handleLogout} style={{
+                            padding: '15px 20px',
+                            backgroundColor: 'red',
+                            color: '#fff',
+                            fontSize: '15px',
+                            border: 'none',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            marginTop: '15px'
+                        }}><i className='fas fa-sign-out'></i> Logout</button>
+
+                    </nav>
+                </aside>
+
+                {/* Main Area */}
+                <div className="dashboard-main">
+                    {/* Topbar */}
+                    <header className="topbar">
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <button 
+                                className="sidebar-toggle-btn"
+                                onClick={() => setIsSidebarOpen(true)}
+                                aria-label="Toggle sidebar"
+                            >
+                                <i className="fas fa-bars"></i>
+                            </button>
+                            <h3>Manage Users</h3>
+                        </div>
+
+                        <div className="topbar-right">
+                            <div className="user-profile">
+                                <span>{auth?.user?.name}</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Page Content */}
+                    <div className="dashboard-content">
+                        <div className="admin-page">
+                            <div className="admin-header">
+                                <h2>Manage Users</h2>
+                                <div className="admin-actions">
+                                    <input
+                                        type="text"
+                                        placeholder="Search users, IPs..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        className="search-input"
+                                    />
+                                    <Link href={route('admin.security')} className="btn btn-security">
+                                        <i className="fas fa-shield-alt"></i> Security Monitor
+                                    </Link>
+                                    <button className="btn btn-info" onClick={logCurrentIP}>
+                                        <i className="fas fa-map-marker-alt"></i> Log Current IP
+                                    </button>
+                                    <Link href={route('admin.users', {}, false)} className="btn btn-primary">
+                                        <i className="fas fa-refresh"></i> Refresh
+                                    </Link>
+                                </div>
+                            </div>
+
+                            {/* Security Stats Overview */}
+                            <div className="security-overview">
+                                <div className="stat-card">
+                                    <div className="stat-icon security">
+                                        <i className="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div className="stat-content">
+                                        <h3>{securityStats?.totalSecurityLogs || 0}</h3>
+                                        <p>Total Security Logs</p>
+                                    </div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-icon high-risk">
+                                        <i className="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div className="stat-content">
+                                        <h3>{securityStats?.highSeverityLogs || 0}</h3>
+                                        <p>High Severity Alerts</p>
+                                    </div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-icon critical">
+                                        <i className="fas fa-bomb"></i>
+                                    </div>
+                                    <div className="stat-content">
+                                        <h3>{securityStats?.criticalSeverityLogs || 0}</h3>
+                                        <p>Critical Alerts</p>
+                                    </div>
+                                </div>
+                                <div className="stat-card">
+                                    <div className="stat-icon today">
+                                        <i className="fas fa-calendar-day"></i>
+                                    </div>
+                                    <div className="stat-content">
+                                        <h3>{securityStats?.todayLogs || 0}</h3>
+                                        <p>Today's Activities</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="users-table-container">
+                                <div className="table-responsive">
+                                    <table className="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Name</th>
+                                                <th>Email</th>
+                                                <th>Role</th>
+                                                <th>Wallet</th>
+                                                <th>IP Address</th>
+                                                <th>Security</th>
+                                                <th>Last Login</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {filteredUsers.map(user => {
+                                                const security = getSecurityLevel(user);
+                                                return (
+                                                    <tr key={user.id} className={security.level !== 'safe' ? 'suspicious-row' : ''}>
+                                                        <td>{user.id}</td>
+                                                        <td>
+                                                            <div className="user-info">
+                                                                <span className="user-name">{user.name}</span>
+                                                                {user.suspicious_activities > 0 && (
+                                                                    <span className="suspicious-badge" title={`${user.suspicious_activities} suspicious activities`}>
+                                                                        ⚠️
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td>{user.email}</td>
+                                                        <td>
+                                                            <span className={user.isAdmin ? 'role-badge admin' : 'role-badge user'}>
+                                                                {user.isAdmin ? 'Admin' : 'User'}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <div className="wallet-info">
+                                                                <span className="wallet-amount">₦{user.walletAmount?.toLocaleString() || 0}</span>
+                                                                {user.walletAmount > 50000 && (
+                                                                    <span className="high-wallet" title="High wallet balance">
+                                                                        💰
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="ip-info">
+                                                                <span className="ip-address">{user.last_login_ip || 'Unknown'}</span>
+                                                                {user.last_login_ip && (
+                                                                    <button 
+                                                                        className="btn-locate" 
+                                                                        onClick={() => window.open(`https://www.ipinfo.io/${user.last_login_ip}`, '_blank')}
+                                                                        title="Locate IP"
+                                                                    >
+                                                                        📍
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="security-indicator">
+                                                                <span 
+                                                                    className="security-badge" 
+                                                                    style={{ backgroundColor: security.color }}
+                                                                    title={`Security Level: ${security.level}`}
+                                                                >
+                                                                    {security.icon} {security.level.toUpperCase()}
+                                                                </span>
+                                                                <div className="security-count">
+                                                                    {user.suspicious_activities} alerts
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="login-info">
+                                                                <span>{user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : 'Never'}</span>
+                                                                {user.last_login_at && (
+                                                                    <span className="login-time">
+                                                                        {new Date(user.last_login_at).toLocaleTimeString()}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <div className="action-buttons">
+                                                                <button 
+                                                                    className="btn btn-sm btn-security"
+                                                                    onClick={() => showUserSecurityDetails(user)}
+                                                                    title="View Security Details"
+                                                                >
+                                                                    <i className="fas fa-shield-alt"></i>
+                                                                </button>
+                                                                <button className="btn btn-sm btn-secondary" title="Edit User">
+                                                                    <i className="fas fa-edit"></i>
+                                                                </button>
+                                                                <button className="btn btn-sm btn-danger" title="Delete User">
+                                                                    <i className="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                {users?.links && (
+                                    <div className="pagination">
+                                        {users.links.map((link, index) => (
+                                            <Link 
+                                                key={index}
+                                                href={link.url || '#'}
+                                                className={link.active ? 'pagination-link active' : 'pagination-link'}
+                                                dangerouslySetInnerHTML={{ __html: link.label }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
+            {/* Security Details Modal */}
+            {showSecurityModal && selectedUser && (
+                <div className="modal-overlay" onClick={() => setShowSecurityModal(false)}>
+                    <div className="modal-content security-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Security Details - {selectedUser.name}</h3>
+                            <button className="modal-close" onClick={() => setShowSecurityModal(false)}>×</button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="security-summary">
+                                <div className="summary-item">
+                                    <label>Security Level:</label>
+                                    <span className={`security-level ${getSecurityLevel(selectedUser).level}`}>
+                                        {getSecurityLevel(selectedUser).icon} {getSecurityLevel(selectedUser).level.toUpperCase()}
+                                    </span>
+                                </div>
+                                <div className="summary-item">
+                                    <label>Suspicious Activities:</label>
+                                    <span className="alert-count">{selectedUser.suspicious_activities}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <label>Last Login IP:</label>
+                                    <span className="ip-address">{selectedUser.last_login_ip || 'Unknown'}</span>
+                                </div>
+                                <div className="summary-item">
+                                    <label>Wallet Balance:</label>
+                                    <span className="wallet-balance">₦{selectedUser.walletAmount?.toLocaleString() || 0}</span>
+                                </div>
+                            </div>
+
+                            <div className="recent-logs">
+                                <h4>Recent Security Logs</h4>
+                                {selectedUser.recent_security_logs && selectedUser.recent_security_logs.length > 0 ? (
+                                    <div className="logs-list">
+                                        {selectedUser.recent_security_logs.map((log) => (
+                                            <div key={log.id} className="log-item">
+                                                <div className="log-header">
+                                                    <span className="log-type">{log.activity_type || 'General Activity'}</span>
+                                                    <span className="log-time">{new Date(log.created_at).toLocaleString()}</span>
+                                                </div>
+                                                <div className="log-details">
+                                                    <span className="log-ip">IP: {log.ip_address}</span>
+                                                    <span className="log-severity" style={{ color: getSeverityColor(log.severity) }}>
+                                                        {log.severity?.toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                {log.location && (
+                                                    <div className="log-location">
+                                                        📍 {log.location.city}, {log.location.country}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="no-logs">No recent security logs found</p>
+                                )}
+                            </div>
+
+                            <div className="security-actions">
+                                <button className="btn btn-danger">
+                                    <i className="fas fa-ban"></i> Block User
+                                </button>
+                                <button className="btn btn-warning">
+                                    <i className="fas fa-exclamation-triangle"></i> Flag for Review
+                                </button>
+                                <button className="btn btn-secondary">
+                                    <i className="fas fa-envelope"></i> Send Warning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <style>{`
-                .admin-page {
+                .dashboard-layout {
+                    display: flex;
+                    min-height: 100vh;
+                    background: #f8f9fa;
+                }
+
+                .sidebar {
+                    width: 280px;
+                    background: white;
+                    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                    position: fixed;
+                    height: 100vh;
+                    left: 0;
+                    top: 0;
+                    z-index: 1000;
+                }
+
+                .sidebar-logo {
                     padding: 20px;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    font-weight: 700;
+                    color: #1f2937;
+                }
+
+                .sidebar-menu {
+                    padding: 20px 0;
+                }
+
+                .sidebar-link {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 15px 20px;
+                    color: #6b7280;
+                    text-decoration: none;
+                    transition: all 0.2s ease;
+                }
+
+                .sidebar-link:hover,
+                .sidebar-link.active {
+                    background: #f3f4f6;
+                    color: #059669;
+                }
+
+                .dashboard-main {
+                    flex: 1;
+                    margin-left: 280px;
+                }
+
+                .topbar {
+                    background: white;
+                    padding: 20px 30px;
+                    border-bottom: 1px solid #e5e7eb;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+
+                .topbar-right {
+                    display: flex;
+                    align-items: center;
+                    gap: 20px;
+                }
+
+                .user-profile {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+                .user-profile span {
+                    font-weight: 500;
+                    color: #374151;
+                }
+
+                .dashboard-content {
+                    padding: 30px;
+                }
+
+                .admin-page {
+                    padding: 0;
                 }
 
                 .admin-header {
@@ -402,6 +599,7 @@ const AdminUsers = ({ users, securityStats }) => {
                     border-radius: 6px;
                     font-size: 14px;
                     width: 300px;
+                    color: #374151;
                 }
 
                 .search-input:focus {
@@ -462,6 +660,11 @@ const AdminUsers = ({ users, securityStats }) => {
                     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
                 }
 
+                .table-responsive {
+                    overflow-x: auto;
+                    width: 100%;
+                }
+
                 .admin-table {
                     width: 100%;
                     border-collapse: collapse;
@@ -474,11 +677,13 @@ const AdminUsers = ({ users, securityStats }) => {
                     font-weight: 600;
                     color: #374151;
                     border-bottom: 2px solid #e5e7eb;
+                    white-space: nowrap;
                 }
 
                 .admin-table td {
                     padding: 12px;
                     border-bottom: 1px solid #f3f4f6;
+                    white-space: nowrap;
                 }
 
                 .admin-table tr:hover {
@@ -604,6 +809,7 @@ const AdminUsers = ({ users, securityStats }) => {
 
                 .security-modal {
                     max-width: 800px;
+                    width: 100%;
                 }
 
                 .modal-header {
@@ -753,17 +959,158 @@ const AdminUsers = ({ users, securityStats }) => {
                     background: #f3f4f6;
                 }
 
-                @media (max-width: 768px) {
+                .sidebar-close-btn {
+                    display: none !important;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 991px) {
+                    .dashboard-layout {
+                        flex-direction: column !important;
+                    }
+
+                    .sidebar {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: -290px !important;
+                        width: 280px !important;
+                        height: 100vh !important;
+                        z-index: 1000 !important;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1) !important;
+                        overflow-y: auto !important;
+                        display: block !important;
+                    }
+
+                    .sidebar.open {
+                        left: 0 !important;
+                    }
+
+                    .sidebar-logo {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                    }
+
+                    .sidebar-close-btn {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        border: none !important;
+                        font-size: 20px !important;
+                        color: #ef4444 !important;
+                        cursor: pointer !important;
+                        padding: 4px !important;
+                    }
+
+                    .sidebar-menu {
+                        position: static !important;
+                        width: 100% !important;
+                        padding-bottom: 30px !important;
+                    }
+
+                    .sidebar-toggle-btn {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        border: none !important;
+                        font-size: 20px !important;
+                        color: #374151 !important;
+                        cursor: pointer !important;
+                        padding: 8px !important;
+                        margin-right: 15px !important;
+                        border-radius: 6px !important;
+                        transition: background-color 0.2s !important;
+                    }
+
+                    .sidebar-toggle-btn:hover {
+                        background-color: #f3f4f6 !important;
+                    }
+
+                    .sidebar-overlay {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background: rgba(0, 0, 0, 0.4) !important;
+                        z-index: 999 !important;
+                        backdrop-filter: blur(2px) !important;
+                    }
+
+                    .dashboard-main {
+                        margin-left: 0 !important;
+                        width: 100% !important;
+                    }
+
+                    .topbar {
+                        padding: 15px 20px !important;
+                        position: sticky !important;
+                        top: 0 !important;
+                        z-index: 100 !important;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+                    }
+
+                    .topbar h3 {
+                        font-size: 18px !important;
+                    }
+
+                    .dashboard-content {
+                        padding: 20px 15px !important;
+                    }
+
+                    .admin-header {
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        gap: 15px !important;
+                        padding: 15px !important;
+                    }
+
+                    .admin-actions {
+                        width: 100% !important;
+                        flex-direction: column !important;
+                        align-items: stretch !important;
+                        gap: 10px !important;
+                    }
+
+                    .search-input {
+                        width: 100% !important;
+                    }
+
+                    .btn {
+                        width: 100% !important;
+                        justify-content: center !important;
+                    }
+
                     .security-overview {
-                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+                        gap: 10px !important;
                     }
-                    
+
+                    .stat-card {
+                        padding: 15px !important;
+                    }
+
+                    .action-buttons {
+                        flex-direction: column !important;
+                        gap: 4px !important;
+                    }
+
                     .security-summary {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: 1fr !important;
                     }
-                    
+
                     .security-actions {
-                        flex-direction: column;
+                        flex-direction: column !important;
+                    }
+                }
+
+                @media (min-width: 992px) {
+                    .sidebar-toggle-btn {
+                        display: none !important;
                     }
                 }
             `}</style>

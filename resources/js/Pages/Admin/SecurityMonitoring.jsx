@@ -13,6 +13,7 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
     });
     const [loading, setLoading] = useState(false);
     const [selectedLog, setSelectedLog] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     // No need to fetch on mount as data is provided via props
     useEffect(() => {
@@ -50,24 +51,57 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
             <Head title="Security Monitoring" />
 
             <div className="dashboard-layout">
+                {/* Sidebar Overlay for Mobile */}
+                {isSidebarOpen && (
+                    <div 
+                        className="sidebar-overlay" 
+                        onClick={() => setIsSidebarOpen(false)}
+                    ></div>
+                )}
+
                 {/* Sidebar */}
-                <aside className="sidebar">
+                <aside className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
                     <div className="sidebar-logo">
-                        <div className="logo-image"></div>
-                        <span>IDENTIFYAM</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div className="logo-image">
+                            </div>
+                            <span>IDENTIFYAM</span>
+                        </div>
+                        <button 
+                            className="sidebar-close-btn"
+                            onClick={() => setIsSidebarOpen(false)}
+                            aria-label="Close sidebar"
+                        >
+                            <i className="fas fa-times"></i>
+                        </button>
                     </div>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('admin.dashboard')} className="sidebar-link">
+                        <Link href={route('admin.dashboard')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-tachometer-alt"></i>Dashboard
                         </Link>
-                        <Link href={route('admin.users')} className="sidebar-link">
-                            <i className="fas fa-users"></i>Manage Users
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-history"></i> Lagacy NIN
                         </Link>
-                        <Link href={route('admin.security')} className="sidebar-link active">
-                            <i className="fas fa-shield-alt"></i>Security Monitor
+                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href="/admin/nin-profit" className="sidebar-link">
+                        <Link href="/admin/users" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-credit-card"></i> Manage Users
+                        </Link>
+                        <Link href="/admin/nin-requests" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-search"></i> NIN Requests
+                        </Link>
+                        <Link href="/admin/send-email" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-envelope"></i> Send Email
+                        </Link>
+                        <Link href="history" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-history"></i>History
+                        </Link>
+                        <Link href="profile" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-user-edit"></i>Profile Edit
+                        </Link>
+                        <Link href={route('admin.nin-profit')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-chart-line"></i> NIN Profit
                         </Link>
 
@@ -78,8 +112,10 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                             fontSize: '15px',
                             border: 'none',
                             borderRadius: '20px',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            marginTop: '15px'
                         }}><i className='fas fa-sign-out'></i> Logout</button>
+
                     </nav>
                 </aside>
 
@@ -87,12 +123,19 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                 <div className="dashboard-main">
                     {/* Topbar */}
                     <header className="topbar">
-                        <h3>Security Monitoring Center</h3>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <button 
+                                className="sidebar-toggle-btn"
+                                onClick={() => setIsSidebarOpen(true)}
+                                aria-label="Toggle sidebar"
+                            >
+                                <i className="fas fa-bars"></i>
+                            </button>
+                            <h3>Security Monitoring Center</h3>
+                        </div>
 
                         <div className="topbar-right">
-                            <span className="notification"><i className="fas fa-bell"></i></span>
                             <div className="user-profile">
-                                <img src="/assets/img/user_profile.png" alt="avatar" />
                                 <span>{auth.user?.name}</span>
                             </div>
                         </div>
@@ -106,7 +149,7 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                                 <div className="stat-icon" style={{ background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' }}>
                                     <i className="fas fa-exclamation-triangle"></i>
                                 </div>
-                                                                <div className="stat-info">
+                                <div className="stat-info">
                                     <h4>High Severity Alerts</h4>
                                     <span className="stat-number">{loading ? '...' : stats.highSeverity}</span>
                                 </div>
@@ -210,7 +253,7 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                                             </div>
                                             <div className="detail-item">
                                                 <label>User Agent:</label>
-                                                <span style={{ fontSize: '12px' }}>{selectedLog.user_agent}</span>
+                                                <span style={{ fontSize: '12px', wordBreak: 'break-all' }}>{selectedLog.user_agent}</span>
                                             </div>
                                             {selectedLog.location && (
                                                 <div className="detail-item">
@@ -309,22 +352,15 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                     gap: 20px;
                 }
 
-                .notification {
-                    font-size: 20px;
-                    color: #6b7280;
-                    cursor: pointer;
-                }
-
                 .user-profile {
                     display: flex;
                     align-items: center;
                     gap: 10px;
                 }
 
-                .user-profile img {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
+                .user-profile span {
+                    font-weight: 500;
+                    color: #374151;
                 }
 
                 .dashboard-content {
@@ -474,6 +510,7 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                     max-height: 80vh;
                     overflow-y: auto;
                     margin: 20px;
+                    width: 100%;
                 }
 
                 .modal-header {
@@ -525,21 +562,135 @@ const SecurityMonitoring = ({ auth, initialLogs, initialStats }) => {
                     overflow-x: auto;
                 }
 
-                @media (max-width: 768px) {
+                .sidebar-close-btn {
+                    display: none !important;
+                }
+
+                /* Responsive Design */
+                @media (max-width: 991px) {
+                    .dashboard-layout {
+                        flex-direction: column !important;
+                    }
+
                     .sidebar {
-                        width: 250px;
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: -290px !important;
+                        width: 280px !important;
+                        height: 100vh !important;
+                        z-index: 1000 !important;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1) !important;
+                        overflow-y: auto !important;
+                        display: block !important;
                     }
-                    
+
+                    .sidebar.open {
+                        left: 0 !important;
+                    }
+
+                    .sidebar-logo {
+                        display: flex !important;
+                        justify-content: space-between !important;
+                        align-items: center !important;
+                        width: 100% !important;
+                    }
+
+                    .sidebar-close-btn {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        border: none !important;
+                        font-size: 20px !important;
+                        color: #ef4444 !important;
+                        cursor: pointer !important;
+                        padding: 4px !important;
+                    }
+
+                    .sidebar-menu {
+                        position: static !important;
+                        width: 100% !important;
+                        padding-bottom: 30px !important;
+                    }
+
+                    .sidebar-toggle-btn {
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        background: transparent !important;
+                        border: none !important;
+                        font-size: 20px !important;
+                        color: #374151 !important;
+                        cursor: pointer !important;
+                        padding: 8px !important;
+                        margin-right: 15px !important;
+                        border-radius: 6px !important;
+                        transition: background-color 0.2s !important;
+                    }
+
+                    .sidebar-toggle-btn:hover {
+                        background-color: #f3f4f6 !important;
+                    }
+
+                    .sidebar-overlay {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        background: rgba(0, 0, 0, 0.4) !important;
+                        z-index: 999 !important;
+                        backdrop-filter: blur(2px) !important;
+                    }
+
                     .dashboard-main {
-                        margin-left: 250px;
+                        margin-left: 0 !important;
+                        width: 100% !important;
                     }
-                    
+
+                    .topbar {
+                        padding: 15px 20px !important;
+                        position: sticky !important;
+                        top: 0 !important;
+                        z-index: 100 !important;
+                        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+                    }
+
+                    .topbar h3 {
+                        font-size: 18px !important;
+                    }
+
+                    .dashboard-content {
+                        padding: 20px 15px !important;
+                    }
+
                     .stats-grid {
-                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+                        gap: 12px !important;
                     }
-                    
+
+                    .stat-card {
+                        padding: 15px !important;
+                    }
+
+                    .log-details {
+                        flex-direction: column !important;
+                        gap: 4px !important;
+                    }
+
                     .detail-grid {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: 1fr !important;
+                    }
+
+                    .detail-item.full-width {
+                        grid-column: span 1 !important;
+                    }
+                }
+
+                @media (min-width: 992px) {
+                    .sidebar-toggle-btn {
+                        display: none !important;
                     }
                 }
             `}</style>

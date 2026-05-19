@@ -1016,3 +1016,66 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
     }
 }
 
+/* About Us Section Styles */
+.about-us {
+    padding: 80px 0;
+    background: #ffffff;
+    position: relative;
+}
+
+.about-us-content {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 0 15px;
+}
+
+.about-us-text h1 {
+    font-size: 42px;
+    font-weight: 800;
+    color: #1a365d;
+    margin-bottom: 25px;
+    position: relative;
+    display: inline-block;
+}
+
+.about-us-text h1::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #059669, #10b981);
+    border-radius: 2px;
+}
+
+.about-us-text p {
+    font-size: 18px;
+    color: #4a5568;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.about-us-text p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .about-us {
+        padding: 60px 0;
+    }
+    
+    .about-us-text h1 {
+        font-size: 32px;
+        margin-bottom: 20px;
+    }
+    
+    .about-us-text p {
+        font-size: 16px;
+        line-height: 1.7;
+    }
+}
+
+
