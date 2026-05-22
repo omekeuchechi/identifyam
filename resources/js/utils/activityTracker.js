@@ -1,7 +1,30 @@
-// Local Storage Activity Tracker
+// Local Storage Activity Tracker (User-Scoped)
 
-const STORAGE_KEY = 'user_recent_activities';
+const STORAGE_KEY_PREFIX = 'user_recent_activities';
 const MAX_ACTIVITIES = 10;
+
+/**
+ * Get the storage key scoped to a specific user
+ * @param {number|string|null} userId - The user's ID
+ * @returns {string} The scoped storage key
+ */
+const getStorageKey = (userId = null) => {
+    if (userId) {
+        return `${STORAGE_KEY_PREFIX}_${userId}`;
+    }
+    return STORAGE_KEY_PREFIX;
+};
+
+// Track current user ID for scoping
+let _currentUserId = null;
+
+/**
+ * Set the current user ID for activity scoping
+ * @param {number|string|null} userId
+ */
+export const setCurrentUserId = (userId) => {
+    _currentUserId = userId;
+};
 
 export const activityTypes = {
     LAGACY_NIN: 'Lagacy NIN',
@@ -11,7 +34,8 @@ export const activityTypes = {
     REPORT_BUG: 'Report Bug',
     UPDATE_PROFILE: 'Update Profile',
     LOGIN: 'Login',
-    DOWNLOAD_PDF: 'Download PDF'
+    DOWNLOAD_PDF: 'Download PDF',
+    ACCOUNT_SWITCH: 'Account Switch'
 };
 
 export const activityStatuses = {
@@ -50,8 +74,9 @@ export const addActivity = (type, description, status = activityStatuses.COMPLET
         // Keep only the most recent activities
         const updatedActivities = existingActivities.slice(0, MAX_ACTIVITIES);
         
-        // Save to local storage
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedActivities));
+        // Save to local storage (scoped to current user)
+        const key = getStorageKey(_currentUserId);
+        localStorage.setItem(key, JSON.stringify(updatedActivities));
         
         return newActivity;
     } catch (error) {
@@ -66,7 +91,8 @@ export const addActivity = (type, description, status = activityStatuses.COMPLET
  */
 export const getActivities = () => {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
+        const key = getStorageKey(_currentUserId);
+        const stored = localStorage.getItem(key);
         return stored ? JSON.parse(stored) : [];
     } catch (error) {
         console.error('Failed to get activities from local storage:', error);
@@ -89,7 +115,8 @@ export const getRecentActivities = (limit = 3) => {
  */
 export const clearActivities = () => {
     try {
-        localStorage.removeItem(STORAGE_KEY);
+        const key = getStorageKey(_currentUserId);
+        localStorage.removeItem(key);
         return true;
     } catch (error) {
         console.error('Failed to clear activities from local storage:', error);
@@ -112,7 +139,8 @@ export const cleanupOldActivities = (days = 30) => {
             return activityDate > cutoffDate;
         });
         
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(filteredActivities));
+        const key = getStorageKey(_currentUserId);
+        localStorage.setItem(key, JSON.stringify(filteredActivities));
         return filteredActivities;
     } catch (error) {
         console.error('Failed to cleanup old activities:', error);
@@ -157,5 +185,107 @@ export const formatActivityDate = (timestamp) => {
     }
 };
 
+/**
+ * Detect and record auth activity from Inertia shared props.
+ * Call this on page load / component mount with the auth_activity prop.
+ *
+ * @param {Object|null} authActivity - The auth_activity prop from Inertia
+ *   { type: 'LOGIN'|'LOGOUT'|'ACCOUNT_SWITCH', userId, userEmail, userName, timestamp }
+ */
+export const detectAndRecordAuthActivity = (authActivity) => {
+    if (!authActivity || !authActivity.type) return null;
+
+    const { type, userId, userEmail, userName, timestamp } = authActivity;
+
+    // Set the current user for scoping
+    if (userId) {
+        setCurrentUserId(userId);
+    }
+
+    // Map the server event type to our activity type constants
+    const typeMap = {
+        'LOGIN': activityTypes.LOGIN,
+        'LOGOUT': activityTypes.LOGOUT,
+        'ACCOUNT_SWITCH': activityTypes.ACCOUNT_SWITCH,
+    };
+
+    const activityType = typeMap[type];
+    if (!activityType) return null;
+
+    // Build a human-readable description
+    const descriptionMap = {
+        'LOGIN': `${userName || 'User'} logged in`,
+        'LOGOUT': `${userName || 'User'} logged out`,
+        'ACCOUNT_SWITCH': `${userName || 'User'} switched account`,
+    };
+
+    const description = descriptionMap[type] || `${type} event`;
+
+    // Prevent duplicate entries: check if this exact event was already recorded
+    const existing = getActivities();
+    const isDuplicate = existing.some(
+        a => a.type === activityType && a.details?.authTimestamp === timestamp
+    );
+    if (isDuplicate) return null;
+
+    return addActivity(activityType, description, activityStatuses.SUCCESS, {
+        userId,
+        userEmail,
+        userName,
+        authTimestamp: timestamp,
+    });
+};
+
+/**
+ * Detect and record logout activity from cookie (used after session is destroyed).
+ * Reads the auth_activity cookie set by the server on logout, records the activity,
+ * then removes the cookie.
+ */
+export const detectLogoutFromCookie = () => {
+    try {
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+            const [name, ...valueParts] = cookie.trim().split('=');
+            if (name.trim() === 'auth_activity') {
+                const value = decodeURIComponent(valueParts.join('='));
+                const activity = JSON.parse(value);
+                if (activity && activity.type === 'LOGOUT') {
+                    // Set user scope for the logout entry
+                    if (activity.userId) {
+                        setCurrentUserId(activity.userId);
+                    }
+                    
+                    // Check for duplicate
+                    const existing = getActivities();
+                    const isDuplicate = existing.some(
+                        a => a.type === activityTypes.LOGOUT && a.details?.authTimestamp === activity.timestamp
+                    );
+                    
+                    if (!isDuplicate) {
+                        addActivity(
+                            activityTypes.LOGOUT,
+                            `${activity.userName || 'User'} logged out`,
+                            activityStatuses.SUCCESS,
+                            {
+                                userId: activity.userId,
+                                userEmail: activity.userEmail,
+                                userName: activity.userName,
+                                authTimestamp: activity.timestamp,
+                            }
+                        );
+                    }
+                    
+                    // Clear the cookie
+                    document.cookie = 'auth_activity=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+                }
+                break;
+            }
+        }
+    } catch (error) {
+        console.error('Failed to detect logout from cookie:', error);
+    }
+};
+
 // Initialize cleanup on module load
 cleanupOldActivities(30);
+

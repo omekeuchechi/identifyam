@@ -110,15 +110,29 @@ class GoogleController extends Controller
                     'walletAmount' => 0, // Default wallet amount
                 ]);
                 file_put_contents(storage_path('debug.log'), "New user created with ID: " . $user->id . "\n", FILE_APPEND);
+                $isAccountSwitch = false;
             } elseif ($user->google_id !== $googleUser['id']) {
                 file_put_contents(storage_path('debug.log'), "Updating existing user with Google ID\n", FILE_APPEND);
+                $previousGoogleId = $user->google_id;
                 $user->update(['google_id' => $googleUser['id']]);
                 file_put_contents(storage_path('debug.log'), "User updated successfully\n", FILE_APPEND);
+                $isAccountSwitch = !empty($previousGoogleId);
+            } else {
+                $isAccountSwitch = false;
             }
 
             file_put_contents(storage_path('debug.log'), "Logging in user ID: " . $user->id . "\n", FILE_APPEND);
             Auth::login($user);
             $request->session()->regenerate();
+
+            // Flash auth activity so the front-end can detect login or account switch
+            $request->session()->flash('auth_activity', [
+                'type' => $isAccountSwitch ? 'ACCOUNT_SWITCH' : 'LOGIN',
+                'userId' => $user->id,
+                'userEmail' => $user->email,
+                'userName' => $user->name,
+                'timestamp' => now()->toISOString(),
+            ]);
 
             // Mark user as email verified if they came from Google
             if (!$user->hasVerifiedEmail()) {

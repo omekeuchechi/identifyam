@@ -34,6 +34,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            // Flash auth activity data (login/logout/account-switch) for front-end tracking
+            'auth_activity' => fn () => $request->session()->get('auth_activity'),
         ];
     }
 

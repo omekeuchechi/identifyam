@@ -1,4 +1,4 @@
-import { Head, Link, router } from "@inertiajs/react";
+import { Head, Link, router, usePage } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 
 import logoImage from '../../assets/img/identifyam_logo.png';
@@ -11,16 +11,40 @@ import secureQuestionImage from '../../assets/img/secure_question.png';
 
 // responsiveness for dashboard who ever will read this code
 import "../../css/dashboardRes.css";
-import { getRecentActivities, formatActivityDate, getActivityStatusClass, addActivity, activityTypes } from '../utils/activityTracker';
+import {
+    getRecentActivities,
+    formatActivityDate,
+    getActivityStatusClass,
+    addActivity,
+    activityTypes,
+    setCurrentUserId,
+    detectAndRecordAuthActivity,
+    detectLogoutFromCookie,
+} from '../utils/activityTracker';
 
 
 export default function Dashboard({ auth }) {
+        const { auth_activity } = usePage().props;
         const [recentActivities, setRecentActivities] = useState([]);
         const [loading, setLoading] = useState(true);
         const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-        // Load user activities from local storage on component mount
+        // Set user scope and detect auth events on component mount
         useEffect(() => {
+            // Scope activities to the logged-in user
+            if (auth?.user?.id) {
+                setCurrentUserId(auth.user.id);
+            }
+
+            // Detect logout from cookie (set during session destroy)
+            detectLogoutFromCookie();
+
+            // Detect login / account-switch from Inertia shared props
+            if (auth_activity) {
+                detectAndRecordAuthActivity(auth_activity);
+            }
+
+            // Load activities after detection
             loadRecentActivities();
         }, []);
 

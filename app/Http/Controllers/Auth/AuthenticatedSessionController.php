@@ -33,6 +33,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Flash auth activity so the front-end can detect login
+        $user = Auth::user();
+        $request->session()->flash('auth_activity', [
+            'type' => 'LOGIN',
+            'userId' => $user->id,
+            'userEmail' => $user->email,
+            'userName' => $user->name,
+            'timestamp' => now()->toISOString(),
+        ]);
+
         if (Auth::check() && Auth::user()->isAdmin) {
             return redirect()->intended(route('admin.dashboard', absolute: false));    
         } else {
@@ -46,12 +56,24 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+
         Auth::guard('web')->logout();
 
         $request->session()->invalidate();
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        // Store logout activity in a cookie so the login page JS can detect it
+        // (session is destroyed above, so we use a temporary cookie)
+        $cookie = cookie('auth_activity', json_encode([
+            'type' => 'LOGOUT',
+            'userId' => $user?->id,
+            'userEmail' => $user?->email,
+            'userName' => $user?->name,
+            'timestamp' => now()->toISOString(),
+        ]), 1); // expires in 1 minute
+
+        return redirect('/')->withCookie($cookie);
     }
 }
