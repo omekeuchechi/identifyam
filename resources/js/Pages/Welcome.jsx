@@ -45,6 +45,9 @@ import redEmailIcon from '../../assets/img/red_email.png';
 // animated image
 import idCardImage from '../../assets/img/id_card.png';
 
+// direct service image
+import directServiceImage from '../../assets/img/identifyam_full_service.jpeg';
+
 
 
 export default function Welcome({ auth, laravelVersion, phpVersion }) {
@@ -402,6 +405,18 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <section className="direct-services fade-in-scroll-direct-service">
+                <div className="direct-service-header">
+                    <h2>Core Features That Define Identifyam</h2>
+                    <p>Identifyam prints plastic ID cards in bulk for your organization at cheap price. We also print NIN slips, verify people's identity, and sell WAEC, NECO, and NABTEB scratchcards. Just WhatsApp us today.</p>
+                </div>
+
+                <div className="flyer .fade-in-scroll-direct-service">
+                    <img src={directServiceImage} alt="identifyam core service image" />
+                    <a href="https://wa.link/xagdik" target="_blank" rel="noopener noreferrer"></a>
                 </div>
             </section>
 

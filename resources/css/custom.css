@@ -73,6 +73,9 @@ a[href^="#"] {
     }
 }
 
+/* fad-in loading for direct service */
+.fade-in-scroll-direct-service{}
+
 /* Hover effects */
 .btn-primary:hover, .btn-secondary:hover {
     transform: translateY(-2px);
