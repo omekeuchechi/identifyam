@@ -154,8 +154,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
                         <nav className={`nav ${isMobileMenuOpen ? 'nav-open' : ''}`}>
                             <ul className="nav-links">
-                                <li><a href="/lagacy-nin" onClick={(e) => {setIsMobileMenuOpen(false); }}>NIN Services</a></li>
-                                <li><a href="/exam-cards" onClick={(e) => {setIsMobileMenuOpen(false); }}>Buy Scratch Card</a></li>
+                                <li><a href="/lagacy-nin" onClick={(e) => { setIsMobileMenuOpen(false); }}>NIN Services</a></li>
+                                <li><a href="/exam-cards" onClick={(e) => { setIsMobileMenuOpen(false); }}>Buy Scratch Card</a></li>
                                 <li><a href="#contact" onClick={(e) => { scrollToSection(e, '#contact'); setIsMobileMenuOpen(false); }}>Contact</a></li>
                                 {auth.user ? (
                                     auth.user.isAdmin ? (
@@ -181,21 +181,21 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                     <div className="hero-content">
                         <div className="hero-text fade-in-scroll">
                             <h1 className="fade-in-scroll">Retrieve Your <span style={{ color: '#059669' }}>NIN
-                                Slip</span> and Buy <span style={{ color: '#059669'}}>Exam Scratch Cards</span></h1>
+                                Slip</span> and Buy <span style={{ color: '#059669' }}>Exam Scratch Cards</span></h1>
                             <p className="fade-in-scroll">Lost your NIN slip? Get it retrieved quickly . Get Exam scratch Cards and check result</p>
                             <div className="hero-flex-btn">
                                 <div className="hero-buttons fade-in-scroll">
-                                <a href="/lagacy-nin" className="btn-get-started">
-                                    <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
-                                    <span>Get Your NIN Slip</span>
-                                </a>
-                            </div>
-                            <div className="hero-buttons fade-in-scroll">
-                                <a href="/exam-cards" className="btn-get-started">
-                                    <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
-                                    <span>Buy Exam Scratch Card</span>
-                                </a>
-                            </div>
+                                    <a href="/lagacy-nin" className="btn-get-started">
+                                        <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
+                                        <span>Get Your NIN Slip</span>
+                                    </a>
+                                </div>
+                                <div className="hero-buttons fade-in-scroll">
+                                    <a href="/exam-cards" className="btn-get-started">
+                                        <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
+                                        <span>Buy Exam Scratch Card</span>
+                                    </a>
+                                </div>
                             </div>
                             <div className="hero-features fade-in-scroll">
                                 <div className="hero-feature fade-in-scroll">
@@ -251,7 +251,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         <h2 className="fade-in-scroll">Our NIN Services</h2>
                         <p className="fade-in-scroll">Comprehensive NIN solutions for all your needs</p>
                     </div>
-                    
+
                     <div className="services-grid fade-in-scroll">
                         <div className="service-item fade-in-scroll">
                             <div className="nin-service-icon-header fade-in-scroll">
@@ -328,7 +328,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         <h2 className="fade-in-scroll">Exam Scratch Cards</h2>
                         <p className="fade-in-scroll">Purchase authentic examination scratch cards for various exam bodies</p>
                     </div>
-                    
+
                     <div className="exam-cards-grid">
                         <div className="exam-card-item fade-in-scroll">
                             <div className="exam-card-image fade-in-scroll">
@@ -408,16 +408,18 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </div>
             </section>
 
-            <section className="direct-services fade-in-scroll-direct-service">
-                <div className="direct-service-header">
-                    <h2>Core Features That Define Identifyam</h2>
-                    <p>Identifyam prints plastic ID cards in bulk for your organization at cheap price. We also print NIN slips, verify people's identity, and sell WAEC, NECO, and NABTEB scratchcards. Just WhatsApp us today.</p>
+            <section className="direct-services fade-in-scroll">
+                <div className="direct-service-header fade-in-scroll">
+                    <h2 className='fade-in-scroll'>Core Features That Define Identifyam</h2>
+                    <p className='fade-in-scroll'>Identifyam prints plastic ID cards in bulk for your organization at cheap price. We also print NIN slips, verify people's identity, and sell WAEC, NECO, and NABTEB scratchcards. Just WhatsApp us today by Clicking the Image</p>
                 </div>
 
-                <div className="flyer .fade-in-scroll-direct-service">
-                    <img src={directServiceImage} alt="identifyam core service image" />
-                    <a href="https://wa.link/xagdik" target="_blank" rel="noopener noreferrer"></a>
+                <div className="flyer fade-in-scroll">
+                    <img src={directServiceImage} className='fade-in-scroll' alt="identifyam core service image" />
+                    {/* Removed the link from the image */}
                 </div>
+
+                <a href="https://wa.link/xagdik" target="_blank" rel="noopener noreferrer" id='direct-service-btn'>Chat Us On Whatsapp</a>
             </section>
 
             {/* Services Section */}
@@ -435,8 +437,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             </div>
                             <p className='fade-in-scroll'>Professional assistance with NIN documentation and application processes</p>
                             <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' onClick={
-                                () => { 
-                                    window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1"; 
+                                () => {
+                                    window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1";
 
                                 }} />Contact Support</button>
                             <div className="contact-options fade-in-scroll">
@@ -462,8 +464,8 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                             </div>
                             <p className='fade-in-scroll'>NIN verification for educational institutions and international travel requirements</p>
                             <button className="contact-support-btn fade-in-scroll"><img src={phoneIcon} alt="" loading='lazy' onClick={
-                                () => { 
-                                    window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1"; 
+                                () => {
+                                    window.location.href = "https://wa.me/message/CX5BRFJSKSVLN1";
 
                                 }} />Contact Support</button>
                             <div className="contact-options fade-in-scroll">

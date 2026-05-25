@@ -94,11 +94,17 @@ class AdminController extends Controller
                 ->whereIn('severity', ['high', 'critical'])
                 ->count();
                 
-            // Get last login IP from security logs or current request
+            // Get most recent IP address from security logs (real-time tracking)
                 $user->last_login_ip = \App\Models\SecurityLog::where('user_id', $user->id)
-                    ->where('activity_type', 'login')
                     ->latest()
-                    ->value('ip_address') ?? request()->ip();
+                    ->value('ip_address');
+                
+                // Get IP statistics for this user
+                $user->ip_history = \App\Models\SecurityLog::where('user_id', $user->id)
+                    ->distinct('ip_address')
+                    ->latest()
+                    ->limit(5)
+                    ->pluck('ip_address');
                 
             return $user;
         });
@@ -347,5 +353,169 @@ class AdminController extends Controller
     public function getSettings()
     {
         return Inertia::render('Admin/Settings');
+    }
+
+    /**
+     * Get real-time IP address for a specific user
+     */
+    public function getUserRealTimeIP($userId)
+    {
+        try {
+            $user = User::findOrFail($userId);
+            
+            // Get the most recent IP address from security logs
+            $latestLog = \App\Models\SecurityLog::where('user_id', $userId)
+                ->latest()
+                ->first();
+            
+            // Get all distinct IPs used in last 24 hours
+            $recentIPs = \App\Models\SecurityLog::where('user_id', $userId)
+                ->where('created_at', '>', now()->subHours(24))
+                ->distinct('ip_address')
+                ->pluck('ip_address');
+            
+            return response()->json([
+                'success' => true,
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'current_ip' => $latestLog ? $latestLog->ip_address : null,
+                'last_seen' => $latestLog ? $latestLog->created_at : null,
+                'recent_ips' => $recentIPs,
+                'total_unique_ips' => $recentIPs->count(),
+                'is_online' => $latestLog && $latestLog->created_at->gt(now()->subMinutes(5))
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get user IP: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all users with their real-time IP addresses
+     */
+    public function getAllUsersRealTimeIPs()
+    {
+        try {
+            // Get all users with their latest IP addresses
+            $users = User::with(['securityLogs' => function($query) {
+                $query->latest()->limit(1);
+            }])->get();
+            
+            $usersData = $users->map(function($user) {
+                $latestLog = $user->securityLogs->first();
+                
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'current_ip' => $latestLog ? $latestLog->ip_address : null,
+                    'last_seen' => $latestLog ? $latestLog->created_at : null,
+                    'is_online' => $latestLog && $latestLog->created_at->gt(now()->subMinutes(5)),
+                    'user_agent' => $latestLog ? $latestLog->user_agent : null,
+                    'location' => $latestLog ? $latestLog->location : null
+                ];
+            });
+            
+            // Get statistics
+            $onlineUsers = $usersData->where('is_online', true)->count();
+            $uniqueIPs = $usersData->whereNotNull('current_ip')->unique('current_ip')->count();
+            
+            return response()->json([
+                'success' => true,
+                'users' => $usersData,
+                'stats' => [
+                    'total_users' => $usersData->count(),
+                    'online_users' => $onlineUsers,
+                    'unique_ips' => $uniqueIPs,
+                    'offline_users' => $usersData->count() - $onlineUsers
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to get users IPs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Trigger user activity event (for testing)
+     */
+    public function triggerUserActivityEvent(Request $request)
+    {
+        try {
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'User not authenticated'], 401);
+            }
+
+            // Dispatch the user activity event
+            event(new \App\Events\UserActivityEvent(
+                $user,
+                $request->ip(),
+                $request->userAgent(),
+                $request->input('activity_type', 'manual_trigger'),
+                $request->input('details', [])
+            ));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User activity event triggered successfully',
+                'ip' => $request->ip()
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to trigger event: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually log IP for all users (for testing purposes)
+     */
+    public function logAllUsersIPs()
+    {
+        try {
+            $users = User::all();
+            $loggedCount = 0;
+
+            foreach ($users as $user) {
+                // Create a sample security log entry with the admin's current IP
+                // This is for testing purposes - in production, users should log their own IPs
+                SecurityLog::create([
+                    'user_id' => $user->id,
+                    'ip_address' => request()->ip(), // Using current request IP as sample
+                    'user_agent' => request()->userAgent(),
+                    'url' => '/admin/log-all-ips',
+                    'method' => 'GET',
+                    'session_id' => session()->getId(),
+                    'browser_fingerprint' => md5(request()->userAgent() . request()->ip()),
+                    'location' => json_encode(['city' => 'Unknown', 'country' => 'Unknown']),
+                    'activity_type' => 'manual_ip_log',
+                    'details' => json_encode(['action' => 'Manual IP logging by admin']),
+                    'severity' => 'low'
+                ]);
+
+                $loggedCount++;
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Successfully logged IPs for {$loggedCount} users",
+                'logged_count' => $loggedCount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to log user IPs: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

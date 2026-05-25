@@ -28,6 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'terms_and_condition',
         'walletAmount',
         'isAdmin',
+        'last_activity_at',
     ];
 
     /**
@@ -52,6 +53,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'isAdmin' => 'boolean',
+            'last_activity_at' => 'datetime',
         ];
     }
 
@@ -71,6 +73,14 @@ class User extends Authenticatable implements MustVerifyEmail
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get the security logs for the user.
+     */
+    public function securityLogs(): HasMany
+    {
+        return $this->hasMany(SecurityLog::class);
     }
 
     /**

@@ -947,6 +947,10 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
 }
 
 .direct-service-header {
@@ -1040,19 +1044,20 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
     overflow: hidden;
     box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
     border: none;
+    margin: 20px auto;
     cursor: pointer;
     z-index: 1;
 }
 
 /* Add WhatsApp icon using pseudo-element */
-.direct-service-btn::before {
+#direct-service-btn::before {
     content: "📱";
     font-size: 18px;
     transition: transform 0.3s ease;
 }
 
 /* Shimmer effect on hover */
-.direct-service-btn::after {
+#direct-service-btn::after {
     content: '';
     position: absolute;
     top: 0;
@@ -1065,28 +1070,28 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 }
 
 /* Hover effects */
-.direct-service-btn:hover {
+#direct-service-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);
     background: linear-gradient(135deg, #20B859 0%, #0E6B5E 100%);
 }
 
-.direct-service-btn:hover::after {
+#direct-service-btn:hover::after {
     left: 100%;
 }
 
-.direct-service-btn:hover::before {
+#direct-service-btn:hover::before {
     transform: scale(1.1);
 }
 
 /* Active/Click effect */
-.direct-service-btn:active {
+#direct-service-btn:active {
     transform: translateY(0px);
     box-shadow: 0 2px 10px rgba(37, 211, 102, 0.3);
 }
 
 /* Focus styles for accessibility */
-.direct-service-btn:focus-visible {
+#direct-service-btn:focus-visible {
     outline: 3px solid #25D366;
     outline-offset: 3px;
     transform: translateY(-2px);
@@ -1094,31 +1099,31 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-    .direct-service-btn {
+    #direct-service-btn {
         padding: 12px 24px;
         font-size: 14px;
     }
     
-    .direct-service-btn::before {
+    #direct-service-btn::before {
         font-size: 16px;
     }
 }
 
 /* Small Mobile */
 @media (max-width: 480px) {
-    .direct-service-btn {
+    #direct-service-btn {
         padding: 10px 20px;
         font-size: 13px;
     }
     
-    .direct-service-btn::before {
+    #direct-service-btn::before {
         font-size: 14px;
     }
 }
 
 /* If you want the button to be full width on mobile */
 @media (max-width: 480px) {
-    .direct-service-btn {
+    #direct-service-btn {
         width: 100%;
         max-width: 280px;
         margin: 0 auto;
@@ -1127,7 +1132,7 @@ a:focus:not(:focus-visible), button:focus:not(:focus-visible), [tabindex]:focus:
 
 
 @media (min-width: 769px) and (max-width: 1024px) {
-    .direct-services {
+    #direct-services {
         padding: 70px 0;
     }
     

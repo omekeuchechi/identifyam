@@ -31,7 +31,7 @@ a[href^="#"] {
 }
 
 /* Scroll-based fade animation */
-.fade-in-scroll {
+.fade-in-scroll{
     opacity: 0;
     transform: translateY(30px);
     transition: opacity 0.6s ease-out, transform 0.6s ease-out;
@@ -73,8 +73,6 @@ a[href^="#"] {
     }
 }
 
-/* fad-in loading for direct service */
-.fade-in-scroll-direct-service{}
 
 /* Hover effects */
 .btn-primary:hover, .btn-secondary:hover {

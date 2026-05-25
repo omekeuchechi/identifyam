@@ -227,7 +227,7 @@ export default function Funding({ auth }) {
                                         />
                                     </div>
 
-                                    <PrimaryButton disabled={processing || loading} style={{ background: 'linear-gradient(135deg, #0B6B3A 0%, #10B981 70.71%)', color: '#fff', padding: '13px 30px', border: 'none', borderRadius: '8px', fontSize: '1.2rem' }}>
+                                    <PrimaryButton disabled={processing || loading} style={{ background: 'linear-gradient(135deg, #0B6B3A 0%, #10B981 70.71%)', color: '#fff', padding: '13px 30px', border: 'none', borderRadius: '8px', fontSize: '1.2rem', cursor: 'pointer' }}>
                                         {loading ? 'Processing...' : 'Fund Wallet'}
                                     </PrimaryButton>
                                 </form>

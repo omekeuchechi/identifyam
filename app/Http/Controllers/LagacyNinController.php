@@ -130,13 +130,26 @@ class LagacyNinController extends Controller
             // Extract fields from nested data structure
             $responseData = $data['data'] ?? $data;
             
+            // Generate unique identifier for all cases
+            if (empty($nin) || $nin === 'demographic_search') {
+                $uniqueNin = 'demo_' . md5(
+                    ($responseData['firstName'] ?? $responseData['first_name'] ?? '') . 
+                    ($responseData['surName'] ?? $responseData['surname'] ?? '') . 
+                    ($responseData['dateOfBirth'] ?? $responseData['birth_date'] ?? '') .
+                    '_' . Auth::id() . '_' . time() // Add user ID and timestamp to ensure uniqueness
+                );
+            } else {
+                $uniqueNin = $nin;
+            }
+            
+            // Build the data array with required fields
             $extractedData = [
-                'nin' => $nin === 'demographic_search' ? null : $nin,
+                'nin' => $uniqueNin,
                 'telephoneno' => $responseData['telephoneno'] ?? $responseData['phone'] ?? $responseData['phoneNumber'] ?? null,
                 'image' => $responseData['image'] ?? $responseData['photo'] ?? null,
                 'surname' => $responseData['surname'] ?? $responseData['lastName'] ?? $responseData['surName'] ?? null,
                 'first_name' => $responseData['first_name'] ?? $responseData['firstName'] ?? null,
-                'birth_date' => $responseData['birth_date'] ?? $responseData['birthdate'] ?? $responseData['dateOfBirth'] ?? null,
+                'birth_date' => $this->formatBirthDateForDatabase($responseData['birth_date'] ?? $responseData['birthdate'] ?? $responseData['dateOfBirth'] ?? null),
                 'gender' => $responseData['gender'] ?? null,
                 'email' => $responseData['email'] ?? null,
                 'search_type' => $searchType . ' (v' . $version . ')',
@@ -146,31 +159,44 @@ class LagacyNinController extends Controller
                 'user_id' => Auth::user()->id,
             ];
 
-            // Remove null values to avoid database issues
+            // Only filter empty strings, keep null values as they might be valid
             $extractedData = array_filter($extractedData, function($value) {
-                return $value !== null;
+                return $value !== '';
             });
 
-            // For demographic searches, create a unique identifier
-            if ($nin === 'demographic_search' && isset($responseData['firstName'])) {
-                $extractedData['nin'] = 'demo_' . md5(
-                    ($responseData['firstName'] ?? '') . 
-                    ($responseData['surName'] ?? '') . 
-                    ($responseData['dateOfBirth'] ?? '')
-                );
-            }
+            $this->logLagacyNin('INFO', 'Attempting to save record', [
+                'nin' => $extractedData['nin'],
+                'data_count' => count($extractedData),
+                'user_id' => $extractedData['user_id'],
+                'sample_data' => array_slice($extractedData, 0, 3)
+            ]);
 
-            // Use updateOrCreate to avoid duplicate entries
-            lagacy_nin::updateOrCreate(
-                ['nin' => $extractedData['nin'] ?? $nin],
+            // Use updateOrCreate with nin as the unique key
+            $record = lagacy_nin::updateOrCreate(
+                ['nin' => $extractedData['nin']],
                 $extractedData
             );
+
+            $this->logLagacyNin('INFO', 'NIN data saved successfully', [
+                'record_id' => $record->id,
+                'nin' => $record->nin,
+                'was_new' => !$record->wasRecentlyCreated
+            ]);
+
+            return $record;
 
         } catch (\Exception $e) {
             $this->logLagacyNin('ERROR', 'Failed to save NIN data', [
                 'nin' => $nin,
                 'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
             ]);
+            
+            // Don't re-throw - just log the error and continue
+            // This ensures the API response is still returned to the user
+            return null;
         }
     }
 
@@ -198,6 +224,7 @@ class LagacyNinController extends Controller
         
         $user->refresh();
         $walletAmount = $user->walletAmount ?? 0;
+        $isAdmin = $user->isAdmin ?? false;
         
         // Dynamic pricing based on selected action
         if ($selectedAction === 'slip') {
@@ -211,10 +238,12 @@ class LagacyNinController extends Controller
         $this->logLagacyNin('INFO', 'Wallet balance check', [
             'wallet_amount' => $walletAmount,
             'required_amount' => $purchaseAmount,
-            'selected_action' => $selectedAction
+            'selected_action' => $selectedAction,
+            'is_admin' => $isAdmin
         ]);
 
-        if ($walletAmount < $purchaseAmount) {
+        // Skip wallet balance check for admin users
+        if (!$isAdmin && $walletAmount < $purchaseAmount) {
             $this->logLagacyNin('WARNING', 'Insufficient wallet balance', [
                 'wallet_amount' => $walletAmount,
                 'required_amount' => $purchaseAmount
@@ -326,8 +355,8 @@ class LagacyNinController extends Controller
                 continue;
             }
 
-            // Check if request was successful and deduct wallet only once
-            if (isset($responseData['status']) && $responseData['status'] === 'success' && !$walletDeducted) {
+            // Check if request was successful and deduct wallet only once (skip for admins)
+            if (isset($responseData['status']) && $responseData['status'] === 'success' && !$walletDeducted && !$isAdmin) {
                 $this->logLagacyNin('INFO', 'API Success, deducting wallet', [
                     'amount' => $purchaseAmount,
                     'user_id' => $user->id
@@ -514,12 +543,30 @@ class LagacyNinController extends Controller
                 isset($result['data']['status']) && 
                 $result['data']['status'] === 'success') {
                 
-                $this->saveNinData(
+                $this->logLagacyNin('INFO', 'Conditions met for saving NIN data', [
+                    'http_status' => $result['status'],
+                    'api_status' => $result['data']['status'],
+                    'has_data' => isset($result['data']),
+                    'nin' => $request->nin ?? 'demographic_search'
+                ]);
+                
+                $savedRecord = $this->saveNinData(
                     $request->nin ?? 'demographic_search', 
                     $result['data'], 
                     $request->search_type, 
                     $version
                 );
+
+                $this->logLagacyNin('INFO', 'Save operation completed', [
+                    'saved_record_id' => $savedRecord ? $savedRecord->id : null,
+                    'save_successful' => $savedRecord !== null
+                ]);
+            } else {
+                $this->logLagacyNin('WARNING', 'Conditions not met for saving NIN data', [
+                    'http_status' => $result['status'] ?? 'unknown',
+                    'api_status' => $result['data']['status'] ?? 'unknown',
+                    'has_data' => isset($result['data'])
+                ]);
             }
 
             return response()->json([
@@ -1279,6 +1326,46 @@ class LagacyNinController extends Controller
     }
 
     /**
+     * Format birth date to MySQL-compatible format (YYYY-MM-DD)
+     */
+    private function formatBirthDateForDatabase($birthDate)
+    {
+        if (empty($birthDate)) {
+            return null;
+        }
+        
+        try {
+            // Try to parse the date using Carbon
+            $date = \Carbon\Carbon::parse($birthDate);
+            return $date->format('Y-m-d');
+        } catch (\Exception $e) {
+            // If Carbon fails, try manual parsing
+            try {
+                // Handle DD-MM-YYYY format
+                if (preg_match('/^(\d{2})-(\d{2})-(\d{4})$/', $birthDate, $matches)) {
+                    return $matches[3] . '-' . $matches[2] . '-' . $matches[1];
+                }
+                
+                // Handle other formats
+                $formats = ['d/m/Y', 'd-m-Y', 'm/d/Y', 'Y-m-d', 'F d, Y', 'M d, Y'];
+                foreach ($formats as $format) {
+                    try {
+                        $date = \Carbon\Carbon::createFromFormat($format, $birthDate);
+                        return $date->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+                
+                // Return as-is if parsing fails (will be filtered out later)
+                return null;
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+    }
+
+    /**
      * Format birth date to human-readable format with short capital month
      */
     private function formatBirthDate($birthDate)
@@ -1756,5 +1843,58 @@ class LagacyNinController extends Controller
         }
 
         return '';
+    }
+
+    /**
+     * Test database connection and save (for debugging)
+     */
+    public function testDatabaseSave(Request $request)
+    {
+        try {
+            $this->logLagacyNin('INFO', 'Database save test initiated');
+
+            if (!Auth::check()) {
+                return response()->json(['error' => 'Not authenticated'], 401);
+            }
+
+            $testData = [
+                'nin' => 'test_' . time(),
+                'telephoneno' => '08012345678',
+                'surname' => 'Test',
+                'first_name' => 'User',
+                'birth_date' => '1990-01-01',
+                'gender' => 'Male',
+                'email' => 'test@example.com',
+                'search_type' => 'test_search',
+                'api_response' => json_encode(['test' => true]),
+                'api_version' => 'v1',
+                'status' => 'success',
+                'user_id' => Auth::user()->id,
+            ];
+
+            $record = lagacy_nin::create($testData);
+
+            $this->logLagacyNin('INFO', 'Test record created successfully', [
+                'record_id' => $record->id,
+                'nin' => $record->nin
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Database save test successful',
+                'record' => $record
+            ]);
+
+        } catch (\Exception $e) {
+            $this->logLagacyNin('ERROR', 'Database save test failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

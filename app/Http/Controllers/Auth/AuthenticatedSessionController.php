@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\SecurityLog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,8 +34,29 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Flash auth activity so the front-end can detect login
+        // Log login IP address and security information
         $user = Auth::user();
+        if ($user) {
+            SecurityLog::create([
+                'user_id' => $user->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'session_id' => session()->getId(),
+                'browser_fingerprint' => md5($request->userAgent() . $request->ip()),
+                'location' => json_encode(['city' => 'Unknown', 'country' => 'Unknown']),
+                'activity_type' => 'login',
+                'details' => json_encode(['action' => 'User login']),
+                'severity' => 'low'
+            ]);
+
+            // Update user's last activity timestamp
+            $user->last_activity_at = now();
+            $user->save();
+        }
+
+        // Flash auth activity so the front-end can detect login
         $request->session()->flash('auth_activity', [
             'type' => 'LOGIN',
             'userId' => $user->id,
@@ -57,6 +79,23 @@ class AuthenticatedSessionController extends Controller
     public function destroy(Request $request): RedirectResponse
     {
         $user = Auth::user();
+
+        // Log logout activity before destroying session
+        if ($user) {
+            SecurityLog::create([
+                'user_id' => $user->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'url' => $request->fullUrl(),
+                'method' => $request->method(),
+                'session_id' => session()->getId(),
+                'browser_fingerprint' => md5($request->userAgent() . $request->ip()),
+                'location' => json_encode(['city' => 'Unknown', 'country' => 'Unknown']),
+                'activity_type' => 'logout',
+                'details' => json_encode(['action' => 'User logout']),
+                'severity' => 'low'
+            ]);
+        }
 
         Auth::guard('web')->logout();
 

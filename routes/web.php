@@ -6,6 +6,7 @@ use App\Http\Controllers\ExamCardController;
 use App\Http\Controllers\LagacyNinController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\HeartbeatController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -75,6 +76,12 @@ Route::middleware('auth')->group(function () {
         // Admin Email routes
         Route::get('/admin/send-email', [App\Http\Controllers\AdminEmailController::class, 'index'])->name('admin.send-email');
         Route::post('/admin/send-email', [App\Http\Controllers\AdminEmailController::class, 'send'])->name('admin.send-email.submit');
+        
+        // Real-time IP tracking routes
+        Route::get('/admin/user/{userId}/realtime-ip', [App\Http\Controllers\AdminController::class, 'getUserRealTimeIP'])->name('admin.user.realtime-ip');
+        Route::get('/admin/users/realtime-ips', [App\Http\Controllers\AdminController::class, 'getAllUsersRealTimeIPs'])->name('admin.users.realtime-ips');
+        Route::post('/admin/trigger-activity-event', [App\Http\Controllers\AdminController::class, 'triggerUserActivityEvent'])->name('admin.trigger-activity-event');
+        Route::post('/admin/log-all-ips', [App\Http\Controllers\AdminController::class, 'logAllUsersIPs'])->name('admin.log-all-ips');
     });
     
     // Bug report routes
@@ -94,6 +101,10 @@ Route::middleware('auth')->group(function () {
     // Keep session alive endpoint
     Route::post('/api/lagacy-nin/keep-alive', [LagacyNinController::class, 'keepAlive']);
     
+    // Heartbeat routes for real-time IP tracking
+    Route::post('/api/heartbeat', [HeartbeatController::class, 'heartbeat'])->name('heartbeat');
+    Route::get('/api/online-users', [HeartbeatController::class, 'getOnlineUsers'])->name('online-users');
+    
     // V1 API
     Route::post('/api/lagacy-nin/search', [LagacyNinController::class, 'LagacyNin']);
     
@@ -108,6 +119,9 @@ Route::middleware('auth')->group(function () {
     
     // PDF Generation
     Route::post('/api/lagacy-nin/pdf', [LagacyNinController::class, 'generatePDF']);
+
+    // Database save test (for debugging)
+    Route::post('/api/lagacy-nin/test-save', [LagacyNinController::class, 'testDatabaseSave']);
 
 
     // settings and the rest
