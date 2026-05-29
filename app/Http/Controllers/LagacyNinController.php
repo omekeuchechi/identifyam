@@ -394,12 +394,32 @@ class LagacyNinController extends Controller
                  strpos(strtolower($responseData['message']), 'balance') !== false)) {
                 
                 $this->logLagacyNin('ERROR', 'External API balance error', ['message' => $responseData['message']]);
+                
+                // Safety check: Refund wallet if money was deducted before this error was detected
+                if ($walletDeducted && !$isAdmin) {
+                    $user->addToWallet($purchaseAmount);
+                    $this->logLagacyNin('INFO', 'Wallet refunded due to API error', [
+                        'amount' => $purchaseAmount,
+                        'user_id' => $user->id
+                    ]);
+                }
+                
                 return [
                     'error' => 'The external API service reports insufficient balance. This may be separate from your local wallet balance. Please contact support or try a different search method.',
                     'code' => 'API_BALANCE_ERROR',
                     'status' => 400,
                     'api_message' => $responseData['message']
                 ];
+            }
+            
+            // Additional safety check: If API returns any failed status and wallet was deducted, refund it
+            if (isset($responseData['status']) && $responseData['status'] === 'failed' && $walletDeducted && !$isAdmin) {
+                $user->addToWallet($purchaseAmount);
+                $this->logLagacyNin('INFO', 'Wallet refunded due to API failure', [
+                    'amount' => $purchaseAmount,
+                    'user_id' => $user->id,
+                    'api_message' => $responseData['message'] ?? 'Unknown error'
+                ]);
             }
 
             // Success - return data
