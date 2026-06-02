@@ -68,6 +68,23 @@ const LagacyNin = ({ auth }) => {
         setPdfDownloading(false);
     };
 
+    // Function to speak text using Web Speech API
+    const speak = (text) => {
+        if ('speechSynthesis' in window) {
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Normal speed
+            utterance.pitch = 1; // Normal pitch
+            utterance.volume = 1; // Full volume
+            
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log('Speech synthesis not supported in this browser');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         
@@ -79,6 +96,9 @@ const LagacyNin = ({ auth }) => {
         try {
             setLoading(true);
             setError('');
+            
+            // Speak "searching" when search starts
+            speak('Searching');
 
             // Determine API endpoint based on version
             let apiEndpoint = '/api/lagacy-nin/search';
@@ -167,6 +187,7 @@ const LagacyNin = ({ auth }) => {
 
     const downloadImage = (imageData, filename) => {
         try {
+            speak('Downloading NIN Profile Image')
             if (!imageData || typeof imageData !== 'string') {
                 throw new Error('Invalid image data');
             }
@@ -210,6 +231,7 @@ const LagacyNin = ({ auth }) => {
     }
 
     try {
+        speak('Downloading ' + 'NIN ' + selectedAction)
         setLoading(true);
         setError('');
 
@@ -238,6 +260,7 @@ const LagacyNin = ({ auth }) => {
         
         if (response.status === 401) {
             setError('Session expired. Please refresh the page and login again.');
+            speak('Session expired. Please refresh the page and login again')
             setTimeout(() => {
                 window.location.href = '/login';
             }, 2000);
@@ -252,6 +275,7 @@ const LagacyNin = ({ auth }) => {
         if (contentType && contentType.includes('application/json') && !response.ok) {
             const errorData = await response.json();
             setError(errorData.error || 'PDF generation failed');
+            speak('PDF generation failed')
             return;
         }
 
@@ -296,12 +320,14 @@ const LagacyNin = ({ auth }) => {
         const fileType = isPDF ? 'PDF' : 'HTML';
         const additionalMessage = isHTML ? ' (PDF generation failed, HTML fallback provided)' : '';
         alert('✅ ' + templateName + ' ' + fileType + ' downloaded successfully!' + additionalMessage);
+        speak('downloaded successfully!')
         setPdfDownloading(false);
 
     } catch (err) {
         console.error('PDF generation error:', err);
         setError(err.message || 'Failed to generate PDF');
         alert('❌ Failed to generate PDF: ' + (err.message || 'Unknown error'));
+        speak('downloaded successfully!')
     } finally {
         setLoading(false);
     }

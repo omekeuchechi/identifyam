@@ -66,11 +66,31 @@ export default function Funding({ auth }) {
         ]);
     };
 
+    // Function to speak text using Web Speech API
+    const speak = (text) => {
+        if ('speechSynthesis' in window) {
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Normal speed
+            utterance.pitch = 1; // Normal pitch
+            utterance.volume = 1; // Full volume
+            
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log('Speech synthesis not supported in this browser');
+        }
+    };
+
     const handleFunding = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
+            // Speak "Funding wallet" when funding starts
+            speak('Funding wallet');
+            
             const response = await post(route('wallet.funding.initialize'), {
                 onSuccess: (page) => {
                     if (page.props.data.authorization_url) {
@@ -84,6 +104,7 @@ export default function Funding({ auth }) {
             });
         } catch (error) {
             console.error('Funding error:', error);
+            speak('An error occurred during Funding')
         } finally {
             setLoading(false);
         }
@@ -94,6 +115,9 @@ export default function Funding({ auth }) {
         setLoading(true);
 
         try {
+            // Speak "Transferring funds" when transfer starts
+            speak('Transferring funds');
+            
             const response = await transferForm.post(route('wallet.transfer'), {
                 onSuccess: (page) => {
                     fetchBalance();

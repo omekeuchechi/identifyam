@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/settings', [App\Http\Controllers\AdminController::class, 'getSettings'])->name('admin.settings');
 
         Route::get('/admin/nin-profit', [App\Http\Controllers\AdminController::class, 'getNinProfit'])->name('admin.nin-profit');
+        Route::get('/admin/exam-profit', [App\Http\Controllers\AdminController::class, 'getExamProfit'])->name('admin.exam-profit');
+        Route::get('/admin/exam-profit', [App\Http\Controllers\AdminController::class, 'getExamProfit'])->name('admin.exam-profit');
         Route::get('/admin/security-monitoring', [App\Http\Controllers\AdminController::class, 'getSecurityMonitoring'])->name('admin.security-monitoring');
         Route::delete('/admin/system-logs/clear', [App\Http\Controllers\AdminController::class, 'clearSystemLogs'])->name('admin.system-logs.clear');
         Route::post('/admin/log-ip', [App\Http\Controllers\AdminController::class, 'logCurrentUserIP'])->name('admin.log-ip');

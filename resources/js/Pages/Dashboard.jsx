@@ -29,6 +29,23 @@ export default function Dashboard({ auth }) {
         const [loading, setLoading] = useState(true);
         const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+        // Function to speak text using Web Speech API
+    const speak = (text) => {
+        if ('speechSynthesis' in window) {
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Normal speed
+            utterance.pitch = 1; // Normal pitch
+            utterance.volume = 1; // Full volume
+            
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log('Speech synthesis not supported in this browser');
+        }
+    };
+
         // Set user scope and detect auth events on component mount
         useEffect(() => {
             // Scope activities to the logged-in user
@@ -84,6 +101,7 @@ export default function Dashboard({ auth }) {
     
         const handleLogout = (e) => {
             e.preventDefault();
+            speak('Do you want to logout')
             if (confirm("Do you want to logout?")) {
                 // Track logout activity
                 addActivity(
@@ -94,6 +112,7 @@ export default function Dashboard({ auth }) {
                 );
                 
                 router.post(route('logout'));
+                speak('logout Successfully!')
             }
         };
 

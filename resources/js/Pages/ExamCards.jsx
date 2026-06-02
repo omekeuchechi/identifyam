@@ -21,8 +21,26 @@ export default function ExamCards({ auth }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [expandedCards, setExpandedCards] = useState(new Set());
 
+    // Function to speak text using Web Speech API
+    const speak = (text) => {
+        if ('speechSynthesis' in window) {
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Normal speed
+            utterance.pitch = 1; // Normal pitch
+            utterance.volume = 1; // Full volume
+            
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log('Speech synthesis not supported in this browser');
+        }
+    };
+
     // Fetch available cards on component mount
     useEffect(() => {
+        speak('Fetching user ')
         fetchAvailableCards();
         if (auth.user) {
             fetchUserPurchases();

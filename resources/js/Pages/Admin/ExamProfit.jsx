@@ -1,43 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePage, Head, Link, router } from '@inertiajs/react';
 import { formatCurrency } from '../../utils/formatCurrency';
-import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend,
-    Filler
+    ArcElement,
 } from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 
-// Register ChartJS components
+// Register Chart.js components
 ChartJS.register(
     CategoryScale,
     LinearScale,
     PointElement,
     LineElement,
+    BarElement,
     Title,
     Tooltip,
     Legend,
-    Filler
+    ArcElement
 );
 
-const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytics, profitData: initialProfitData }) => {
+const ExamProfit = ({ auth, purchases: initialPurchases, analytics: initialAnalytics, profitData: initialProfitData }) => {
     const [analytics, setAnalytics] = useState(initialAnalytics || {
-        totalRequests: 0,
+        totalPurchases: 0,
         totalRevenue: 0,
         totalProfit: 0,
+        totalCardsSold: 0,
         avgDailyProfit: 0,
         avgMonthlyProfit: 0,
         avgYearlyProfit: 0,
         totalWalletBalance: 0
     });
     const [profitData, setProfitData] = useState(initialProfitData || []);
-    const [requests, setRequests] = useState(initialRequests?.data || []);
+    const [purchases, setPurchases] = useState(initialPurchases?.data || []);
     const [loading, setLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
@@ -45,8 +48,8 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
     useEffect(() => {
         if (initialAnalytics) setAnalytics(initialAnalytics);
         if (initialProfitData) setProfitData(initialProfitData);
-        if (initialRequests) setRequests(initialRequests.data);
-    }, [initialAnalytics, initialProfitData, initialRequests]);
+        if (initialPurchases) setPurchases(initialPurchases.data);
+    }, [initialAnalytics, initialProfitData, initialPurchases]);
 
     const handleLogout = (e) => {
         e.preventDefault();
@@ -57,23 +60,23 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
 
     // Chart data configuration
     const chartData = {
-        labels: profitData.map(item => item.date),
+        labels: profitData.map(item => new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
         datasets: [
             {
-                label: 'Daily Profit',
-                data: profitData.map(item => item.profit),
-                borderColor: 'rgb(75, 192, 192)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                fill: true,
-                tension: 0.4
+                label: 'Revenue',
+                data: profitData.map(item => item.revenue),
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                tension: 0.4,
+                fill: true
             },
             {
-                label: 'Daily Revenue',
-                data: profitData.map(item => item.profit + (item.date ? (analytics.externalApiCost || 140) : 0)),
-                borderColor: 'rgb(54, 162, 235)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                fill: true,
-                tension: 0.4
+                label: 'Profit',
+                data: profitData.map(item => item.profit),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                tension: 0.4,
+                fill: true
             }
         ]
     };
@@ -85,9 +88,19 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
             legend: {
                 position: 'top',
             },
-            title: {
-                display: true,
-                text: '30-Day NIN Profit & Revenue Trend'
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += formatCurrency(context.parsed.y);
+                        }
+                        return label;
+                    }
+                }
             }
         },
         scales: {
@@ -102,9 +115,48 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
         }
     };
 
+    // Bar chart for cards sold
+    const barChartData = {
+        labels: profitData.map(item => new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+        datasets: [
+            {
+                label: 'Cards Sold',
+                data: profitData.map(item => item.cards_sold),
+                backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Purchases',
+                data: profitData.map(item => item.purchases),
+                backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }
+        ]
+    };
+
+    const barChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    };
+
     return (
         <>
-            <Head title="NIN Profit Analytics" />
+            <Head title="Exam Card Profit Analytics" />
 
             <div className="dashboard-layout">
                 {/* Sidebar Overlay for Mobile */}
@@ -143,7 +195,7 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
                         <Link href="/admin/users" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
-                            <i className="fas fa-credit-card"></i> Manage Users
+                            <i className="fas fa-users"></i> Manage Users
                         </Link>
                         <Link href="history" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-history"></i>History
@@ -151,10 +203,10 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                         <Link href="profile" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-user-edit"></i>Profile Edit
                         </Link>
-                        <Link href={route('admin.nin-profit')} className="sidebar-link active" onClick={() => setIsSidebarOpen(false)}>
+                        <Link href={route('admin.nin-profit')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-chart-line"></i> NIN Profit
                         </Link>
-                        <Link href={route('admin.exam-profit')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                        <Link href={route('admin.exam-profit')} className="sidebar-link active" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-chart-pie"></i> Exam Profit
                         </Link>
 
@@ -184,7 +236,7 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                             >
                                 <i className="fas fa-bars"></i>
                             </button>
-                            <h3>NIN Profit Analytics</h3>
+                            <h3>Exam Card Profit Analytics</h3>
                         </div>
 
                         <div className="topbar-right">
@@ -220,21 +272,21 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
 
                             <div className="stat-card">
                                 <div className="stat-icon">
-                                    <i className="fas fa-wallet"></i>
+                                    <i className="fas fa-credit-card"></i>
                                 </div>
                                 <div className="stat-info">
-                                    <h4>Total Wallet Balance</h4>
-                                    <span className="stat-number">{loading ? '...' : formatCurrency(analytics.totalWalletBalance)}</span>
+                                    <h4>Total Cards Sold</h4>
+                                    <span className="stat-number">{loading ? '...' : analytics.totalCardsSold}</span>
                                 </div>
                             </div>
 
                             <div className="stat-card">
                                 <div className="stat-icon">
-                                    <i className="fas fa-users"></i>
+                                    <i className="fas fa-shopping-cart"></i>
                                 </div>
                                 <div className="stat-info">
-                                    <h4>Total Requests</h4>
-                                    <span className="stat-number">{loading ? '...' : analytics.totalRequests}</span>
+                                    <h4>Total Purchases</h4>
+                                    <span className="stat-number">{loading ? '...' : analytics.totalPurchases}</span>
                                 </div>
                             </div>
                         </div>
@@ -258,36 +310,46 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                             </div>
                         </div>
 
-                        {/* Profit Chart */}
+                        {/* Revenue and Profit Chart */}
                         <div className="admin-actions">
-                            <h3>30-Day Profit Trend</h3>
-                            <div className="chart-container" style={{ height: '400px' }}>
+                            <h3>30-Day Revenue & Profit Trend</h3>
+                            <div className="chart-container" style={{ height: '300px' }}>
                                 <Line data={chartData} options={chartOptions} />
                             </div>
                         </div>
 
-                        {/* Recent Requests Table */}
+                        {/* Cards Sold and Purchases Chart */}
                         <div className="admin-actions">
-                            <h3>Recent NIN Requests</h3>
+                            <h3>30-Day Cards Sold & Purchases</h3>
+                            <div className="chart-container" style={{ height: '300px' }}>
+                                <Bar data={barChartData} options={barChartOptions} />
+                            </div>
+                        </div>
+
+                        {/* Recent Purchases Table */}
+                        <div className="admin-actions">
+                            <h3>Recent Exam Card Purchases</h3>
                             <div className="table-responsive">
                                 <table className="admin-table">
                                     <thead>
                                         <tr>
                                             <th>User</th>
-                                            <th>NIN</th>
+                                            <th>Card Type</th>
+                                            <th>Quantity</th>
                                             <th>Amount</th>
                                             <th>Profit</th>
                                             <th>Date</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {requests.slice(0, 10).map((request) => (
-                                            <tr key={request.id}>
-                                                <td>{request.user?.name || 'N/A'}</td>
-                                                <td>{request.nin}</td>
-                                                <td>{formatCurrency(request.amount || 1000)}</td>
-                                                <td className="profit-positive">{formatCurrency((request.amount || 1000) - 140)}</td>
-                                                <td>{new Date(request.created_at).toLocaleDateString()}</td>
+                                        {purchases.slice(0, 10).map((purchase) => (
+                                            <tr key={purchase.id}>
+                                                <td>{purchase.user?.name || 'N/A'}</td>
+                                                <td>{purchase.card_type || 'N/A'}</td>
+                                                <td>{purchase.quantity || 1}</td>
+                                                <td>{formatCurrency(purchase.amount || 0)}</td>
+                                                <td className="profit-positive">{formatCurrency((purchase.amount || 0) - ((purchase.quantity || 1) * analytics.costPerCard))}</td>
+                                                <td>{new Date(purchase.created_at).toLocaleDateString()}</td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -340,10 +402,35 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                     transition: all 0.2s ease;
                 }
 
-                .sidebar-link:hover,
-                .sidebar-link.active {
+                .sidebar-link:hover {
                     background: #f3f4f6;
-                    color: #059669;
+                    color: #1f2937;
+                }
+
+                .sidebar-link.active {
+                    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                }
+
+                .sidebar-close-btn {
+                    display: none;
+                    background: none;
+                    border: none;
+                    color: #6b7280;
+                    cursor: pointer;
+                    font-size: 18px;
+                    margin-left: auto;
+                }
+
+                .sidebar-overlay {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: rgba(0,0,0,0.5);
+                    z-index: 999;
                 }
 
                 .dashboard-main {
@@ -353,40 +440,34 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
 
                 .topbar {
                     background: white;
-                    padding: 20px 30px;
-                    border-bottom: 1px solid #e5e7eb;
+                    padding: 15px 25px;
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+                }
+
+                .sidebar-toggle-btn {
+                    display: none;
+                    background: none;
+                    border: none;
+                    color: #6b7280;
+                    cursor: pointer;
+                    font-size: 20px;
+                    margin-right: 15px;
                 }
 
                 .topbar h3 {
-                    color: #1f2937;
                     margin: 0;
-                }
-
-                .topbar-right {
-                    display: flex;
-                    align-items: center;
-                    gap: 20px;
-                }
-
-                .notification {
-                    font-size: 20px;
-                    color: #6b7280;
-                    cursor: pointer;
+                    font-size: 1.2rem;
+                    color: #1f2937;
                 }
 
                 .user-profile {
                     display: flex;
                     align-items: center;
                     gap: 10px;
-                }
-
-                .user-profile img {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
+                    color: #6b7280;
                 }
 
                 .dashboard-content {
@@ -402,89 +483,96 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
 
                 .stat-card {
                     background: white;
-                    padding: 25px;
                     border-radius: 12px;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    padding: 20px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                     display: flex;
                     align-items: center;
                     gap: 15px;
-                    transition: transform 0.2s ease;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
                 }
 
                 .stat-card:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
                 }
 
                 .stat-icon {
-                    width: 60px;
-                    height: 60px;
-                    background: linear-gradient(135deg, #0B6B3A 0%, #10B981 100%);
-                    border-radius: 50%;
+                    width: 50px;
+                    height: 50px;
+                    border-radius: 12px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    color: white;
                     font-size: 24px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
                 }
 
                 .stat-info h4 {
                     margin: 0 0 5px 0;
-                    color: #6b7280;
                     font-size: 14px;
-                    font-weight: 500;
+                    color: #6b7280;
                 }
 
                 .stat-number {
-                    font-size: 28px;
+                    font-size: 24px;
                     font-weight: 700;
                     color: #1f2937;
                 }
 
                 .admin-actions {
                     background: white;
-                    padding: 25px;
                     border-radius: 12px;
-                    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                    padding: 25px;
                     margin-bottom: 25px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
                 }
 
                 .admin-actions h3 {
+                    margin: 0 0 20px 0;
+                    font-size: 18px;
                     color: #1f2937;
-                    margin-bottom: 20px;
-                    font-size: 20px;
                 }
 
                 .action-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 15px;
+                    gap: 20px;
                 }
 
                 .projection-card {
-                    background: #f9fafb;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border-radius: 12px;
                     padding: 20px;
-                    border-radius: 8px;
-                    border: 1px solid #e5e7eb;
-                    text-align: center;
+                    color: white;
+                    transition: transform 0.2s ease;
+                }
+
+                .projection-card:hover {
+                    transform: translateY(-2px);
                 }
 
                 .projection-card h4 {
-                    color: #6b7280;
-                    margin-bottom: 10px;
+                    margin: 0 0 10px 0;
                     font-size: 14px;
+                    opacity: 0.9;
                 }
 
                 .projection-amount {
                     font-size: 24px;
                     font-weight: 700;
-                    color: #10b981;
                 }
 
                 .chart-container {
                     position: relative;
-                    height: 300px;
-                    margin: 20px 0;
+                    background: #fafafa;
+                    border-radius: 8px;
+                    padding: 15px;
+                }
+
+                .table-responsive {
+                    overflow-x: auto;
                 }
 
                 .admin-table {
@@ -493,17 +581,21 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                 }
 
                 .admin-table th {
-                    background: #f8fafc;
-                    padding: 12px;
+                    background: #f9fafb;
+                    padding: 12px 15px;
                     text-align: left;
                     font-weight: 600;
-                    color: #475569;
-                    border-bottom: 2px solid #e2e8f0;
+                    color: #6b7280;
+                    border-bottom: 2px solid #e5e7eb;
                 }
 
                 .admin-table td {
-                    padding: 12px;
-                    border-bottom: 1px solid #e2e8f0;
+                    padding: 12px 15px;
+                    border-bottom: 1px solid #e5e7eb;
+                }
+
+                .admin-table tr:hover {
+                    background: #f9fafb;
                 }
 
                 .profit-positive {
@@ -511,139 +603,43 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
                     font-weight: 600;
                 }
 
-                .table-responsive {
-                    overflow-x: auto;
-                }
-
-                .sidebar-close-btn {
-                    display: none !important;
-                }
-
-                /* Responsive Design */
-                @media (max-width: 991px) {
-                    .dashboard-layout {
-                        flex-direction: column !important;
-                    }
-
+                /* Responsive styles */
+                @media (max-width: 768px) {
                     .sidebar {
-                        position: fixed !important;
-                        top: 0 !important;
-                        left: -290px !important;
-                        width: 280px !important;
-                        height: 100vh !important;
-                        z-index: 1000 !important;
-                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-                        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1) !important;
-                        overflow-y: auto !important;
-                        display: block !important;
+                        transform: translateX(-100%);
+                        transition: transform 0.3s ease;
                     }
 
                     .sidebar.open {
-                        left: 0 !important;
-                    }
-
-                    .sidebar-logo {
-                        display: flex !important;
-                        justify-content: space-between !important;
-                        align-items: center !important;
-                        width: 100% !important;
-                    }
-
-                    .sidebar-close-btn {
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        background: transparent !important;
-                        border: none !important;
-                        font-size: 20px !important;
-                        color: #ef4444 !important;
-                        cursor: pointer !important;
-                        padding: 4px !important;
-                    }
-
-                    .sidebar-menu {
-                        position: static !important;
-                        width: 100% !important;
-                        padding-bottom: 30px !important;
-                    }
-
-                    .sidebar-toggle-btn {
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        background: transparent !important;
-                        border: none !important;
-                        font-size: 20px !important;
-                        color: #374151 !important;
-                        cursor: pointer !important;
-                        padding: 8px !important;
-                        margin-right: 15px !important;
-                        border-radius: 6px !important;
-                        transition: background-color 0.2s !important;
-                    }
-
-                    .sidebar-toggle-btn:hover {
-                        background-color: #f3f4f6 !important;
+                        transform: translateX(0);
                     }
 
                     .sidebar-overlay {
-                        position: fixed !important;
-                        top: 0 !important;
-                        left: 0 !important;
-                        width: 100vw !important;
-                        height: 100vh !important;
-                        background: rgba(0, 0, 0, 0.4) !important;
-                        z-index: 999 !important;
-                        backdrop-filter: blur(2px) !important;
+                        display: block;
+                    }
+
+                    .sidebar-overlay:not(:has(+ .sidebar.open)) {
+                        display: none;
                     }
 
                     .dashboard-main {
-                        margin-left: 0 !important;
-                        width: 100% !important;
+                        margin-left: 0;
                     }
 
-                    .topbar {
-                        padding: 15px 20px !important;
-                        position: sticky !important;
-                        top: 0 !important;
-                        z-index: 100 !important;
-                        box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+                    .sidebar-toggle-btn {
+                        display: block;
                     }
 
-                    .topbar h3 {
-                        font-size: 18px !important;
-                    }
-
-                    .dashboard-content {
-                        padding: 20px 15px !important;
+                    .sidebar-close-btn {
+                        display: block;
                     }
 
                     .stats-grid {
-                        grid-template-columns: 1fr !important;
-                        gap: 15px !important;
+                        grid-template-columns: 1fr;
                     }
 
-                    .stat-card {
-                        padding: 20px !important;
-                    }
-
-                    .admin-actions {
-                        padding: 20px 15px !important;
-                    }
-
-                    .action-grid {
-                        grid-template-columns: 1fr !important;
-                        gap: 10px !important;
-                    }
-                    
-                    .projection-card {
-                        padding: 15px !important;
-                    }
-                }
-
-                @media (min-width: 992px) {
-                    .sidebar-toggle-btn {
-                        display: none !important;
+                    .dashboard-content {
+                        padding: 15px;
                     }
                 }
             `}</style>
@@ -651,4 +647,4 @@ const NinProfit = ({ auth, requests: initialRequests, analytics: initialAnalytic
     );
 };
 
-export default NinProfit;
+export default ExamProfit;

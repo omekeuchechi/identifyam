@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\lagacy_nin;
 use App\Models\SecurityLog;
+use App\Models\ExamCardPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -187,6 +188,72 @@ class AdminController extends Controller
                 'avgYearlyProfit' => $avgYearlyProfit,
                 'totalWalletBalance' => $totalWalletBalance,
                 'externalApiCost' => $externalApiCostPerRequest
+            ],
+            'profitData' => $profitData
+        ]);
+    }
+
+    /**
+     * Get Exam Card Profit analytics
+     */
+    public function getExamProfit()
+    {
+        // Get exam card purchases (successful transactions)
+        $examPurchases = ExamCardPurchase::where('status', 'success');
+        
+        $totalPurchases = $examPurchases->count();
+        $totalRevenue = $examPurchases->sum('amount');
+        $totalCardsSold = $examPurchases->sum('quantity');
+        
+        // For exam cards, the cost is typically the card purchase cost
+        // Assuming a cost per card - adjust this based on your actual pricing model
+        $costPerCard = 0; // Adjust based on your actual cost structure
+        $totalCost = $totalCardsSold * $costPerCard;
+        $totalProfit = $totalRevenue - $totalCost;
+
+        // Calculate averages
+        $avgDailyProfit = $totalPurchases > 0 ? $totalProfit / max(1, ceil($totalPurchases / 30)) : 0;
+        $avgMonthlyProfit = $avgDailyProfit * 30;
+        $avgYearlyProfit = $avgMonthlyProfit * 12;
+
+        // Get total wallet balance from all users
+        $totalWalletBalance = User::sum('walletAmount');
+
+        // Get profit data for graph (last 30 days)
+        $profitData = ExamCardPurchase::where('status', 'success')
+            ->where('created_at', '>=', now()->subDays(30))
+            ->selectRaw('DATE(created_at) as date, SUM(amount) as daily_revenue, COUNT(*) as daily_purchases, SUM(quantity) as daily_cards')
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->map(function($item) use ($costPerCard) {
+                $dailyCost = $item->daily_cards * $costPerCard;
+                return [
+                    'date' => $item->date,
+                    'revenue' => (float) $item->daily_revenue,
+                    'purchases' => $item->daily_purchases,
+                    'cards_sold' => $item->daily_cards,
+                    'profit' => (float) ($item->daily_revenue - $dailyCost)
+                ];
+            });
+
+        // Get recent purchases for the table
+        $purchases = ExamCardPurchase::with(['user'])
+            ->latest()
+            ->paginate(10);
+
+        return Inertia::render('Admin/ExamProfit', [
+            'purchases' => $purchases,
+            'analytics' => [
+                'totalPurchases' => $totalPurchases,
+                'totalRevenue' => $totalRevenue,
+                'totalProfit' => $totalProfit,
+                'totalCardsSold' => $totalCardsSold,
+                'avgDailyProfit' => $avgDailyProfit,
+                'avgMonthlyProfit' => $avgMonthlyProfit,
+                'avgYearlyProfit' => $avgYearlyProfit,
+                'totalWalletBalance' => $totalWalletBalance,
+                'costPerCard' => $costPerCard
             ],
             'profitData' => $profitData
         ]);

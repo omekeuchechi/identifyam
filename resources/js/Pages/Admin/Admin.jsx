@@ -101,6 +101,12 @@ const Admin = ({ auth, initialStats }) => {
                         <Link href="profile" className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
                             <i className="fas fa-user-edit"></i>Profile Edit
                         </Link>
+                        <Link href={route('admin.nin-profit')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-chart-line"></i> NIN Profit
+                        </Link>
+                        <Link href={route('admin.exam-profit')} className="sidebar-link" onClick={() => setIsSidebarOpen(false)}>
+                            <i className="fas fa-chart-pie"></i> Exam Profit
+                        </Link>
 
                         <button onClick={handleLogout} style={{
                             padding: '15px 20px',
