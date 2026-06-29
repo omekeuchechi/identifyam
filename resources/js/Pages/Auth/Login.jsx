@@ -173,7 +173,8 @@ export default function Login({ status, canResetPassword }) {
                                 Continue with Google
                             </a>
 
-                            <p>Don't have an account? <Link href={route('register')}>Sign up</Link></p>
+                            {/* <p>Don't have an account? <Link href={route('register')}>Sign up</Link></p> */}
+                            <p>Get to work</p>
                         </div>
                     </form>
                 </div>
