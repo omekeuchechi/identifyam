@@ -200,14 +200,32 @@ export default function Dashboard({ auth }) {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <a className="active" href="dashboard" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-home"></i>Dashboard</a>
-                        <a href="lagacy-nin" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-id-card"></i> NIN Services</a>
-                        <a href="exam-cards" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-credit-card"></i> Exam Cards</a>
+                        <a className="active" href="dashboard" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("still on Dashboard screen")
+                        }}><i className="fas fa-home"></i>Dashboard</a>
+                        <a href="lagacy-nin" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Nin service screen")
+                        }}><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href="exam-cards" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Exam card screen")
+                        }}><i className="fas fa-credit-card"></i> Exam Cards</a>
                         {/* <a><i className="fas fa-building"></i> CAC Registration</a> */}
                         {/* <a><i className="fas fa-graduation-cap"></i> Study Abroad</a> */}
-                        <a><i className="fas fa-wallet"></i> Wallet</a>
-                        <a href={route('history')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-history"></i> History</a>
-                        <a href={route('settings')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-cog"></i> Settings</a>
+                        <a href={route("funding")} onClick={()  => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to funding screen")
+                        }}><i className="fas fa-wallet"></i> Wallet</a>
+                        <a href={route('history')} onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to history screen")
+                        }}><i className="fas fa-history"></i> History</a>
+                        <a href={route('settings')} onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Settings screen")
+                        }}><i className="fas fa-cog"></i> Settings</a>
 
                         <button onClick={(e) => { e.preventDefault(); handleLogout(e); }} style={{
                             padding: '15px 20px',

@@ -40,7 +40,7 @@ export default function ExamCards({ auth }) {
 
     // Fetch available cards on component mount
     useEffect(() => {
-        speak('Fetching user ')
+        speak('Fetching exam card data')
         fetchAvailableCards();
         if (auth.user) {
             fetchUserPurchases();
@@ -291,22 +291,40 @@ export default function ExamCards({ auth }) {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to dashboard")
+                        }}>
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to nin service screen")
+                        }}>
                             <i className="fas fa-id-card"></i> NIN Services
                         </Link>
-                        <Link href={route('exam.cards')} className="sidebar-link active" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href={route('exam.cards')} className="sidebar-link active" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Still on Exam card screen")
+                        }}>
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href={route('funding')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href={route('funding')} className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Funding Screen")
+                        }}>
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="history" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="history" className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to history")
+                        }}>
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="settings" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="settings" className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Setting screen")
+                        }}>
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>

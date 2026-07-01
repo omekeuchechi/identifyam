@@ -35,28 +35,33 @@ class WalletController extends Controller
         \Illuminate\Support\Facades\File::append($logFile, $logEntry);
     }
 
-    // Add this method
-    private function autoUpdateExpiredTransactions()
-    {
-        // Check only once per hour to avoid performance issues
-        $lastCheck = Cache::get('last_expired_check');
-
-        if (!$lastCheck || now()->diffInMinutes($lastCheck) >= 60) {
-            try {
-                Transaction::where('status', 'pending')
-                    ->where('created_at', '<', now()->subMinutes(20))
-                    ->update([
-                        'status' => 'failed',
-                        'failed_at' => now(),
-                        'gateway_response' => json_encode(['timeout' => true, 'reason' => 'Auto-failed after 20 minutes'])
-                    ]);
-
-                Cache::put('last_expired_check', now(), 3600);
-            } catch (\Exception $e) {
-                // Silent fail
-            }
-        }
-    }
+    // REMOVED: Auto-fail mechanism disabled
+    // We now rely on Paystack webhooks and scheduled verification jobs
+    // to handle transaction status updates properly.
+    // The previous auto-fail mechanism was incorrectly marking successful
+    // payments as failed without verifying with Paystack.
+    //
+    // private function autoUpdateExpiredTransactions()
+    // {
+    //     // Check only once per hour to avoid performance issues
+    //     $lastCheck = Cache::get('last_expired_check');
+    //
+    //     if (!$lastCheck || now()->diffInMinutes($lastCheck) >= 60) {
+    //         try {
+    //             Transaction::where('status', 'pending')
+    //                 ->where('created_at', '<', now()->subMinutes(20))
+    //                 ->update([
+    //                     'status' => 'failed',
+    //                     'failed_at' => now(),
+    //                     'gateway_response' => json_encode(['timeout' => true, 'reason' => 'Auto-failed after 20 minutes'])
+    //                 ]);
+    //
+    //             Cache::put('last_expired_check', now(), 3600);
+    //         } catch (\Exception $e) {
+    //             // Silent fail
+    //         }
+    //     }
+    // }
 
     /**
      * Initialize Paystack funding.
@@ -402,7 +407,7 @@ class WalletController extends Controller
      */
     public function balance()
     {
-        $this->autoUpdateExpiredTransactions();
+        // autoUpdateExpiredTransactions() removed - now handled by scheduled job
         $user = Auth::user();
 
         return response()->json([
@@ -416,8 +421,7 @@ class WalletController extends Controller
      */
     public function transactions()
     {
-        $this->autoUpdateExpiredTransactions();
-
+        // autoUpdateExpiredTransactions() removed - now handled by scheduled job
         $transactions = Auth::user()
             ->transactions()
             ->latest()

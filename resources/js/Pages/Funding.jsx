@@ -154,22 +154,40 @@ export default function Funding({ auth }) {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href={route('dashboard')} className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Dashboard screen")
+                        }}>
                             <i className="fas fa-home"></i>Dashboard
                         </Link>
-                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="lagacy-nin" className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to nin service screen")
+                        }}>
                             <i className="fas fa-id-card"></i> NIN Services
                         </Link>
-                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href={route('exam.cards')} className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Exam card screen")
+                        }}>
                             <i className="fas fa-credit-card"></i> Exam Cards
                         </Link>
-                        <Link href={route('funding')} className="sidebar-link active" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href={route('funding')} className="sidebar-link active" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("still in funding screen")
+                        }}>
                             <i className="fas fa-wallet"></i>Wallet
                         </Link>
-                        <Link href="history" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="history" className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to history screen")
+                        }}>
                             <i className="fas fa-history"></i>History
                         </Link>
-                        <Link href="settings" className="sidebar-link" onClick={() => setMobileMenuOpen(false)}>
+                        <Link href="settings" className="sidebar-link" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to settings screen")
+                        }}>
                             <i className="fas fa-cog"></i>Settings
                         </Link>
                     </nav>

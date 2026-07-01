@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import logoImage from '../../assets/img/identifyam_logo.png';
 import defaultProfileImage from '../../assets/img/user_profile.png';
@@ -6,13 +6,54 @@ import defaultProfileImage from '../../assets/img/user_profile.png';
 import "../../css/dashboardRes.css";
 import "../../css/settingsRes.css";
 
+import {
+    addActivity,
+    activityTypes,
+} from '../utils/activityTracker';
+
 const Settings = ({ auth }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+    useEffect(() => {
+        speak(
+            `Welcome ${auth.user.name} you can do the following here 
+            (1) update your profile details
+            (2) Report Bug so that we can use your feed back to better identifyam
+            (3) you can Logout if you choose to`
+        )
+    }, []);
+
+    // Function to speak text using Web Speech API
+    const speak = (text) => {
+        if ('speechSynthesis' in window) {
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1; // Normal speed
+            utterance.pitch = 0.1; // Normal pitch
+            utterance.volume = 1; // Full volume
+
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log('Speech synthesis not supported in this browser');
+        }
+    };
+
     const handleLogout = (e) => {
         e.preventDefault();
-        if (confirm("Are you sure you want to logout?")) {
+        speak('Do you want to logout')
+        if (confirm("Do you want to logout?")) {
+            // Track logout activity
+            addActivity(
+                activityTypes.LOGOUT,
+                'User logged out',
+                'completed',
+                { timestamp: new Date().toISOString() }
+            );
+
             router.post(route('logout'));
+            speak('logout Successfully!')
         }
     };
 
@@ -34,14 +75,32 @@ const Settings = ({ auth }) => {
                     </a>
 
                     <nav className="sidebar-menu">
-                        <a href={route('dashboard')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-home"></i>Dashboard</a>
-                        <a href="lagacy-nin" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-id-card"></i> NIN Services</a>
-                        <a href={route('exam.cards')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-credit-card"></i> Exam Cards</a>
+                        <a href={route('dashboard')} onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to dashboard")
+                        }}><i className="fas fa-home"></i>Dashboard</a>
+                        <a href="lagacy-nin" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to dashboard")
+                        }}><i className="fas fa-id-card"></i> NIN Services</a>
+                        <a href={route('exam.cards')} onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to Exam card screen")
+                        }}><i className="fas fa-credit-card"></i> Exam Cards</a>
                         {/* <a><i className="fas fa-building"></i> CAC Registration</a> */}
                         {/* <a><i className="fas fa-graduation-cap"></i> Study Abroad</a> */}
-                        <a href={route('funding')} onClick={() => setMobileMenuOpen(false)}><i className="fas fa-wallet"></i> Wallet</a>
-                        <a href='history' onClick={() => setMobileMenuOpen(false)}><i className="fas fa-history"></i> History</a>
-                        <a href={route('settings')} className="active" onClick={() => setMobileMenuOpen(false)}><i className="fas fa-cog"></i> Settings</a>
+                        <a href={route('funding')} onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to funding screen")
+                        }}><i className="fas fa-wallet"></i> Wallet</a>
+                        <a href='history' onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Navigating to history screen")
+                        }}><i className="fas fa-history"></i> History</a>
+                        <a href={route('settings')} className="active" onClick={() => {
+                            setMobileMenuOpen(false)
+                            speak("Still on settings screen")
+                        }}><i className="fas fa-cog"></i> Settings</a>
                     </nav>
                 </aside>
 
@@ -50,7 +109,10 @@ const Settings = ({ auth }) => {
                     {/* Topbar */}
                     <header className="topbar">
                         <div className="topbar-left">
-                            <button className="mobile-menu-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+                            <button className="mobile-menu-toggle" onClick={() => {
+                                setMobileMenuOpen(!mobileMenuOpen)
+                                speak("still on settings screen")
+                            }}>
                                 <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`}></i>
                             </button>
                             <h2>Settings</h2>
@@ -83,7 +145,7 @@ const Settings = ({ auth }) => {
                             gap: '24px',
                             marginTop: '32px'
                         }}>
-                            
+
                             {/* Profile Settings */}
                             <div className="settings-section" style={{
                                 backgroundColor: 'white',
@@ -95,7 +157,7 @@ const Settings = ({ auth }) => {
                                     <i className="fas fa-user-cog" style={{ marginRight: '8px', color: '#3b82f6' }}></i>
                                     Account Settings
                                 </h3>
-                                
+
                                 <div className="settings-cards">
                                     <Link href={route('profile.edit')} className="settings-card" style={{
                                         display: 'flex',
@@ -107,18 +169,18 @@ const Settings = ({ auth }) => {
                                         color: '#374151',
                                         transition: 'all 0.2s',
                                         marginBottom: '12px'
-                                    }} 
-                                    onMouseOver={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#f9fafb';
-                                        e.currentTarget.style.borderColor = '#3b82f6';
                                     }}
-                                    onMouseOut={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'white';
-                                        e.currentTarget.style.borderColor = '#e5e7eb';
-                                    }}>
-                                        <i className="fas fa-user-edit" style={{ 
-                                            fontSize: '20px', 
-                                            marginRight: '16px', 
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#f9fafb';
+                                            e.currentTarget.style.borderColor = '#3b82f6';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'white';
+                                            e.currentTarget.style.borderColor = '#e5e7eb';
+                                        }}>
+                                        <i className="fas fa-user-edit" style={{
+                                            fontSize: '20px',
+                                            marginRight: '16px',
                                             color: '#3b82f6',
                                             width: '24px',
                                             textAlign: 'center'
@@ -127,8 +189,8 @@ const Settings = ({ auth }) => {
                                             <div style={{ fontWeight: '600', marginBottom: '4px' }}>Change Profile Details</div>
                                             <div style={{ fontSize: '14px', color: '#6b7280' }}>Update your personal information</div>
                                         </div>
-                                        <i className="fas fa-chevron-right" style={{ 
-                                            marginLeft: 'auto', 
+                                        <i className="fas fa-chevron-right" style={{
+                                            marginLeft: 'auto',
                                             color: '#9ca3af',
                                             fontSize: '14px'
                                         }}></i>
@@ -147,7 +209,7 @@ const Settings = ({ auth }) => {
                                     <i className="fas fa-life-ring" style={{ marginRight: '8px', color: '#10b981' }}></i>
                                     Support
                                 </h3>
-                                
+
                                 <div className="settings-cards">
                                     <Link href={route('report.bug')} className="settings-card" style={{
                                         display: 'flex',
@@ -159,18 +221,18 @@ const Settings = ({ auth }) => {
                                         color: '#374151',
                                         transition: 'all 0.2s',
                                         marginBottom: '12px'
-                                    }} 
-                                    onMouseOver={(e) => {
-                                        e.currentTarget.style.backgroundColor = '#f9fafb';
-                                        e.currentTarget.style.borderColor = '#10b981';
                                     }}
-                                    onMouseOut={(e) => {
-                                        e.currentTarget.style.backgroundColor = 'white';
-                                        e.currentTarget.style.borderColor = '#e5e7eb';
-                                    }}>
-                                        <i className="fas fa-bug" style={{ 
-                                            fontSize: '20px', 
-                                            marginRight: '16px', 
+                                        onMouseOver={(e) => {
+                                            e.currentTarget.style.backgroundColor = '#f9fafb';
+                                            e.currentTarget.style.borderColor = '#10b981';
+                                        }}
+                                        onMouseOut={(e) => {
+                                            e.currentTarget.style.backgroundColor = 'white';
+                                            e.currentTarget.style.borderColor = '#e5e7eb';
+                                        }}>
+                                        <i className="fas fa-bug" style={{
+                                            fontSize: '20px',
+                                            marginRight: '16px',
                                             color: '#10b981',
                                             width: '24px',
                                             textAlign: 'center'
@@ -179,8 +241,8 @@ const Settings = ({ auth }) => {
                                             <div style={{ fontWeight: '600', marginBottom: '4px' }}>Report Bug</div>
                                             <div style={{ fontSize: '14px', color: '#6b7280' }}>Help us improve by reporting issues</div>
                                         </div>
-                                        <i className="fas fa-chevron-right" style={{ 
-                                            marginLeft: 'auto', 
+                                        <i className="fas fa-chevron-right" style={{
+                                            marginLeft: 'auto',
                                             color: '#9ca3af',
                                             fontSize: '14px'
                                         }}></i>
@@ -200,11 +262,11 @@ const Settings = ({ auth }) => {
                                     <i className="fas fa-exclamation-triangle" style={{ marginRight: '8px', color: '#dc2626' }}></i>
                                     Danger Zone
                                 </h3>
-                                
+
                                 <div className="settings-cards">
                                     <button
                                         onClick={handleLogout}
-                                        className="settings-card logout-card" 
+                                        className="settings-card logout-card"
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
@@ -218,7 +280,7 @@ const Settings = ({ auth }) => {
                                             cursor: 'pointer',
                                             width: '100%',
                                             textAlign: 'left'
-                                        }} 
+                                        }}
                                         onMouseOver={(e) => {
                                             e.currentTarget.style.backgroundColor = '#fef2f2';
                                             e.currentTarget.style.borderColor = '#dc2626';
@@ -227,9 +289,9 @@ const Settings = ({ auth }) => {
                                             e.currentTarget.style.backgroundColor = 'white';
                                             e.currentTarget.style.borderColor = '#fecaca';
                                         }}>
-                                        <i className="fas fa-sign-out-alt" style={{ 
-                                            fontSize: '20px', 
-                                            marginRight: '16px', 
+                                        <i className="fas fa-sign-out-alt" style={{
+                                            fontSize: '20px',
+                                            marginRight: '16px',
                                             color: '#ef4444',
                                             width: '24px',
                                             textAlign: 'center'
@@ -242,8 +304,8 @@ const Settings = ({ auth }) => {
                                                 Sign out of your account
                                             </div>
                                         </div>
-                                        <i className="fas fa-chevron-right" style={{ 
-                                            marginLeft: 'auto', 
+                                        <i className="fas fa-chevron-right" style={{
+                                            marginLeft: 'auto',
                                             color: '#ef4444',
                                             fontSize: '14px'
                                         }}></i>
