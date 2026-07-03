@@ -6,10 +6,13 @@ use App\Models\User;
 use App\Models\lagacy_nin;
 use App\Models\SecurityLog;
 use App\Models\ExamCardPurchase;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class AdminController extends Controller
@@ -582,6 +585,118 @@ class AdminController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to log user IPs: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually verify all pending transactions with Paystack
+     */
+    public function verifyPendingTransactions()
+    {
+        try {
+            // Get all pending funding transactions
+            $pendingTransactions = Transaction::where('status', 'pending')
+                ->where('type', 'funding')
+                ->where('gateway', 'paystack')
+                ->limit(100) // Process in batches
+                ->get();
+
+            $verifiedCount = 0;
+            $successfulCount = 0;
+            $failedCount = 0;
+            $errors = [];
+
+            foreach ($pendingTransactions as $transaction) {
+                try {
+                    $reference = $transaction->reference;
+
+                    // Verify with Paystack
+                    $response = Http::withToken(config('services.paystack.secret_key'))
+                        ->timeout(30)
+                        ->get("https://api.paystack.co/transaction/verify/{$reference}");
+
+                    $data = $response->json();
+
+                    if (!$response->successful() || !$data['status']) {
+                        $errors[] = "Failed to verify {$reference}: " . ($data['message'] ?? 'Unknown error');
+                        continue;
+                    }
+
+                    $paystackData = $data['data'];
+                    $verifiedCount++;
+
+                    // Use database transaction with row locking
+                    DB::transaction(function () use ($transaction, $paystackData, &$successfulCount, &$failedCount) {
+                        $lockedTransaction = Transaction::where('id', $transaction->id)
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (!$lockedTransaction || $lockedTransaction->status !== 'pending') {
+                            return;
+                        }
+
+                        // Validate amounts match
+                        $expectedAmount = $lockedTransaction->amount;
+                        $actualAmount = $paystackData['amount'] / 100;
+
+                        if (abs($expectedAmount - $actualAmount) > 0.01) {
+                            $lockedTransaction->update([
+                                'status' => 'failed',
+                                'gateway_response' => array_merge($paystackData, [
+                                    'fraud_detected' => 'amount_mismatch',
+                                    'expected_amount' => $expectedAmount,
+                                    'actual_amount' => $actualAmount,
+                                    'verification_method' => 'admin_manual'
+                                ]),
+                            ]);
+                            $failedCount++;
+                            return;
+                        }
+
+                        // Update status based on Paystack response
+                        $newStatus = $paystackData['status'] === 'success' ? 'successful' : 'failed';
+                        $lockedTransaction->update([
+                            'status' => $newStatus,
+                            'gateway_response' => array_merge($paystackData, [
+                                'verification_method' => 'admin_manual'
+                            ]),
+                            'processed_at' => now(),
+                        ]);
+
+                        if ($newStatus === 'successful') {
+                            // Add funds to wallet
+                            $user = $lockedTransaction->user;
+                            if ($user && $user->email_verified_at !== null) {
+                                $user->addToWallet($lockedTransaction->amount);
+                                $successfulCount++;
+                            } else {
+                                // Revert if user not verified
+                                $lockedTransaction->update(['status' => 'pending']);
+                            }
+                        } else {
+                            $failedCount++;
+                        }
+                    });
+
+                } catch (\Exception $e) {
+                    $errors[] = "Error processing {$transaction->reference}: " . $e->getMessage();
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Verified {$verifiedCount} transactions: {$successfulCount} successful, {$failedCount} failed",
+                'verified_count' => $verifiedCount,
+                'successful_count' => $successfulCount,
+                'failed_count' => $failedCount,
+                'errors' => $errors
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to verify transactions: ' . $e->getMessage()
             ], 500);
         }
     }

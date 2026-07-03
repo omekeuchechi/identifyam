@@ -43,9 +43,9 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withSchedule(function (Schedule $schedule): void {
-        // Verify pending transactions every 10 minutes
+        // Verify pending transactions every 5 minutes
         $schedule->job(new \App\Jobs\VerifyPendingTransactions())
-            ->everyTenMinutes()
+            ->everyFiveMinutes()
             ->description('Verify pending transactions with Paystack');
     })
     ->create();

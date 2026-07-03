@@ -10,6 +10,8 @@ const Admin = ({ auth, initialStats }) => {
     });
     const [loading, setLoading] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [verifying, setVerifying] = useState(false);
+    const [verificationResult, setVerificationResult] = useState(null);
 
     useEffect(() => {
         if (initialStats) {
@@ -46,6 +48,50 @@ const Admin = ({ auth, initialStats }) => {
         e.preventDefault();
         if (confirm("Are you sure you want to logout?")) {
             router.post(route('logout'));
+        }
+    };
+
+    const handleVerifyPendingTransactions = async () => {
+        if (!confirm("Are you sure you want to verify all pending transactions with Paystack? This will check the status of pending payments and update them accordingly.")) {
+            return;
+        }
+
+        try {
+            setVerifying(true);
+            setVerificationResult(null);
+
+            const response = await fetch(route('admin.verify-pending-transactions'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setVerificationResult({
+                    success: true,
+                    message: data.message,
+                    verifiedCount: data.verified_count,
+                    successfulCount: data.successful_count,
+                    failedCount: data.failed_count,
+                    errors: data.errors
+                });
+            } else {
+                setVerificationResult({
+                    success: false,
+                    message: data.message || 'Verification failed'
+                });
+            }
+        } catch (err) {
+            setVerificationResult({
+                success: false,
+                message: 'Network error: ' + err.message
+            });
+        } finally {
+            setVerifying(false);
         }
     };
 
@@ -213,7 +259,79 @@ const Admin = ({ auth, initialStats }) => {
                                     <i className="fas fa-cog"></i>
                                     <span>System Settings</span>
                                 </Link>
+                                <button
+                                    onClick={handleVerifyPendingTransactions}
+                                    disabled={verifying}
+                                    className="action-card"
+                                    style={{
+                                        cursor: verifying ? 'not-allowed' : 'pointer',
+                                        opacity: verifying ? 0.6 : 1
+                                    }}
+                                >
+                                    <i className="fas fa-check-circle"></i>
+                                    <span>{verifying ? 'Verifying...' : 'Verify Pending Transactions'}</span>
+                                </button>
                             </div>
+
+                            {/* Verification Result */}
+                            {verificationResult && (
+                                <div style={{
+                                    marginTop: '20px',
+                                    padding: '15px',
+                                    borderRadius: '8px',
+                                    backgroundColor: verificationResult.success ? '#d1fae5' : '#fee2e2',
+                                    border: `1px solid ${verificationResult.success ? '#10b981' : '#ef4444'}`
+                                }}>
+                                    <h4 style={{
+                                        margin: '0 0 10px 0',
+                                        color: verificationResult.success ? '#065f46' : '#991b1b'
+                                    }}>
+                                        {verificationResult.success ? '✓ Verification Complete' : '✗ Verification Failed'}
+                                    </h4>
+                                    <p style={{ margin: '0 0 10px 0', color: '#374151' }}>
+                                        {verificationResult.message}
+                                    </p>
+                                    {verificationResult.success && verificationResult.verifiedCount > 0 && (
+                                        <div style={{ fontSize: '14px', color: '#374151' }}>
+                                            <p style={{ margin: '5px 0' }}>
+                                                <strong>Total Verified:</strong> {verificationResult.verifiedCount}
+                                            </p>
+                                            <p style={{ margin: '5px 0', color: '#059669' }}>
+                                                <strong>Successful:</strong> {verificationResult.successfulCount}
+                                            </p>
+                                            <p style={{ margin: '5px 0', color: '#dc2626' }}>
+                                                <strong>Failed:</strong> {verificationResult.failedCount}
+                                            </p>
+                                            {verificationResult.errors && verificationResult.errors.length > 0 && (
+                                                <details style={{ marginTop: '10px' }}>
+                                                    <summary style={{ cursor: 'pointer', color: '#6b7280' }}>
+                                                        View Errors ({verificationResult.errors.length})
+                                                    </summary>
+                                                    <ul style={{ marginTop: '10px', paddingLeft: '20px', color: '#dc2626' }}>
+                                                        {verificationResult.errors.map((error, index) => (
+                                                            <li key={index} style={{ marginBottom: '5px' }}>{error}</li>
+                                                        ))}
+                                                    </ul>
+                                                </details>
+                                            )}
+                                        </div>
+                                    )}
+                                    <button
+                                        onClick={() => setVerificationResult(null)}
+                                        style={{
+                                            marginTop: '10px',
+                                            padding: '5px 10px',
+                                            backgroundColor: '#374151',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/admin/users/realtime-ips', [App\Http\Controllers\AdminController::class, 'getAllUsersRealTimeIPs'])->name('admin.users.realtime-ips');
         Route::post('/admin/trigger-activity-event', [App\Http\Controllers\AdminController::class, 'triggerUserActivityEvent'])->name('admin.trigger-activity-event');
         Route::post('/admin/log-all-ips', [App\Http\Controllers\AdminController::class, 'logAllUsersIPs'])->name('admin.log-all-ips');
+        Route::post('/admin/verify-pending-transactions', [App\Http\Controllers\AdminController::class, 'verifyPendingTransactions'])->name('admin.verify-pending-transactions');
     });
     
     // Bug report routes
