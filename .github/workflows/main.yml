@@ -1,9 +1,12 @@
-name: Build and Deploy Frontend
+name: Build and Commit Frontend Assets
 
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -12,20 +15,26 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        ref: main
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '24.18.1'
+        cache: 'npm'
 
     - name: Install dependencies
       run: npm ci
 
-    - name: Build the project (Vite)
+    - name: Build the project
       run: npm run build
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-files
-        path: public/build/
+    - name: Commit and push build files
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add public/build/
+        git diff --staged --quiet || git commit -m "Build frontend assets [skip ci]"
+        git push
