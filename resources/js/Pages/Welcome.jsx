@@ -154,7 +154,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
 
                         <nav className={`nav ${isMobileMenuOpen ? 'nav-open' : ''}`}>
                             <ul className="nav-links">
-                                {/* <li><a href="/lagacy-nin" onClick={(e) => { setIsMobileMenuOpen(false); }}>NIN Services</a></li> */}
+                                <li><a href="/lagacy-nin" onClick={(e) => { setIsMobileMenuOpen(false); }}>NIN Services</a></li>
                                 <li><a href="/exam-cards" onClick={(e) => { setIsMobileMenuOpen(false); }}>Buy Scratch Card</a></li>
                                 <li><a href="#contact" onClick={(e) => { scrollToSection(e, '#contact'); setIsMobileMenuOpen(false); }}>Contact</a></li>
                                 {auth.user ? (
@@ -166,7 +166,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                                 ) : (
                                     <>
                                         <li><a href="login">Login</a></li>
-                                        {/* <li><a href="register">Register</a></li> */}
+                                        <li><a href="register">Register</a></li>
                                     </>
                                 )}
                             </ul>
@@ -180,16 +180,16 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 <div className="container">
                     <div className="hero-content">
                         <div className="hero-text fade-in-scroll">
-                            <h1 className="fade-in-scroll">{/*Retrieve Your <span style={{ color: '#059669' }}>NIN
-                                Slip</span> and */} Buy <span style={{ color: '#059669' }}>Exam Scratch Cards</span></h1>
+                            <h1 className="fade-in-scroll">Retrieve Your <span style={{ color: '#059669' }}>NIN
+                                Slip</span> and Buy <span style={{ color: '#059669' }}>Exam Scratch Cards</span></h1>
                             <p className="fade-in-scroll">Lost your NIN slip? Get it retrieved quickly . Get Exam scratch Cards and check result</p>
                             <div className="hero-flex-btn">
-                                {/* <div className="hero-buttons fade-in-scroll">
+                                <div className="hero-buttons fade-in-scroll">
                                     <a href="/lagacy-nin" className="btn-get-started">
                                         <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
                                         <span>Get Your NIN Slip</span>
                                     </a>
-                                </div> */}
+                                </div>
                                 <div className="hero-buttons fade-in-scroll">
                                     <a href="/exam-cards" className="btn-get-started">
                                         <img src={greenShieldIcon} alt="IdentifyAM" loading="lazy" />
@@ -245,7 +245,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                 </div>
             </section>
 
-            {/* <section className='nin-services fade-in-scroll'>
+            <section className='nin-services fade-in-scroll'>
                 <div className="container">
                     <div className="services-header">
                         <h2 className="fade-in-scroll">Our NIN Services</h2>
@@ -287,10 +287,10 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         </div>
                     </div>
                 </div>
-            </section> */}
+            </section>
 
             {/* How It Works Section */}
-            {/* <section className="how-it-works fade-in-scroll" id="process">
+            <section className="how-it-works fade-in-scroll" id="process">
                 <div className="container">
                     <div className="section-header fade-in-scroll">
                         <h2 className="fade-in-scroll">How It Works</h2>
@@ -320,7 +320,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         </div>
                     </div>
                 </div>
-            </section> */}
+            </section>
 
             <section className='exam-scratch-card fade-in-scroll'>
                 <div className="container">
@@ -529,7 +529,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
             </section>
 
             {/* FAQ Section */}
-            {/* <section className="faq fade-in-scroll" id="faq">
+            <section className="faq fade-in-scroll" id="faq">
                 <div className="container">
                     <div className="section-header fade-in-scroll">
                         <h2>Frequently Asked Questions</h2>
@@ -723,7 +723,7 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
                         </div>
                     </div>
                 </div>
-            </section> */}
+            </section>
 
             {/* CTA Section */}
             <section className="cta fade-in-scroll">
