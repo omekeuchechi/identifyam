@@ -3,9 +3,7 @@ name: Build and Deploy Frontend
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   build:
@@ -14,25 +12,20 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '24.18.1'
-        cache: 'npm'
-    
+
     - name: Install dependencies
       run: npm ci
-      # or use: npm install
-    
-    - name: Build the project
+
+    - name: Build the project (Vite)
       run: npm run build
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-files
-        path: |
-          dist/
-          build/
-          !dist/**/*.map  # Exclude source maps if needed
+        path: public/build/
