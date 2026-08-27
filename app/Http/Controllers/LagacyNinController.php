@@ -1496,11 +1496,11 @@ class LagacyNinController extends Controller
 
         // Format data for the template
         $nin = $data['nin'] ?? '1234 5678 901';
-        $surname = $data['surName'] ?? $data['surname'] ?? 'DOE';
-        $firstName = $data['firstName'] ?? $data['firstname'] ?? 'JOHN';
-        $middleName = $data['middleName'] ?? $data['middlename'] ?? 'SMITH';
+        $surname = $data['surName'] ?? $data['surname'];
+        $firstName = $data['firstName'] ?? $data['firstname'];
+        $middleName = $data['middleName'] ?? $data['middlename'];
         $gender = $data['gender'] ?? 'M';
-        $birthDate = $this->formatBirthDate($data['dateOfBirth'] ?? $data['birthdate'] ?? $data['birth_date'] ?? '01 JAN 1990');
+        $birthDate = $this->formatBirthDate($data['dateOfBirth'] ?? $data['birthdate'] ?? $data['birth_date']);
         $issueDate = now()->format('d M Y');
 
         $genderNewValue='';
