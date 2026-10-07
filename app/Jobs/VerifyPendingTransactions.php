@@ -12,6 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class VerifyPendingTransactions implements ShouldQueue
 {
@@ -22,52 +23,66 @@ class VerifyPendingTransactions implements ShouldQueue
      */
     public function handle()
     {
-        Log::info('Starting verification of pending transactions');
+        Log::info('Starting verification of pending Flutterwave transactions');
 
         // Get pending transactions older than 5 minutes
         $pendingTransactions = Transaction::where('status', 'pending')
             ->where('type', 'funding')
             ->where('created_at', '<', now()->subMinutes(5))
-            ->where('gateway', 'paystack')
-            ->limit(50) // Process in batches to avoid overwhelming Paystack API
+            ->where('gateway', 'flutterwave')
+            ->limit(50) // Process in batches to avoid overwhelming Flutterwave API
             ->get();
 
-        Log::info('Found pending transactions to verify', ['count' => $pendingTransactions->count()]);
+        Log::info('Found pending Flutterwave transactions to verify', ['count' => $pendingTransactions->count()]);
 
         foreach ($pendingTransactions as $transaction) {
             $this->verifyTransaction($transaction);
         }
 
-        Log::info('Completed verification of pending transactions');
+        Log::info('Completed verification of pending Flutterwave transactions');
     }
 
     /**
-     * Verify a single transaction with Paystack.
+     * Get Flutterwave access token (using secret_key)
+     */
+    private function getFlutterwaveAccessToken()
+    {
+        // Flutterwave uses secret_key as Bearer token
+        return 'Bearer ' . config('services.flutterwave.secret_key');
+    }
+
+    /**
+     * Verify a single transaction with Flutterwave.
      */
     private function verifyTransaction(Transaction $transaction)
     {
         $reference = $transaction->reference;
 
         try {
-            // Verify transaction with Paystack
-            $response = Http::withToken(config('services.paystack.secret_key'))
+            // Get access token
+            $accessToken = $this->getFlutterwaveAccessToken();
+
+            // Verify transaction with Flutterwave
+            $response = Http::withHeaders([
+                'Authorization' => $accessToken,
+            ])
                 ->timeout(30)
-                ->get("https://api.paystack.co/transaction/verify/{$reference}");
+                ->get(config('services.flutterwave.base_url') . "/transactions/verify_by_reference?tx_ref={$reference}");
 
             $data = $response->json();
 
-            if (!$response->successful() || !$data['status']) {
-                Log::warning('Failed to verify transaction with Paystack', [
+            if (!$response->successful() || $data['status'] !== 'success') {
+                Log::warning('Failed to verify transaction with Flutterwave', [
                     'reference' => $reference,
                     'response' => $data
                 ]);
                 return;
             }
 
-            $paystackData = $data['data'];
+            $flutterwaveData = $data['data'];
 
             // Use database transaction with row locking
-            DB::transaction(function () use ($transaction, $paystackData) {
+            DB::transaction(function () use ($transaction, $flutterwaveData) {
                 // Lock the transaction row
                 $lockedTransaction = Transaction::where('id', $transaction->id)
                     ->lockForUpdate()
@@ -91,7 +106,7 @@ class VerifyPendingTransactions implements ShouldQueue
 
                 // Validate amounts match
                 $expectedAmount = $lockedTransaction->amount;
-                $actualAmount = $paystackData['amount'] / 100; // Convert from kobo
+                $actualAmount = $flutterwaveData['amount'];
 
                 if (abs($expectedAmount - $actualAmount) > 0.01) {
                     Log::error('Amount mismatch during verification', [
@@ -102,7 +117,7 @@ class VerifyPendingTransactions implements ShouldQueue
 
                     $lockedTransaction->update([
                         'status' => 'failed',
-                        'gateway_response' => array_merge($paystackData, [
+                        'gateway_response' => array_merge($flutterwaveData, [
                             'fraud_detected' => 'amount_mismatch',
                             'expected_amount' => $expectedAmount,
                             'actual_amount' => $actualAmount,
@@ -114,15 +129,15 @@ class VerifyPendingTransactions implements ShouldQueue
                 }
 
                 // Validate payment currency
-                if ($paystackData['currency'] !== 'NGN') {
+                if ($flutterwaveData['currency'] !== 'NGN') {
                     Log::error('Invalid currency during verification', [
                         'reference' => $lockedTransaction->reference,
-                        'currency' => $paystackData['currency']
+                        'currency' => $flutterwaveData['currency']
                     ]);
 
                     $lockedTransaction->update([
                         'status' => 'failed',
-                        'gateway_response' => array_merge($paystackData, [
+                        'gateway_response' => array_merge($flutterwaveData, [
                             'fraud_detected' => 'invalid_currency',
                             'verification_method' => 'scheduled_job'
                         ]),
@@ -131,18 +146,18 @@ class VerifyPendingTransactions implements ShouldQueue
                     return;
                 }
 
-                // Update transaction status based on Paystack status
-                $newStatus = $paystackData['status'] === 'success' ? 'successful' : 'failed';
+                // Update transaction status based on Flutterwave status
+                $newStatus = $flutterwaveData['status'] === 'successful' ? 'successful' : 'failed';
                 $lockedTransaction->update([
                     'status' => $newStatus,
-                    'gateway_response' => array_merge($paystackData, [
+                    'gateway_response' => array_merge($flutterwaveData, [
                         'verification_method' => 'scheduled_job'
                     ]),
                     'processed_at' => now(),
                 ]);
 
                 // If successful, add funds to wallet
-                if ($paystackData['status'] === 'success') {
+                if ($flutterwaveData['status'] === 'successful') {
                     $user = $lockedTransaction->user;
 
                     if (!$user || $user->email_verified_at === null) {
@@ -181,7 +196,7 @@ class VerifyPendingTransactions implements ShouldQueue
                 } else {
                     Log::info('Scheduled verification: Transaction marked as failed', [
                         'reference' => $lockedTransaction->reference,
-                        'paystack_status' => $paystackData['status']
+                        'flutterwave_status' => $flutterwaveData['status']
                     ]);
                 }
             });

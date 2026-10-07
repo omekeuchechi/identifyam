@@ -590,15 +590,18 @@ class AdminController extends Controller
     }
 
     /**
-     * Manually verify all pending transactions with Paystack
+     * Manually verify all pending transactions with Flutterwave
      */
     public function verifyPendingTransactions()
     {
         try {
+            // Get access token (using secret_key)
+            $accessToken = 'Bearer ' . config('services.flutterwave.secret_key');
+
             // Get all pending funding transactions
             $pendingTransactions = Transaction::where('status', 'pending')
                 ->where('type', 'funding')
-                ->where('gateway', 'paystack')
+                ->where('gateway', 'flutterwave')
                 ->limit(100) // Process in batches
                 ->get();
 
@@ -611,23 +614,25 @@ class AdminController extends Controller
                 try {
                     $reference = $transaction->reference;
 
-                    // Verify with Paystack
-                    $response = Http::withToken(config('services.paystack.secret_key'))
+                    // Verify with Flutterwave
+                    $response = Http::withHeaders([
+                        'Authorization' => $accessToken,
+                    ])
                         ->timeout(30)
-                        ->get("https://api.paystack.co/transaction/verify/{$reference}");
+                        ->get(config('services.flutterwave.base_url') . "/transactions/verify_by_reference?tx_ref={$reference}");
 
                     $data = $response->json();
 
-                    if (!$response->successful() || !$data['status']) {
+                    if (!$response->successful() || $data['status'] !== 'success') {
                         $errors[] = "Failed to verify {$reference}: " . ($data['message'] ?? 'Unknown error');
                         continue;
                     }
 
-                    $paystackData = $data['data'];
+                    $flutterwaveData = $data['data'];
                     $verifiedCount++;
 
                     // Use database transaction with row locking
-                    DB::transaction(function () use ($transaction, $paystackData, &$successfulCount, &$failedCount) {
+                    DB::transaction(function () use ($transaction, $flutterwaveData, &$successfulCount, &$failedCount) {
                         $lockedTransaction = Transaction::where('id', $transaction->id)
                             ->lockForUpdate()
                             ->first();
@@ -638,12 +643,12 @@ class AdminController extends Controller
 
                         // Validate amounts match
                         $expectedAmount = $lockedTransaction->amount;
-                        $actualAmount = $paystackData['amount'] / 100;
+                        $actualAmount = $flutterwaveData['amount'];
 
                         if (abs($expectedAmount - $actualAmount) > 0.01) {
                             $lockedTransaction->update([
                                 'status' => 'failed',
-                                'gateway_response' => array_merge($paystackData, [
+                                'gateway_response' => array_merge($flutterwaveData, [
                                     'fraud_detected' => 'amount_mismatch',
                                     'expected_amount' => $expectedAmount,
                                     'actual_amount' => $actualAmount,
@@ -654,11 +659,11 @@ class AdminController extends Controller
                             return;
                         }
 
-                        // Update status based on Paystack response
-                        $newStatus = $paystackData['status'] === 'success' ? 'successful' : 'failed';
+                        // Update status based on Flutterwave response
+                        $newStatus = $flutterwaveData['status'] === 'successful' ? 'successful' : 'failed';
                         $lockedTransaction->update([
                             'status' => $newStatus,
-                            'gateway_response' => array_merge($paystackData, [
+                            'gateway_response' => array_merge($flutterwaveData, [
                                 'verification_method' => 'admin_manual'
                             ]),
                             'processed_at' => now(),

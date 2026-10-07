@@ -90,21 +90,31 @@ export default function Funding({ auth }) {
         try {
             // Speak "Funding wallet" when funding starts
             speak('Funding wallet');
-            
-            const response = await post(route('wallet.funding.initialize'), {
-                onSuccess: (page) => {
-                    if (page.props.data.authorization_url) {
-                        // Redirect to Paystack payment page
-                        window.location.href = page.props.data.authorization_url;
-                    }
+
+            const response = await fetch(route('wallet.funding.initialize'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 },
-                onError: (errors) => {
-                    console.error('Funding failed:', errors);
-                }
+                body: JSON.stringify({
+                    amount: data.amount,
+                    email: data.email,
+                }),
             });
+
+            const result = await response.json();
+
+            if (result.success && result.link) {
+                // Redirect to Flutterwave payment page
+                window.location.href = result.link;
+            } else {
+                console.error('Funding failed:', result);
+                speak('Funding failed. Please try again.');
+            }
         } catch (error) {
             console.error('Funding error:', error);
-            speak('An error occurred during Funding')
+            speak('An error occurred during Funding');
         } finally {
             setLoading(false);
         }
@@ -243,7 +253,7 @@ export default function Funding({ auth }) {
                         <div className="funding-options">
                             <div className="option-card">
                                 <h3>Fund Wallet</h3>
-                                <p>Add funds to your wallet using Paystack</p>
+                                <p>Add funds to your wallet using Flutterwave</p>
 
                                 <form onSubmit={handleFunding} className="funding-form">
                                     <div className="form-group">

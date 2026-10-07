@@ -7,7 +7,7 @@ use App\Http\Controllers\LagacyNinController;
 use App\Http\Controllers\PagesController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\HeartbeatController;
-use App\Http\Controllers\PaystackWebhookController;
+use App\Http\Controllers\FlutterwaveWebhookController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,8 +23,8 @@ Route::get('/', function () {
 
 Route::get('/terms-and-condition', [PagesController::class, 'TermsAndCondition'])->name('terms-and-condition');
 
-// Paystack webhook endpoint (no auth required - Paystack calls this directly)
-Route::post('/webhook/paystack', [PaystackWebhookController::class, 'handle'])->name('webhook.paystack');
+// Flutterwave webhook endpoint (no auth required - Flutterwave calls this directly)
+Route::post('/webhook/flutterwave', [FlutterwaveWebhookController::class, 'handle'])->name('webhook.flutterwave');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');

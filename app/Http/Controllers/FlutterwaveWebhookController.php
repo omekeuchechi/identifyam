@@ -9,38 +9,38 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
-class PaystackWebhookController extends Controller
+class FlutterwaveWebhookController extends Controller
 {
     /**
-     * Handle Paystack webhook events.
+     * Handle Flutterwave webhook events.
      */
     public function handle(Request $request)
     {
-        // Paystack doesn't use webhook secrets like Stripe
-        // Security is achieved by verifying the transaction with Paystack API
+        // Flutterwave doesn't use webhook secrets like Stripe
+        // Security is achieved by verifying the transaction with Flutterwave API
         // using the reference from the webhook payload
 
         $event = $request->input('event');
         $data = $request->input('data');
 
-        Log::info('Paystack webhook received', [
+        Log::info('Flutterwave webhook received', [
             'event' => $event,
-            'reference' => $data['reference'] ?? null,
+            'reference' => $data['tx_ref'] ?? null,
             'ip' => $request->ip()
         ]);
 
         // Handle different event types
         switch ($event) {
-            case 'charge.success':
+            case 'charge.completed':
                 return $this->handleSuccessfulCharge($data);
             case 'charge.failed':
                 return $this->handleFailedCharge($data);
-            case 'transfer.success':
+            case 'transfer.completed':
                 return $this->handleSuccessfulTransfer($data);
             case 'transfer.failed':
                 return $this->handleFailedTransfer($data);
             default:
-                Log::info('Unhandled Paystack webhook event', ['event' => $event]);
+                Log::info('Unhandled Flutterwave webhook event', ['event' => $event]);
                 return response()->json(['message' => 'Event received'], 200);
         }
     }
@@ -50,7 +50,7 @@ class PaystackWebhookController extends Controller
      */
     private function handleSuccessfulCharge($data)
     {
-        $reference = $data['reference'];
+        $reference = $data['tx_ref'];
 
         // Validate reference format
         if (!preg_match('/^WALLET_[A-Za-z0-9]{12}_[0-9]+$/', $reference)) {
@@ -77,7 +77,7 @@ class PaystackWebhookController extends Controller
 
             // Validate amounts match
             $expectedAmount = $transaction->amount;
-            $actualAmount = $data['amount'] / 100; // Convert from kobo
+            $actualAmount = $data['amount'];
 
             if (abs($expectedAmount - $actualAmount) > 0.01) {
                 Log::error('Amount mismatch in webhook', [
@@ -85,7 +85,7 @@ class PaystackWebhookController extends Controller
                     'expected' => $expectedAmount,
                     'actual' => $actualAmount
                 ]);
-                
+
                 $transaction->update([
                     'status' => 'failed',
                     'gateway_response' => array_merge($data, [
@@ -104,7 +104,7 @@ class PaystackWebhookController extends Controller
                     'reference' => $reference,
                     'currency' => $data['currency']
                 ]);
-                
+
                 $transaction->update([
                     'status' => 'failed',
                     'gateway_response' => array_merge($data, [
@@ -130,7 +130,7 @@ class PaystackWebhookController extends Controller
                     'reference' => $reference,
                     'user_id' => $transaction->user_id
                 ]);
-                
+
                 // Revert transaction status
                 $transaction->update(['status' => 'pending']);
                 return response()->json(['message' => 'User verification required'], 200);
@@ -168,7 +168,7 @@ class PaystackWebhookController extends Controller
      */
     private function handleFailedCharge($data)
     {
-        $reference = $data['reference'];
+        $reference = $data['tx_ref'];
 
         return DB::transaction(function () use ($reference, $data) {
             $transaction = Transaction::where('reference', $reference)

@@ -35,11 +35,20 @@ class WalletController extends Controller
         \Illuminate\Support\Facades\File::append($logFile, $logEntry);
     }
 
+    /**
+     * Get Flutterwave access token (using secret_key)
+     */
+    private function getFlutterwaveAccessToken()
+    {
+        // Flutterwave uses secret_key as Bearer token
+        return 'Bearer ' . config('services.flutterwave.secret_key');
+    }
+
     // REMOVED: Auto-fail mechanism disabled
-    // We now rely on Paystack webhooks and scheduled verification jobs
+    // We now rely on Flutterwave webhooks and scheduled verification jobs
     // to handle transaction status updates properly.
     // The previous auto-fail mechanism was incorrectly marking successful
-    // payments as failed without verifying with Paystack.
+    // payments as failed without verifying with Flutterwave.
     //
     // private function autoUpdateExpiredTransactions()
     // {
@@ -64,7 +73,7 @@ class WalletController extends Controller
     // }
 
     /**
-     * Initialize Paystack funding.
+     * Initialize Flutterwave funding.
      */
     public function initializeFunding(Request $request)
     {
@@ -76,9 +85,10 @@ class WalletController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return redirect()->route('funding')
-                    ->with('error', 'Invalid input. Amount must be between 100 and 1,000,000.')
-                    ->withInput();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid input. Amount must be between 100 and 1,000,000.'
+                ], 400);
             }
 
             $user = Auth::user();
@@ -86,14 +96,15 @@ class WalletController extends Controller
             // Rate limiting check
             $cacheKey = "funding_attempt_{$user->id}";
             if (Cache::has($cacheKey)) {
-                return redirect()->route('funding')
-                    ->with('error', 'Please wait before making another funding attempt.');
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Please wait before making another funding attempt.'
+                ], 429);
             }
 
             // Rate limit: 1 funding attempt per 30 seconds
             Cache::put($cacheKey, true, 30);
 
-            $amount = $request->amount * 100; // Convert to kobo
             $reference = 'WALLET_' . Str::random(12) . '_' . time();
 
             // Use database transaction for consistency
@@ -108,21 +119,51 @@ class WalletController extends Controller
                     'amount' => $request->amount,
                     'currency' => 'NGN',
                     'status' => 'pending',
-                    'gateway' => 'paystack',
+                    'gateway' => 'flutterwave',
                     'description' => 'Wallet funding',
                     'ip_address' => $request->ip(),
                     'user_agent' => $request->userAgent(),
                 ]);
 
-                // Initialize Paystack transaction
-                $response = Http::withToken(config('services.paystack.secret_key'))
-                    ->timeout(30) // Add timeout
-                    ->post('https://api.paystack.co/transaction/initialize', [
-                        'amount' => $amount,
+                // Get access token
+                try {
+                    $accessToken = $this->getFlutterwaveAccessToken();
+                } catch (\Exception $e) {
+                    $transaction->update([
+                        'status' => 'failed',
+                        'gateway_response' => ['error' => $e->getMessage()],
+                    ]);
+
+                    DB::rollBack();
+                    Cache::forget($cacheKey);
+
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to authenticate with Flutterwave.',
+                    ], 400);
+                }
+
+                // Initialize Flutterwave transaction with access token
+                $response = Http::withHeaders([
+                    'Authorization' => $accessToken,
+                ])
+                    ->timeout(30)
+                    ->post(config('services.flutterwave.base_url') . '/payments', [
+                        'tx_ref' => $reference,
+                        'amount' => $request->amount,
+                        'currency' => 'NGN',
                         'email' => $request->email,
-                        'reference' => $reference,
-                        'callback_url' => route('wallet.funding.callback'),
-                        'metadata' => [
+                        'redirect_url' => route('wallet.funding.callback'),
+                        'payment_options' => 'card,banktransfer,ussd',
+                        'customer' => [
+                            'email' => $request->email,
+                            'name' => $user->name ?? 'User',
+                        ],
+                        'customizations' => [
+                            'title' => 'Wallet Funding',
+                            'description' => 'Fund your wallet',
+                        ],
+                        'meta' => [
                             'user_id' => $user->id,
                             'transaction_id' => $transaction->id,
                             'ip_address' => $request->ip(),
@@ -131,7 +172,7 @@ class WalletController extends Controller
 
                 $data = $response->json();
 
-                if (!$response->successful() || !$data['status']) {
+                if (!$response->successful() || $data['status'] !== 'success') {
                     $transaction->update([
                         'status' => 'failed',
                         'gateway_response' => $data,
@@ -140,32 +181,43 @@ class WalletController extends Controller
                     DB::rollBack();
                     Cache::forget($cacheKey);
 
-                    return redirect()->route('funding')
-                        ->with('error', 'Failed to initialize payment. Please try again.');
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Failed to initialize payment. Please try again.',
+                        'error' => $data,
+                    ], 400);
                 }
 
                 DB::commit();
 
-                // Use Inertia visit to handle redirect properly
-                return inertia()->location($data['data']['authorization_url']);
+                // Return the payment link to the frontend
+                return response()->json([
+                    'success' => true,
+                    'link' => $data['data']['link'],
+                ]);
             } catch (\Exception $e) {
                 DB::rollBack();
                 Cache::forget($cacheKey);
-                throw $e;
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred: ' . $e->getMessage(),
+                ], 500);
             }
         } catch (\Exception $e) {
-
-            return redirect()->route('funding')
-                ->with('error', 'An unexpected error occurred. Please try again.');
+            return response()->json([
+                'success' => false,
+                'message' => 'An unexpected error occurred. Please try again.',
+            ], 500);
         }
     }
 
     /**
-     * Handle Paystack callback.
+     * Handle Flutterwave callback.
      */
     public function fundingCallback(Request $request)
     {
-        $reference = $request->reference;
+        $reference = $request->tx_ref ?? $request->reference;
 
         // Validate reference format
         if (!preg_match('/^WALLET_[A-Za-z0-9]{12}_[0-9]+$/', $reference)) {
@@ -196,14 +248,17 @@ class WalletController extends Controller
                 return redirect()->route('funding')->with('error', 'Payment already processed');
             }
 
-            // Verify transaction with Paystack
-            $response = Http::withToken(config('services.paystack.secret_key'))
+            // Verify transaction with Flutterwave
+            $accessToken = $this->getFlutterwaveAccessToken();
+            $response = Http::withHeaders([
+                'Authorization' => $accessToken,
+            ])
                 ->timeout(30)
-                ->get("https://api.paystack.co/transaction/verify/{$reference}");
+                ->get(config('services.flutterwave.base_url') . "/transactions/verify_by_reference?tx_ref={$reference}");
 
             $data = $response->json();
 
-            if (!$response->successful() || !$data['status']) {
+            if (!$response->successful() || $data['status'] !== 'success') {
 
                 $transaction->update([
                     'status' => 'failed',
@@ -213,17 +268,17 @@ class WalletController extends Controller
                 return redirect()->route('funding')->with('error', 'Payment verification failed');
             }
 
-            $paystackData = $data['data'];
+            $flutterwaveData = $data['data'];
 
             // Validate amounts match (prevent tampering)
             $expectedAmount = $transaction->amount;
-            $actualAmount = $paystackData['amount'] / 100; // Convert from kobo
+            $actualAmount = $flutterwaveData['amount'];
 
             if (abs($expectedAmount - $actualAmount) > 0.01) {
 
                 $transaction->update([
                     'status' => 'failed',
-                    'gateway_response' => array_merge($paystackData, [
+                    'gateway_response' => array_merge($flutterwaveData, [
                         'fraud_detected' => 'amount_mismatch',
                         'expected_amount' => $expectedAmount,
                         'actual_amount' => $actualAmount
@@ -234,11 +289,11 @@ class WalletController extends Controller
             }
 
             // Validate payment currency
-            if ($paystackData['currency'] !== 'NGN') {
+            if ($flutterwaveData['currency'] !== 'NGN') {
 
                 $transaction->update([
                     'status' => 'failed',
-                    'gateway_response' => array_merge($paystackData, [
+                    'gateway_response' => array_merge($flutterwaveData, [
                         'fraud_detected' => 'invalid_currency'
                     ]),
                 ]);
@@ -247,15 +302,15 @@ class WalletController extends Controller
             }
 
             // Update transaction status
-            $newStatus = $paystackData['status'] === 'success' ? 'successful' : 'failed';
+            $newStatus = $flutterwaveData['status'] === 'successful' ? 'successful' : 'failed';
             $transaction->update([
                 'status' => $newStatus,
-                'gateway_response' => $paystackData,
+                'gateway_response' => $flutterwaveData,
                 'processed_at' => now(),
             ]);
 
             // If successful, add funds to wallet atomically
-            if ($paystackData['status'] === 'success') {
+            if ($flutterwaveData['status'] === 'successful') {
                 $user = $transaction->user;
 
                 // Double-check user still exists and is active
@@ -286,7 +341,7 @@ class WalletController extends Controller
                     "Wallet funded with ₦" . number_format($transaction->amount, 2),
                     $transaction->amount,
                     $reference,
-                    ['gateway' => 'paystack', 'new_balance' => $newBalance]
+                    ['gateway' => 'flutterwave', 'new_balance' => $newBalance]
                 );
 
                 return redirect()->route('funding')->with(
@@ -331,7 +386,7 @@ class WalletController extends Controller
             'amount' => $request->amount,
             'currency' => 'NGN',
             'status' => 'pending',
-            'gateway' => 'paystack',
+            'gateway' => 'flutterwave',
             'description' => 'Transfer to ' . $request->recipient_name,
             'recipient_name' => $request->recipient_name,
             'recipient_account' => $request->recipient_account,
@@ -339,18 +394,24 @@ class WalletController extends Controller
         ]);
 
         // Initialize transfer
-        $response = Http::withToken(config('services.paystack.secret_key'))
-            ->post('https://api.paystack.co/transfer', [
-                'source' => 'balance',
-                'amount' => $request->amount * 100, // Convert to kobo
+        $accessToken = $this->getFlutterwaveAccessToken();
+        $response = Http::withHeaders([
+            'Authorization' => $accessToken,
+        ])
+            ->post(config('services.flutterwave.base_url') . '/transfers', [
+                'account_bank' => $request->recipient_bank,
+                'account_number' => $request->recipient_account,
+                'amount' => $request->amount,
+                'narration' => 'Wallet transfer to ' . $request->recipient_name,
+                'currency' => 'NGN',
                 'reference' => $reference,
-                'recipient' => $this->createTransferRecipient($request),
-                'reason' => 'Wallet transfer to ' . $request->recipient_name,
+                'callback_url' => route('wallet.transfer.callback'),
+                'debit_currency' => 'NGN',
             ]);
 
         $data = $response->json();
 
-        if (!$response->successful()) {
+        if (!$response->successful() || $data['status'] !== 'success') {
             $transaction->update([
                 'status' => 'failed',
                 'gateway_response' => $data,
@@ -377,29 +438,6 @@ class WalletController extends Controller
             'data' => $data['data'],
             'new_balance' => $user->fresh()->formatted_wallet_balance,
         ]);
-    }
-
-    /**
-     * Create transfer recipient.
-     */
-    private function createTransferRecipient(Request $request)
-    {
-        $response = Http::withToken(config('services.paystack.secret_key'))
-            ->post('https://api.paystack.co/transferrecipient', [
-                'type' => 'nuban',
-                'name' => $request->recipient_name,
-                'account_number' => $request->recipient_account,
-                'bank_code' => $request->recipient_bank,
-                'currency' => 'NGN',
-            ]);
-
-        $data = $response->json();
-
-        if ($response->successful()) {
-            return $data['data']['recipient_code'];
-        }
-
-        throw new \Exception('Failed to create transfer recipient');
     }
 
     /**

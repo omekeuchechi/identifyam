@@ -155,6 +155,8 @@ export default function Login({ status, canResetPassword }) {
                             </PrimaryButton>
                         </div>
 
+                        <p>Don't have an Account? <Link href={route('register')} className="text-blue-600 hover:underline">Sign up</Link></p>
+
                         <div className="auth-divider">
                             <span>OR</span>
                         </div>

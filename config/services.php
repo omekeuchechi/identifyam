@@ -46,6 +46,13 @@ return [
         'public_key' => env('PAYSTACK_PUBLIC_KEY'),
     ],
 
+    'flutterwave' => [
+        'public_key' => env('FLUTTERWAVE_CLIENT_ID'),
+        'secret_key' => env('FLUTTERWAVE_CLIENT_SECRET'),
+        'encryption_key' => env('FLUTTERWAVE_ENCRYPTION_KEY'),
+        'base_url' => env('FLUTTERWAVE_URL', 'https://api.flutterwave.com/v3'),
+    ],
+
     'easy_verify' => [
         'token' => env('EASYVERIFY_TOKEN'),
     ],
