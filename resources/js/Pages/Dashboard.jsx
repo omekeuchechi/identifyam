@@ -277,7 +277,7 @@ export default function Dashboard({ auth }) {
                         <div className="wallet-card">
                             <div>
                                 <h4>Wallet Balance</h4>
-                                <p>Paystack</p>
+                                <p>Flutterwave</p>
                                 <h2>{auth.user.walletAmount || 0}</h2>
                             </div>
 

@@ -47,6 +47,59 @@ const LagacyNin = ({ auth }) => {
         return () => clearInterval(keepAliveInterval);
     }, []);
 
+    // Load saved NIN result and form data from localStorage on component mount
+    useEffect(() => {
+        try {
+            const savedResult = localStorage.getItem('lagacy_nin_result');
+            if (savedResult) {
+                const parsedResult = JSON.parse(savedResult);
+                setResult(parsedResult);
+            }
+
+            const savedFormData = localStorage.getItem('lagacy_nin_form_data');
+            if (savedFormData) {
+                const parsedFormData = JSON.parse(savedFormData);
+                setFormData(parsedFormData);
+            }
+
+            const savedSelectedAction = localStorage.getItem('lagacy_nin_selected_action');
+            if (savedSelectedAction) {
+                setSelectedAction(savedSelectedAction);
+            }
+        } catch (err) {
+            console.log('Failed to load saved NIN data:', err);
+        }
+    }, []);
+
+    // Save NIN result to localStorage whenever it changes
+    useEffect(() => {
+        if (result) {
+            try {
+                localStorage.setItem('lagacy_nin_result', JSON.stringify(result));
+            } catch (err) {
+                console.log('Failed to save NIN result:', err);
+            }
+        }
+    }, [result]);
+
+    // Save form data to localStorage whenever it changes
+    useEffect(() => {
+        try {
+            localStorage.setItem('lagacy_nin_form_data', JSON.stringify(formData));
+        } catch (err) {
+            console.log('Failed to save form data:', err);
+        }
+    }, [formData]);
+
+    // Save selected action to localStorage whenever it changes
+    useEffect(() => {
+        try {
+            localStorage.setItem('lagacy_nin_selected_action', selectedAction);
+        } catch (err) {
+            console.log('Failed to save selected action:', err);
+        }
+    }, [selectedAction]);
+
     // Remove auto-download - let user choose template first
 
     const handleActionChange = (e) => {
@@ -224,11 +277,13 @@ const LagacyNin = ({ auth }) => {
         }
     };
 
-    const downloadPDF = async () => {
+    const downloadPDF = async (retryCount = 0) => {
     if (!result || !result.data) {
         setError('No verification results available for PDF generation');
         return;
     }
+
+    const maxRetries = 2;
 
     try {
         speak('Downloading ' + 'NIN ' + selectedAction)
@@ -236,6 +291,10 @@ const LagacyNin = ({ auth }) => {
         setError('');
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+        // Increase timeout to 60 seconds for PDF generation
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
         
         const response = await fetch('/api/lagacy-nin/pdf', {
             method: 'POST',
@@ -252,8 +311,11 @@ const LagacyNin = ({ auth }) => {
                 api_version: formData.api_version,
                 search_type: formData.search_type,
                 template_type: selectedAction
-            })
+            }),
+            signal: controller.signal
         });
+        
+        clearTimeout(timeoutId);
 
         // Check if response is HTML (redirect to login)
         const contentType = response.headers.get('content-type');
@@ -325,9 +387,17 @@ const LagacyNin = ({ auth }) => {
 
     } catch (err) {
         console.error('PDF generation error:', err);
+        
+        // Retry on network errors or timeouts
+        if (retryCount < maxRetries && (err.name === 'AbortError' || err.message.includes('fetch') || err.message.includes('network'))) {
+            console.log(`Retrying PDF generation (${retryCount + 1}/${maxRetries})...`);
+            alert(`⚠️ PDF generation timed out. Retrying (${retryCount + 1}/${maxRetries})...`);
+            return downloadPDF(retryCount + 1);
+        }
+        
         setError(err.message || 'Failed to generate PDF');
         alert('❌ Failed to generate PDF: ' + (err.message || 'Unknown error'));
-        speak('downloaded successfully!')
+        speak('download failed!')
     } finally {
         setLoading(false);
     }
@@ -833,6 +903,9 @@ const LagacyNin = ({ auth }) => {
                                             setResult(null);
                                             setError('');
                                             setPdfDownloading(false);
+                                            // Clear localStorage (except selected action to preserve user preference)
+                                            localStorage.removeItem('lagacy_nin_result');
+                                            localStorage.removeItem('lagacy_nin_form_data');
                                         }}
                                     >
                                         Clear Results

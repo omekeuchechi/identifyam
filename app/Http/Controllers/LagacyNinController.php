@@ -628,6 +628,7 @@ class LagacyNinController extends Controller
             
             // Refresh session to prevent expiration during long PDF generation
             $request->session()->put('last_activity', time());
+            $request->session()->save(); // Save immediately to prevent expiration
 
             $request->validate([
                 'data' => 'required|array',
@@ -822,13 +823,31 @@ class LagacyNinController extends Controller
     private function generateNinPDF($data, $ninRecord, $templateType = 'slip')
     {
         $this->logLagacyNin('INFO', 'generateNinPDF internal called', ['type' => $templateType]);
+        
+        // Temporarily increase memory limit for PDF generation
+        $originalMemoryLimit = ini_get('memory_limit');
+        $originalTimeLimit = ini_get('max_execution_time');
+        
         try {
+            // Increase limits for PDF generation
+            ini_set('memory_limit', '512M');
+            set_time_limit(120);
+            
+            $this->logLagacyNin('INFO', 'Memory and time limits increased', [
+                'memory' => '512M',
+                'time' => '120s'
+            ]);
+            
             // Generate HTML content
             if ($templateType === 'card') {
                 $html = $this->getPlasticCardHTML($data, $ninRecord);
             } else {
                 $html = $this->getPDFHTML($data, $ninRecord);
             }
+
+            $this->logLagacyNin('INFO', 'HTML generated', [
+                'html_length' => strlen($html)
+            ]);
 
             // Initialize DomPDF
             $this->logLagacyNin('INFO', 'Initializing DomPDF');
@@ -837,6 +856,8 @@ class LagacyNinController extends Controller
             $options->set('isRemoteEnabled', true);
             $options->set('isHtml5ParserEnabled', true);
             $options->set('chroot', [public_path(), storage_path()]);
+            $options->set('enable_css_float', true);
+            $options->set('enable_php', false);
             
             $dompdf = new \Dompdf\Dompdf($options);
             
@@ -851,14 +872,33 @@ class LagacyNinController extends Controller
             }
             
             // Render PDF
+            $this->logLagacyNin('INFO', 'Rendering PDF');
             $dompdf->render();
             
             // Return PDF output
-            return $dompdf->output();
+            $pdfOutput = $dompdf->output();
+            
+            $this->logLagacyNin('INFO', 'PDF generated successfully', [
+                'size' => strlen($pdfOutput)
+            ]);
+            
+            return $pdfOutput;
             
         } catch (\Exception $e) {
+            $this->logLagacyNin('ERROR', 'PDF generation failed', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+            
             // Fallback to HTML if DomPDF fails
             return $this->generateHTMLFallbackContent($data, $ninRecord, $templateType);
+        } finally {
+            // Restore original limits
+            ini_set('memory_limit', $originalMemoryLimit);
+            set_time_limit($originalTimeLimit);
+            
+            $this->logLagacyNin('INFO', 'Memory and time limits restored');
         }
     }
     
@@ -951,7 +991,18 @@ class LagacyNinController extends Controller
         $surname = $data['surName'] ?? $data['surname'] ?? 'N/A';
         $firstName = $data['firstName'] ?? $data['firstname'] ?? 'N/A';
         $middleName = $data['middleName'] ?? $data['middlename'] ?? 'N/A';
-        $gender = $data['gender'] ?? 'N/A';
+        $genderRaw = $data['gender'] ?? 'N/A';
+        
+        // Format gender for display
+        $genderLower = strtolower($genderRaw);
+        if (in_array($genderLower, ['male', 'm'])) {
+            $gender = 'Male';
+        } elseif (in_array($genderLower, ['female', 'f'])) {
+            $gender = 'Female';
+        } else {
+            $gender = $genderRaw; // Keep original if unrecognized
+        }
+        
         $address = $data['residentialAddress'] ?? $data['address'] ?? 'N/A';
         $issueDate = now()->format('d/m/Y');
         
@@ -1503,9 +1554,16 @@ class LagacyNinController extends Controller
         $birthDate = $this->formatBirthDate($data['dateOfBirth'] ?? $data['birthdate'] ?? $data['birth_date']);
         $issueDate = now()->format('d M Y');
 
-        $genderNewValue='';
-
-        $gender === 'Male' ? $genderNewValue= 'M' : $genderNewValue= 'F';
+        // Convert gender to M/F format (handle various input formats)
+        $genderLower = strtolower($gender);
+        if (in_array($genderLower, ['male', 'm'])) {
+            $genderNewValue = 'M';
+        } elseif (in_array($genderLower, ['female', 'f'])) {
+            $genderNewValue = 'F';
+        } else {
+            // Default to M if gender is unrecognized
+            $genderNewValue = 'M';
+        }
 
         // Get photo data
         $photoSrc = '';
